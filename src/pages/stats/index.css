@@ -1,0 +1,348 @@
+/* 统计页面样式 - 与原型保持一致 */
+
+.stats-page {
+  min-height: 100vh;
+  background-color: #F7F4ED;
+  padding-bottom: 120px;
+}
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background-color: #F7F4ED;
+}
+
+.header-left,
+.header-right {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.refreshing {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E2933;
+}
+
+/* 主内容区域 */
+.main-content {
+  padding: 0 16px;
+}
+
+/* 统计卡片 */
+.stats-card {
+  background-color: #FAF8F3;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E2933;
+  margin-bottom: 16px;
+}
+
+/* 统计网格 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E2933;
+}
+
+.stat-date {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* BMI区块 */
+.bmi-current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bmi-label {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.bmi-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1E2933;
+}
+
+.bmi-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.bmi-badge-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* BMI刻度尺 */
+.bmi-scale {
+  margin-bottom: 16px;
+}
+
+.bmi-scale-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+}
+
+.bmi-scale-segment {
+  flex: 1;
+}
+
+.bmi-scale-thin {
+  background-color: #F59E0B;
+}
+
+.bmi-scale-normal {
+  background-color: #3C8D6E;
+}
+
+.bmi-scale-overweight {
+  background-color: #F59E0B;
+}
+
+.bmi-scale-obese {
+  background-color: #EF4444;
+}
+
+.bmi-scale-indicator {
+  position: absolute;
+  top: -4px;
+  width: 16px;
+  height: 16px;
+  background-color: #F26B3A;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bmi-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.bmi-scale-label {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* BMI等级说明 */
+.bmi-levels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.bmi-level-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bmi-level-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.bmi-level-dot-thin {
+  background-color: #F59E0B;
+}
+
+.bmi-level-dot-normal {
+  background-color: #3C8D6E;
+}
+
+.bmi-level-dot-overweight {
+  background-color: #F59E0B;
+}
+
+.bmi-level-dot-obese {
+  background-color: #EF4444;
+}
+
+.bmi-level-text {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* 体脂率区块 */
+.bodyfat-current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bodyfat-label {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.bodyfat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1E2933;
+}
+
+.bodyfat-badge {
+  padding: 4px 12px;
+  background-color: rgba(60, 141, 110, 0.15);
+  border-radius: 9999px;
+}
+
+.bodyfat-badge-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3C8D6E;
+}
+
+/* 体脂率刻度尺 */
+.bodyfat-scale {
+  margin-bottom: 16px;
+}
+
+.bodyfat-scale-bar {
+  position: relative;
+  height: 8px;
+  background: linear-gradient(to right, #3C8D6E 0%, #3C8D6E 50%, #F59E0B 50%, #F59E0B 100%);
+  border-radius: 4px;
+}
+
+.bodyfat-scale-indicator {
+  position: absolute;
+  top: -4px;
+  width: 16px;
+  height: 16px;
+  background-color: #F26B3A;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bodyfat-range {
+  margin-top: 8px;
+}
+
+.bodyfat-range-text {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* 体脂率信息 */
+.bodyfat-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.bodyfat-info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bodyfat-info-label {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.bodyfat-info-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E2933;
+}
+
+.bodyfat-info-divider {
+  width: 1px;
+  height: 32px;
+  background-color: rgba(228, 222, 210, 0.5);
+}
+
+/* 健康建议 */
+.suggestions-card {
+  margin-bottom: 0;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.suggestion-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(60, 141, 110, 0.1);
+  flex-shrink: 0;
+}
+
+.suggestion-text {
+  font-size: 14px;
+  color: #1E2933;
+  line-height: 1.5;
+}

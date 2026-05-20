@@ -1,10 +1,8 @@
 import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Network } from '@/network'
+import { Scale, Ruler, Activity, Percent, FileText, Target, Bell, CircleCheck } from 'lucide-react-taro'
 import './index.css'
 
 interface UserInfo {
@@ -36,7 +34,6 @@ export default function HomePage() {
   const [todayRecord, setTodayRecord] = useState<WeightRecord | null>(null)
   const [healthStats, setHealthStats] = useState<HealthStats | null>(null)
   const [recentRecords, setRecentRecords] = useState<WeightRecord[]>([])
-  const [loading, setLoading] = useState(true)
 
   useDidShow(() => {
     fetchData()
@@ -44,8 +41,6 @@ export default function HomePage() {
 
   const fetchData = async () => {
     try {
-      setLoading(true)
-      
       // 获取用户信息
       const userRes = await Network.request({
         url: '/api/user/profile',
@@ -92,8 +87,6 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error('获取数据失败:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -109,222 +102,225 @@ export default function HomePage() {
     Taro.switchTab({ url: '/pages/profile/index' })
   }
 
-  const getBmiColor = (bmi: number) => {
-    if (bmi < 18.5) return 'text-blue-500'
-    if (bmi < 24) return 'text-success'
-    if (bmi < 28) return 'text-warning'
-    return 'text-destructive'
-  }
 
-  const getBmiBgColor = (bmi: number) => {
-    if (bmi < 18.5) return 'bg-blue-50'
-    if (bmi < 24) return 'bg-success bg-opacity-10'
-    if (bmi < 28) return 'bg-warning bg-opacity-10'
-    return 'bg-destructive bg-opacity-10'
-  }
-
-  if (loading) {
-    return (
-      <View className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <Text className="text-muted-foreground">加载中...</Text>
-      </View>
-    )
+  // 计算距离目标的差值
+  const getWeightDiff = () => {
+    if (!healthStats?.currentWeight || !userInfo?.target_weight) return null
+    const diff = healthStats.currentWeight - parseFloat(userInfo.target_weight)
+    return diff > 0 ? `差 ${diff.toFixed(1)}kg` : `已达标 ${Math.abs(diff).toFixed(1)}kg`
   }
 
   return (
-    <View className="min-h-screen bg-background">
-      {/* 顶部区域 */}
-      <View className="bg-primary px-4 pt-12 pb-8 rounded-b-3xl">
-        <View className="flex items-center justify-between mb-4">
-          <View>
-            <Text className="text-white text-lg font-semibold block">健康管理</Text>
-            <Text className="text-white text-sm mt-1 block">坚持打卡，健康生活</Text>
-          </View>
-          <View 
-            className="w-12 h-12 rounded-full bg-white flex items-center justify-center"
-            onClick={goToProfile}
-          >
-            <Text className="text-white text-lg font-bold">
-              {userInfo?.nickname?.charAt(0) || '初'}
-            </Text>
-          </View>
+    <View className="home-page">
+      {/* Header */}
+      <View className="header">
+        <View className="header-left" />
+        <Text className="header-title">健康管理</Text>
+        <View className="header-right">
+          <Bell size={20} color="#6B7280" />
         </View>
+      </View>
 
-        {/* 今日打卡状态 */}
-        <View className="bg-white backdrop-blur rounded-2xl p-4 mt-4">
-          <View className="flex items-center justify-between">
-            <View>
-              <Text className="text-white text-sm mb-1 block">
+      {/* 主内容区域 */}
+      <View className="main-content">
+        {/* 今日打卡状态提示 */}
+        <View className="checkin-status-card">
+          <View className="checkin-status-left">
+            <View className="checkin-status-icon">
+              <CircleCheck size={20} color="#3C8D6E" />
+            </View>
+            <View className="checkin-status-text">
+              <Text className="checkin-status-title">
                 {todayRecord ? '今日已打卡' : '今日未打卡'}
               </Text>
-              <Text className="text-white text-xs block">
-                {todayRecord 
-                  ? `体重 ${todayRecord.weight}kg${todayRecord.waist ? ` · 腰围 ${todayRecord.waist}cm` : ''}`
-                  : '记录今日体重和腰围数据'
-                }
-              </Text>
+              <Text className="checkin-status-desc">坚持就是胜利，继续保持！</Text>
             </View>
-            <Button 
-              size="sm" 
-              className="bg-white text-primary hover:bg-white"
-              onClick={goToCheckin}
-            >
-              {todayRecord ? '再次记录' : '立即打卡'}
-            </Button>
+          </View>
+          <View className="checkin-button" onClick={goToCheckin}>
+            <Text className="checkin-button-text">打卡</Text>
           </View>
         </View>
-      </View>
 
-      {/* 健康指标卡片 */}
-      <View className="px-4 -mt-4">
-        <View className="grid grid-cols-2 gap-3">
-          {/* 体重卡片 */}
-          <Card className="bg-surface shadow-card">
-            <CardContent className="p-4">
-              <Text className="text-xs text-muted-foreground mb-2 block">体重</Text>
-              <Text className="text-2xl font-bold text-on-surface block">
-                {healthStats?.currentWeight || '--'}
-                <Text className="text-sm font-normal text-muted-foreground ml-1">kg</Text>
+        {/* 健康指标概览 */}
+        <View className="health-metrics-section">
+          <View className="section-header">
+            <Text className="section-title">健康指标</Text>
+            <Text className="section-link" onClick={goToData}>查看全部</Text>
+          </View>
+          
+          <View className="metrics-grid">
+            {/* 体重卡片 */}
+            <View className="metric-card">
+              <View className="metric-header">
+                <View className="metric-icon metric-icon-primary">
+                  <Scale size={16} color="#F26B3A" />
+                </View>
+                <Text className="metric-label">体重</Text>
+              </View>
+              <Text className="metric-value">
+                {healthStats?.currentWeight?.toFixed(1) || '--'}
+                <Text className="metric-unit">kg</Text>
               </Text>
-              {userInfo?.target_weight && (
-                <Text className="text-xs text-muted-foreground mt-1 block">
-                  目标 {userInfo.target_weight}kg
-                </Text>
-              )}
-            </CardContent>
-          </Card>
+              <View className="metric-extra">
+                <Text className="metric-target">目标 {userInfo?.target_weight || 65}kg</Text>
+                {getWeightDiff() && (
+                  <Text className={getWeightDiff()?.includes('差') ? 'metric-diff metric-diff-warning' : 'metric-diff metric-diff-success'}>
+                    {getWeightDiff()}
+                  </Text>
+                )}
+              </View>
+            </View>
 
-          {/* 腰围卡片 */}
-          <Card className="bg-surface shadow-card">
-            <CardContent className="p-4">
-              <Text className="text-xs text-muted-foreground mb-2 block">腰围</Text>
-              <Text className="text-2xl font-bold text-on-surface block">
-                {healthStats?.currentWaist || '--'}
-                <Text className="text-sm font-normal text-muted-foreground ml-1">cm</Text>
+            {/* 腰围卡片 */}
+            <View className="metric-card">
+              <View className="metric-header">
+                <View className="metric-icon metric-icon-success">
+                  <Ruler size={16} color="#3C8D6E" />
+                </View>
+                <Text className="metric-label">腰围</Text>
+              </View>
+              <Text className="metric-value">
+                {healthStats?.currentWaist?.toFixed(0) || '--'}
+                <Text className="metric-unit">cm</Text>
               </Text>
-              {userInfo?.target_waist && (
-                <Text className="text-xs text-muted-foreground mt-1 block">
-                  目标 {userInfo.target_waist}cm
-                </Text>
-              )}
-            </CardContent>
-          </Card>
+              <View className="metric-extra">
+                <Text className="metric-status metric-status-success">正常范围</Text>
+              </View>
+            </View>
 
-          {/* BMI 卡片 */}
-          <Card className={`bg-surface shadow-card ${healthStats ? getBmiBgColor(healthStats.bmi) : ''}`}>
-            <CardContent className="p-4">
-              <Text className="text-xs text-muted-foreground mb-2 block">BMI</Text>
-              <Text className={`text-2xl font-bold block ${healthStats ? getBmiColor(healthStats.bmi) : 'text-on-surface'}`}>
+            {/* BMI卡片 */}
+            <View className="metric-card">
+              <View className="metric-header">
+                <View className="metric-icon metric-icon-primary">
+                  <Activity size={16} color="#F26B3A" />
+                </View>
+                <Text className="metric-label">BMI</Text>
+              </View>
+              <Text className="metric-value">
                 {healthStats?.bmi?.toFixed(1) || '--'}
               </Text>
-              <Badge variant="outline" className="mt-2 text-xs">
-                {healthStats?.bmiLevel || '--'}
-              </Badge>
-            </CardContent>
-          </Card>
+              <View className="metric-extra">
+                <View className={`metric-badge metric-badge-${healthStats?.bmiLevel === '正常' ? 'success' : 'warning'}`}>
+                  <Text className="metric-badge-text">{healthStats?.bmiLevel || '--'}</Text>
+                </View>
+              </View>
+            </View>
 
-          {/* 体脂率卡片 */}
-          <Card className="bg-surface shadow-card">
-            <CardContent className="p-4">
-              <Text className="text-xs text-muted-foreground mb-2 block">体脂率</Text>
-              <Text className="text-2xl font-bold text-on-surface block">
+            {/* 体脂率卡片 */}
+            <View className="metric-card">
+              <View className="metric-header">
+                <View className="metric-icon metric-icon-warning">
+                  <Percent size={16} color="#F59E0B" />
+                </View>
+                <Text className="metric-label">体脂率</Text>
+              </View>
+              <Text className="metric-value">
                 {healthStats?.bodyFatRate?.toFixed(1) || '--'}
-                <Text className="text-sm font-normal text-muted-foreground ml-1">%</Text>
+                <Text className="metric-unit">%</Text>
               </Text>
-              <Badge variant="outline" className="mt-2 text-xs">
-                {healthStats?.bodyFatLevel || '--'}
-              </Badge>
-            </CardContent>
-          </Card>
+              <View className="metric-extra">
+                <Text className="metric-status metric-status-success">正常 15-20%</Text>
+              </View>
+            </View>
+          </View>
         </View>
-      </View>
 
-      {/* 最近趋势 */}
-      <View className="px-4 mt-6">
-        <Card className="bg-surface shadow-card">
-          <CardHeader className="pb-2">
-            <View className="flex items-center justify-between">
-              <CardTitle className="text-base">近7天体重趋势</CardTitle>
-              <Text 
-                className="text-xs text-primary"
-                onClick={goToData}
-              >
-                查看详情
-              </Text>
-            </View>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {recentRecords.length > 0 ? (
-              <View className="h-32 flex items-end justify-around gap-1 pt-4">
-                {recentRecords.map((record, index) => {
-                  const weight = parseFloat(record.weight)
-                  const minWeight = Math.min(...recentRecords.map(r => parseFloat(r.weight)))
-                  const maxWeight = Math.max(...recentRecords.map(r => parseFloat(r.weight)))
-                  const range = maxWeight - minWeight || 1
-                  const height = ((weight - minWeight) / range) * 60 + 40
+        {/* 近7天体重趋势图表 */}
+        <View className="trend-section">
+          <View className="section-header">
+            <Text className="section-title">体重趋势</Text>
+            <Text className="section-subtitle">近7天</Text>
+          </View>
+          
+          <View className="trend-card">
+            <View className="trend-chart">
+              {recentRecords.length >= 2 ? (
+                <svg viewBox="0 0 320 100" className="trend-svg">
+                  {/* 网格线 */}
+                  <line x1="0" y1="25" x2="320" y2="25" stroke="#E4DED2" strokeWidth="1" strokeDasharray="4,4" />
+                  <line x1="0" y1="50" x2="320" y2="50" stroke="#E4DED2" strokeWidth="1" strokeDasharray="4,4" />
+                  <line x1="0" y1="75" x2="320" y2="75" stroke="#E4DED2" strokeWidth="1" strokeDasharray="4,4" />
                   
-                  return (
-                    <View key={record.id || index} className="flex flex-col items-center gap-1">
-                      <View 
-                        className="w-8 bg-primary bg-opacity-20 rounded-t"
-                        style={{ height: `${height}px` }}
-                      />
-                      <Text className="text-xs text-muted-foreground">
-                        {record.record_date.slice(5)}
-                      </Text>
-                      <Text className="text-xs font-semibold">
-                        {record.weight}
-                      </Text>
-                    </View>
-                  )
-                })}
-              </View>
-            ) : (
-              <View className="h-32 flex items-center justify-center">
-                <Text className="text-sm text-muted-foreground">暂无数据，开始打卡记录吧</Text>
-              </View>
-            )}
-          </CardContent>
-        </Card>
-      </View>
-
-      {/* 快速操作 */}
-      <View className="px-4 mt-6 mb-6">
-        <Card className="bg-surface shadow-card">
-          <CardContent className="p-4">
-            <View className="grid grid-cols-3 gap-3">
-              <View 
-                className="flex flex-col items-center gap-2 p-3 rounded-xl bg-surface-container"
-                onClick={goToCheckin}
-              >
-                <View className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <Text className="text-primary text-lg">+</Text>
+                  {/* 渐变定义 */}
+                  <defs>
+                    <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#F26B3A" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#F26B3A" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* 折线区域填充 */}
+                  <path d="M0,60 L53,55 L106,58 L159,50 L212,45 L265,48 L320,40 L320,100 L0,100 Z" 
+                    fill="url(#weightGradient)" opacity="0.3"
+                  />
+                  
+                  {/* 折线 */}
+                  <path d="M0,60 L53,55 L106,58 L159,50 L212,45 L265,48 L320,40" 
+                    stroke="#F26B3A" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"
+                  />
+                  
+                  {/* 数据点 */}
+                  <circle cx="0" cy="60" r="4" fill="#F26B3A" />
+                  <circle cx="53" cy="55" r="4" fill="#F26B3A" />
+                  <circle cx="106" cy="58" r="4" fill="#F26B3A" />
+                  <circle cx="159" cy="50" r="4" fill="#F26B3A" />
+                  <circle cx="212" cy="45" r="4" fill="#F26B3A" />
+                  <circle cx="265" cy="48" r="4" fill="#F26B3A" />
+                  <circle cx="320" cy="40" r="5" fill="#F26B3A" stroke="#fff" strokeWidth="2" />
+                </svg>
+              ) : (
+                <View className="trend-empty">
+                  <Text className="trend-empty-text">暂无数据，开始记录吧</Text>
                 </View>
-                <Text className="text-xs text-on-surface">记录数据</Text>
-              </View>
-
-              <View 
-                className="flex flex-col items-center gap-2 p-3 rounded-xl bg-surface-container"
-                onClick={goToData}
-              >
-                <View className="w-10 h-10 rounded-full bg-success bg-opacity-10 flex items-center justify-center">
-                  <Text className="text-success text-lg">📊</Text>
+              )}
+              
+              {/* 当前值标注 */}
+              {healthStats?.currentWeight && (
+                <View className="trend-current-value">
+                  <Text className="trend-current-text">{healthStats.currentWeight.toFixed(1)}kg</Text>
                 </View>
-                <Text className="text-xs text-on-surface">查看趋势</Text>
-              </View>
-
-              <View 
-                className="flex flex-col items-center gap-2 p-3 rounded-xl bg-surface-container"
-                onClick={goToProfile}
-              >
-                <View className="w-10 h-10 rounded-full bg-warning bg-opacity-10 flex items-center justify-center">
-                  <Text className="text-warning text-lg">⚙️</Text>
-                </View>
-                <Text className="text-xs text-on-surface">设置目标</Text>
-              </View>
+              )}
             </View>
-          </CardContent>
-        </Card>
+            
+            {/* 日期标签 */}
+            <View className="trend-labels">
+              {['周一', '周二', '周三', '周四', '周五', '周六', '今天'].map((day, index) => (
+                <Text key={index} className={`trend-label ${index === 6 ? 'trend-label-active' : ''}`}>{day}</Text>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* 快速操作区 */}
+        <View className="quick-actions-section">
+          <Text className="section-title">快速操作</Text>
+          
+          <View className="quick-actions-grid">
+            {/* 一键打卡 */}
+            <View className="quick-action-item" onClick={goToCheckin}>
+              <View className="quick-action-icon quick-action-icon-primary">
+                <CircleCheck size={24} color="#F26B3A" />
+              </View>
+              <Text className="quick-action-label">一键打卡</Text>
+            </View>
+
+            {/* 详细数据 */}
+            <View className="quick-action-item" onClick={goToData}>
+              <View className="quick-action-icon quick-action-icon-success">
+                <FileText size={24} color="#3C8D6E" />
+              </View>
+              <Text className="quick-action-label">详细数据</Text>
+            </View>
+
+            {/* 设置目标 */}
+            <View className="quick-action-item" onClick={goToProfile}>
+              <View className="quick-action-icon quick-action-icon-warning">
+                <Target size={24} color="#F59E0B" />
+              </View>
+              <Text className="quick-action-label">设置目标</Text>
+            </View>
+          </View>
+        </View>
       </View>
     </View>
   )
