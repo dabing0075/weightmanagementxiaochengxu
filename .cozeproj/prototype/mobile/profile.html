@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #F26B3A;
+      --color-primary-container:    #FDE8DF;
+      --color-on-primary:           #ffffff;
+      /* === 背景 / 表面（M3 色调系统 + Apple HIG 呼吸感） === */
+      --color-background:                 #F7F4ED;
+      --color-surface-container-lowest:   #FFFFFF;
+      --color-surface:                    #FAF8F3;
+      --color-surface-container:          #F0EDE6;
+      --color-surface-container-high:     #E8E5DE;
+      --color-surface-container-highest:  #E0DDD6;
+      /* === 文字 === */
+      --color-on-surface:           #1E2933;
+      --color-on-surface-variant:   #6B7280;
+      /* === 功能色 === */
+      --color-success:  #3C8D6E;
+      --color-error:    #EF4444;
+      --color-warning:  #F59E0B;
+      /* === 边框 === */
+      --color-outline:          #D1D5DB;
+      --color-outline-variant:  #E4DED2;
+      /* === 圆角 === */
+      --radius-sm:   0.5rem;
+      --radius-md:   0.75rem;
+      --radius-lg:   1rem;
+      --radius-xl:   1.5rem;
+      --radius-2xl:  2rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 4px 12px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.08);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.12);
+      /* === 字体 === */
+      --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+  </style>
+
+  <style>
+    body {
+      min-height: max(812px, 100dvh);
+      font-family: system-ui, sans-serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- @nav:start 导航组件，不需要的页面则不要复制此段（从 @nav:start 到 @nav:end） -->
+  <!-- 顶部 Header -->
+  <header class="bg-background sticky top-0 z-40 h-14 flex items-center justify-between px-4">
+    <div class="w-10 h-10 flex items-center justify-center">
+      <!-- 首页不显示返回按钮，二级页显示 -->
+    </div>
+    <h1 class="text-base font-semibold text-on-surface">个人中心</h1>
+    <button id="btn-settings" class="w-10 h-10 flex items-center justify-center text-on-surface-variant rounded-full
+                   hover:bg-surface-container active:bg-surface-container-high transition-colors">
+      <i data-lucide="settings" class="w-5 h-5"></i>
+    </button>
+  </header>
+
+  <main class="flex-1 overflow-y-auto pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+    <!-- @main-content:start -->
+    
+    <!-- 用户头像和昵称区域 -->
+    <div class="bg-surface mx-4 mt-4 rounded-xl shadow-card p-5">
+      <div class="flex items-center gap-4">
+        <!-- 默认头像：圆圈+文字"初" -->
+        <div class="w-16 h-16 bg-primary/15 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="text-2xl font-bold text-primary">初</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="text-lg font-bold text-on-surface">小初</h2>
+          <p class="text-sm text-on-surface-variant mt-0.5">坚持打卡，健康生活</p>
+        </div>
+        <button id="btn-edit-profile" class="w-10 h-10 flex items-center justify-center text-on-surface-variant rounded-full
+                       hover:bg-surface-container active:bg-surface-container-high transition-colors">
+          <i data-lucide="pencil" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 个人信息卡片 -->
+    <div class="bg-surface mx-4 mt-4 rounded-xl shadow-card p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-on-surface">个人信息</h3>
+        <button id="btn-edit-info" class="text-sm text-primary font-medium hover:opacity-80 transition-opacity">编辑</button>
+      </div>
+      <div class="space-y-3">
+        <!-- 信息项：姓名 -->
+        <div class="flex items-center justify-between py-2">
+          <span class="text-sm text-on-surface-variant">姓名</span>
+          <span class="text-sm text-on-surface">小初</span>
+        </div>
+        <!-- 信息项：性别 -->
+        <div class="flex items-center justify-between py-2">
+          <span class="text-sm text-on-surface-variant">性别</span>
+          <span class="text-sm text-on-surface">女</span>
+        </div>
+        <!-- 信息项：出生年月 -->
+        <div class="flex items-center justify-between py-2">
+          <span class="text-sm text-on-surface-variant">出生年月</span>
+          <span class="text-sm text-on-surface">1995年6月</span>
+        </div>
+        <!-- 信息项：身高 -->
+        <div class="flex items-center justify-between py-2">
+          <span class="text-sm text-on-surface-variant">身高</span>
+          <span class="text-sm text-on-surface">165 cm</span>
+        </div>
+        <!-- 信息项：目标体重 -->
+        <div class="flex items-center justify-between py-2">
+          <span class="text-sm text-on-surface-variant">目标体重</span>
+          <span class="text-sm text-on-surface">55 kg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 打卡记录卡片 -->
+    <div class="bg-surface mx-4 mt-4 rounded-xl shadow-card p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-on-surface">打卡记录</h3>
+        <button id="btn-view-records" class="text-sm text-primary font-medium hover:opacity-80 transition-opacity">查看全部</button>
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <!-- 总打卡天数 -->
+        <div class="text-center py-3 bg-primary-container rounded-xl">
+          <p class="text-2xl font-bold text-primary">128</p>
+          <p class="text-xs text-on-surface-variant mt-1">总打卡天数</p>
+        </div>
+        <!-- 连续打卡天数 -->
+        <div class="text-center py-3 bg-surface-container rounded-xl">
+          <p class="text-2xl font-bold text-on-surface">15</p>
+          <p class="text-xs text-on-surface-variant mt-1">连续打卡</p>
+        </div>
+        <!-- 本月打卡天数 -->
+        <div class="text-center py-3 bg-surface-container rounded-xl">
+          <p class="text-2xl font-bold text-on-surface">18</p>
+          <p class="text-xs text-on-surface-variant mt-1">本月打卡</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 健康目标设置卡片 -->
+    <div class="bg-surface mx-4 mt-4 rounded-xl shadow-card">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant/20">
+        <h3 class="text-base font-semibold text-on-surface">健康目标设置</h3>
+      </div>
+      <!-- 目标项：目标体重 -->
+      <div id="item-target-weight" class="flex items-center px-4 py-3.5 hover:bg-surface-container active:bg-surface-container-high transition-colors cursor-pointer">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i data-lucide="target" class="w-4.5 h-4.5 text-primary"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-on-surface">目标体重</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">55 kg</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-on-surface-variant/50 flex-shrink-0"></i>
+      </div>
+      <!-- 目标项：目标腰围 -->
+      <div id="item-target-waist" class="flex items-center px-4 py-3.5 hover:bg-surface-container active:bg-surface-container-high transition-colors cursor-pointer">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-9 h-9 bg-success/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i data-lucide="ruler" class="w-4.5 h-4.5 text-success"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-on-surface">目标腰围</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">65 cm</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-on-surface-variant/50 flex-shrink-0"></i>
+      </div>
+      <!-- 目标项：提醒时间 -->
+      <div id="item-reminder" class="flex items-center px-4 py-3.5 hover:bg-surface-container active:bg-surface-container-high transition-colors cursor-pointer">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-9 h-9 bg-warning/10 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i data-lucide="bell" class="w-4.5 h-4.5 text-warning"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-on-surface">提醒时间</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">每日 08:00</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-on-surface-variant/50 flex-shrink-0"></i>
+      </div>
+    </div>
+
+    <!-- 其他功能入口 -->
+    <div class="bg-surface mx-4 mt-4 rounded-xl shadow-card">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-outline-variant/20">
+        <h3 class="text-base font-semibold text-on-surface">更多功能</h3>
+      </div>
+      <!-- 功能项：数据导出 -->
+      <div id="item-export" class="flex items-center px-4 py-3.5 hover:bg-surface-container active:bg-surface-container-high transition-colors cursor-pointer">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-9 h-9 bg-surface-container-high rounded-lg flex items-center justify-center flex-shrink-0">
+            <i data-lucide="download" class="w-4.5 h-4.5 text-on-surface-variant"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-on-surface">数据导出</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">导出您的健康数据</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-on-surface-variant/50 flex-shrink-0"></i>
+      </div>
+      <!-- 功能项：关于我们 -->
+      <div id="item-about" class="flex items-center px-4 py-3.5 hover:bg-surface-container active:bg-surface-container-high transition-colors cursor-pointer">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-9 h-9 bg-surface-container-high rounded-lg flex items-center justify-center flex-shrink-0">
+            <i data-lucide="info" class="w-4.5 h-4.5 text-on-surface-variant"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-on-surface">关于我们</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">版本 1.0.0</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-on-surface-variant/50 flex-shrink-0"></i>
+      </div>
+      <!-- 功能项：意见反馈 -->
+      <div id="item-feedback" class="flex items-center px-4 py-3.5 hover:bg-surface-container active:bg-surface-container-high transition-colors cursor-pointer">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-9 h-9 bg-surface-container-high rounded-lg flex items-center justify-center flex-shrink-0">
+            <i data-lucide="message-square" class="w-4.5 h-4.5 text-on-surface-variant"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-on-surface">意见反馈</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">帮助我们做得更好</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-on-surface-variant/50 flex-shrink-0"></i>
+      </div>
+      <!-- 功能项：清除缓存 -->
+      <div id="item-clear-cache" class="flex items-center px-4 py-3.5 hover:bg-surface-container active:bg-surface-container-high transition-colors cursor-pointer">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <div class="w-9 h-9 bg-surface-container-high rounded-lg flex items-center justify-center flex-shrink-0">
+            <i data-lucide="trash-2" class="w-4.5 h-4.5 text-on-surface-variant"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-on-surface">清除缓存</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">当前缓存 12.5 MB</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-on-surface-variant/50 flex-shrink-0"></i>
+      </div>
+    </div>
+
+    <!-- 底部留白 -->
+    <div class="h-6"></div>
+    
+    <!-- @main-content:end -->
+  </main>
+
+  <!-- 底部 TabBar（一级页专用） -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface
+              flex justify-around items-center h-14 pb-[env(safe-area-inset-bottom)]">
+    <a id="nav-home" href="home.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">首页</span>
+    </a>
+    <a id="nav-checkin" href="checkin.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">打卡</span>
+    </a>
+    <a id="nav-data" href="data.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="trending-up" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">数据</span>
+    </a>
+    <a id="nav-stats" href="stats.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="bar-chart" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">统计</span>
+    </a>
+    <a id="nav-profile" href="profile.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-primary"
+       aria-current="page">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">我的</span>
+    </a>
+  </nav>
+  <!-- @nav:end 导航组件，不需要的页面则不要复制此段 -->
+
+  <script>
+    // 导航辅助函数
+    function navPush(route) {
+        console.log(`[原型演示] PUSH 到: ${route}`);
+        window.location.href = route;
+    }
+
+    function navReplace(route) {
+        console.log(`[原型演示] REPLACE 为: ${route}`);
+        window.location.replace(route);
+    }
+
+    function navReset(route) {
+        console.log(`[原型演示] RESET 到: ${route}`);
+        window.location.href = route;
+    }
+
+    function navBack() {
+        console.log(`[原型演示] BACK 返回上一页`);
+        if(window.history.length > 1) window.history.back();
+    }
+
+    $(function() {
+        // 初始化 Lucide 图标
+        lucide.createIcons();
+
+        // TabBar 导航点击事件
+        $('#nav-home').on('click', function(e) {
+            e.preventDefault();
+            navReset('home.html');
+        });
+
+        $('#nav-checkin').on('click', function(e) {
+            e.preventDefault();
+            navReset('checkin.html');
+        });
+
+        $('#nav-data').on('click', function(e) {
+            e.preventDefault();
+            navReset('data.html');
+        });
+
+        $('#nav-stats').on('click', function(e) {
+            e.preventDefault();
+            navReset('stats.html');
+        });
+
+        // 设置按钮点击
+        // 完整交互描述：
+        // 1. 点击后跳转到设置页面
+        // 2. 设置页面包含账号管理、通知设置、隐私设置等功能
+        $('#btn-settings').on('click', function() {
+            console.log('[原型演示] 跳转到设置页面');
+            // navPush('settings.html');
+        });
+
+        // 编辑个人资料按钮
+        // 完整交互描述：
+        // 1. 点击后跳转到个人资料编辑页面
+        // 2. 可修改头像、昵称、个人简介等信息
+        $('#btn-edit-profile').on('click', function() {
+            console.log('[原型演示] 跳转到个人资料编辑页面');
+            // navPush('edit-profile.html');
+        });
+
+        // 编辑个人信息按钮
+        // 完整交互描述：
+        // 1. 点击后跳转到个人信息编辑页面
+        // 2. 可修改姓名、性别、出生年月、身高等信息
+        $('#btn-edit-info').on('click', function() {
+            console.log('[原型演示] 跳转到个人信息编辑页面');
+            // navPush('edit-info.html');
+        });
+
+        // 查看全部打卡记录
+        // 完整交互描述：
+        // 1. 点击后跳转到打卡记录列表页面
+        // 2. 列表页按时间倒序展示所有打卡记录
+        // 3. 可按日期筛选、按类型筛选
+        $('#btn-view-records').on('click', function() {
+            console.log('[原型演示] 跳转到打卡记录列表页面');
+            // navPush('checkin-records.html');
+        });
+
+        // 健康目标设置项点击
+        $('#item-target-weight').on('click', function() {
+            console.log('[原型演示] 设置目标体重');
+            // 弹出输入框或跳转到目标设置页面
+        });
+
+        $('#item-target-waist').on('click', function() {
+            console.log('[原型演示] 设置目标腰围');
+            // 弹出输入框或跳转到目标设置页面
+        });
+
+        $('#item-reminder').on('click', function() {
+            console.log('[原型演示] 设置提醒时间');
+            // 弹出时间选择器
+        });
+
+        // 更多功能入口点击
+        $('#item-export').on('click', function() {
+            console.log('[原型演示] 导出数据');
+            // 显示导出选项：CSV / PDF / Excel
+        });
+
+        $('#item-about').on('click', function() {
+            console.log('[原型演示] 查看关于我们');
+            // navPush('about.html');
+        });
+
+        $('#item-feedback').on('click', function() {
+            console.log('[原型演示] 意见反馈');
+            // navPush('feedback.html');
+        });
+
+        // 清除缓存
+        // 完整交互描述：
+        // 1. 点击后弹出确认对话框"确定要清除缓存吗？"
+        // 2. 确认后显示加载动画
+        // 3. 清除完成后显示 Toast 提示"缓存已清除"
+        // 4. 更新缓存大小显示为 0 MB
+        $('#item-clear-cache').on('click', function() {
+            console.log('[原型演示] 清除缓存');
+            // 显示确认弹窗
+            // 清除后更新显示
+        });
+    });
+  </script>
+</body>
+
+</html>

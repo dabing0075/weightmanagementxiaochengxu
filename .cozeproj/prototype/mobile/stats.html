@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #F26B3A;
+      --color-primary-container:    #FDE8DF;
+      --color-on-primary:           #ffffff;
+      /* === 背景 / 表面（M3 色调系统 + Apple HIG 呼吸感） === */
+      --color-background:                 #F7F4ED;
+      --color-surface-container-lowest:   #FFFFFF;
+      --color-surface:                    #FAF8F3;
+      --color-surface-container:          #F0EDE6;
+      --color-surface-container-high:     #E8E5DE;
+      --color-surface-container-highest:  #E0DDD6;
+      /* === 文字 === */
+      --color-on-surface:           #1E2933;
+      --color-on-surface-variant:   #6B7280;
+      /* === 功能色 === */
+      --color-success:  #3C8D6E;
+      --color-error:    #EF4444;
+      --color-warning:  #F59E0B;
+      /* === 边框 === */
+      --color-outline:          #D1D5DB;
+      --color-outline-variant:  #E4DED2;
+      /* === 圆角 === */
+      --radius-sm:   0.5rem;
+      --radius-md:   0.75rem;
+      --radius-lg:   1rem;
+      --radius-xl:   1.5rem;
+      --radius-2xl:  2rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 4px 12px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.08);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.12);
+      /* === 字体 === */
+      --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+  </style>
+
+  <style>
+    body {
+      min-height: max(812px, 100dvh);
+      font-family: system-ui, sans-serif;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- @nav:start 导航组件，不需要的页面则不要复制此段（从 @nav:start 到 @nav:end） -->
+  <!-- 顶部 Header -->
+  <header class="bg-background sticky top-0 z-40 h-14 flex items-center justify-between px-4">
+    <div class="w-10 h-10 flex items-center justify-center">
+      <!-- 首页不显示返回按钮，二级页显示 -->
+    </div>
+    <h1 class="text-base font-semibold text-on-surface">统计分析</h1>
+    <button id="btn-refresh" class="w-10 h-10 flex items-center justify-center text-on-surface-variant rounded-full
+                   hover:bg-surface-container active:bg-surface-container-high transition-colors">
+      <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+    </button>
+  </header>
+
+  <main class="flex-1 overflow-y-auto pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+    <!-- @main-content:start -->
+    <div class="px-4 py-4 space-y-4">
+      
+      <!-- 体重统计卡片 -->
+      <div class="bg-surface rounded-xl shadow-card p-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+            <i data-lucide="scale" class="w-4 h-4 text-primary"></i>
+          </div>
+          <h2 class="text-base font-semibold text-on-surface">体重统计</h2>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
+          <!-- 平均值 -->
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">平均值</p>
+            <p class="text-2xl font-bold text-on-surface">65.2<span class="text-sm font-normal text-on-surface-variant ml-1">kg</span></p>
+          </div>
+          
+          <!-- 最大值及日期 -->
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">最大值</p>
+            <p class="text-2xl font-bold text-on-surface">68.5<span class="text-sm font-normal text-on-surface-variant ml-1">kg</span></p>
+            <p class="text-xs text-on-surface-variant mt-1">12月15日</p>
+          </div>
+          
+          <!-- 最小值及日期 -->
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">最小值</p>
+            <p class="text-2xl font-bold text-on-surface">62.3<span class="text-sm font-normal text-on-surface-variant ml-1">kg</span></p>
+            <p class="text-xs text-on-surface-variant mt-1">1月8日</p>
+          </div>
+          
+          <!-- 标准差 -->
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">标准差</p>
+            <p class="text-2xl font-bold text-on-surface">1.8<span class="text-sm font-normal text-on-surface-variant ml-1">kg</span></p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 腰围统计卡片 -->
+      <div class="bg-surface rounded-xl shadow-card p-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
+            <i data-lucide="ruler" class="w-4 h-4 text-success"></i>
+          </div>
+          <h2 class="text-base font-semibold text-on-surface">腰围统计</h2>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
+          <!-- 平均值 -->
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">平均值</p>
+            <p class="text-2xl font-bold text-on-surface">78.5<span class="text-sm font-normal text-on-surface-variant ml-1">cm</span></p>
+          </div>
+          
+          <!-- 最大值及日期 -->
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">最大值</p>
+            <p class="text-2xl font-bold text-on-surface">82.0<span class="text-sm font-normal text-on-surface-variant ml-1">cm</span></p>
+            <p class="text-xs text-on-surface-variant mt-1">12月10日</p>
+          </div>
+          
+          <!-- 最小值及日期 -->
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">最小值</p>
+            <p class="text-2xl font-bold text-on-surface">75.2<span class="text-sm font-normal text-on-surface-variant ml-1">cm</span></p>
+            <p class="text-xs text-on-surface-variant mt-1">1月12日</p>
+          </div>
+          
+          <!-- 标准差 -->
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">标准差</p>
+            <p class="text-2xl font-bold text-on-surface">1.5<span class="text-sm font-normal text-on-surface-variant ml-1">cm</span></p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- BMI 变化趋势 -->
+      <div class="bg-surface rounded-xl shadow-card p-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+            <i data-lucide="activity" class="w-4 h-4 text-primary"></i>
+          </div>
+          <h2 class="text-base font-semibold text-on-surface">BMI 变化趋势</h2>
+        </div>
+        
+        <!-- 当前 BMI -->
+        <div class="bg-surface-container rounded-xl p-4 mb-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs text-on-surface-variant mb-1">当前 BMI</p>
+              <p class="text-3xl font-bold text-on-surface">22.8</p>
+            </div>
+            <div class="bg-success/15 text-success px-3 py-1.5 rounded-full">
+              <span class="text-sm font-semibold">正常</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 健康等级分布 -->
+        <div class="space-y-2">
+          <p class="text-xs text-on-surface-variant mb-2">健康等级分布</p>
+          
+          <!-- 偏瘦 -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-on-surface-variant w-12">偏瘦</span>
+            <div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+              <div class="h-full bg-primary/40 rounded-full" style="width: 15%"></div>
+            </div>
+            <span class="text-xs text-on-surface-variant w-8 text-right">15%</span>
+          </div>
+          
+          <!-- 正常 -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-on-surface-variant w-12">正常</span>
+            <div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+              <div class="h-full bg-success rounded-full" style="width: 65%"></div>
+            </div>
+            <span class="text-xs text-on-surface-variant w-8 text-right">65%</span>
+          </div>
+          
+          <!-- 超重 -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-on-surface-variant w-12">超重</span>
+            <div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+              <div class="h-full bg-warning rounded-full" style="width: 15%"></div>
+            </div>
+            <span class="text-xs text-on-surface-variant w-8 text-right">15%</span>
+          </div>
+          
+          <!-- 肥胖 -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-on-surface-variant w-12">肥胖</span>
+            <div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+              <div class="h-full bg-error rounded-full" style="width: 5%"></div>
+            </div>
+            <span class="text-xs text-on-surface-variant w-8 text-right">5%</span>
+          </div>
+        </div>
+        
+        <!-- 等级说明 -->
+        <div class="mt-4 pt-3 border-t border-outline-variant/20">
+          <p class="text-xs text-on-surface-variant">BMI 等级标准：偏瘦 &lt;18.5 | 正常 18.5-24.9 | 超重 25-29.9 | 肥胖 ≥30</p>
+        </div>
+      </div>
+      
+      <!-- 体脂率变化趋势 -->
+      <div class="bg-surface rounded-xl shadow-card p-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+            <i data-lucide="percent" class="w-4 h-4 text-primary"></i>
+          </div>
+          <h2 class="text-base font-semibold text-on-surface">体脂率变化趋势</h2>
+        </div>
+        
+        <!-- 当前体脂率 -->
+        <div class="bg-surface-container rounded-xl p-4 mb-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs text-on-surface-variant mb-1">当前体脂率</p>
+              <p class="text-3xl font-bold text-on-surface">18.5<span class="text-lg font-normal text-on-surface-variant">%</span></p>
+            </div>
+            <div class="bg-success/15 text-success px-3 py-1.5 rounded-full">
+              <span class="text-sm font-semibold">健康</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 健康范围指示 -->
+        <div class="mb-4">
+          <p class="text-xs text-on-surface-variant mb-2">健康范围</p>
+          <div class="relative h-8 bg-surface-container-high rounded-lg overflow-hidden">
+            <!-- 渐变背景 -->
+            <div class="absolute inset-0 flex">
+              <div class="flex-1 bg-primary/20"></div>
+              <div class="flex-1 bg-success/30"></div>
+              <div class="flex-1 bg-warning/20"></div>
+              <div class="flex-1 bg-error/20"></div>
+            </div>
+            <!-- 当前值指示器 -->
+            <div class="absolute top-0 bottom-0 w-0.5 bg-on-surface" style="left: 42%"></div>
+            <!-- 范围标签 -->
+            <div class="absolute inset-0 flex items-center justify-between px-2">
+              <span class="text-[10px] text-on-surface-variant">偏低</span>
+              <span class="text-[10px] text-on-surface-variant">健康</span>
+              <span class="text-[10px] text-on-surface-variant">偏高</span>
+              <span class="text-[10px] text-on-surface-variant">过高</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 健康范围数值 -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">男性健康范围</p>
+            <p class="text-base font-semibold text-on-surface">10% - 20%</p>
+          </div>
+          <div class="bg-surface-container rounded-xl p-3">
+            <p class="text-xs text-on-surface-variant mb-1">女性健康范围</p>
+            <p class="text-base font-semibold text-on-surface">18% - 28%</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 健康建议卡片 -->
+      <div class="bg-surface rounded-xl shadow-card p-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
+            <i data-lucide="lightbulb" class="w-4 h-4 text-success"></i>
+          </div>
+          <h2 class="text-base font-semibold text-on-surface">健康建议</h2>
+        </div>
+        
+        <div class="space-y-3">
+          <!-- 建议1 -->
+          <div class="flex items-start gap-3 bg-success/5 rounded-xl p-3">
+            <div class="w-6 h-6 bg-success/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="trending-down" class="w-3 h-3 text-success"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-on-surface">体重呈下降趋势，继续保持</p>
+              <p class="text-xs text-on-surface-variant mt-1">近30天体重下降1.2kg，减重进度良好</p>
+            </div>
+          </div>
+          
+          <!-- 建议2 -->
+          <div class="flex items-start gap-3 bg-success/5 rounded-xl p-3">
+            <div class="w-6 h-6 bg-success/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="check-circle" class="w-3 h-3 text-success"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-on-surface">BMI 在正常范围，保持健康饮食</p>
+              <p class="text-xs text-on-surface-variant mt-1">当前 BMI 22.8，处于健康区间中段</p>
+            </div>
+          </div>
+          
+          <!-- 建议3 -->
+          <div class="flex items-start gap-3 bg-primary/5 rounded-xl p-3">
+            <div class="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="target" class="w-3 h-3 text-primary"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-on-surface">腰围接近目标，再坚持一下</p>
+              <p class="text-xs text-on-surface-variant mt-1">当前腰围78.5cm，距离目标75cm还差3.5cm</p>
+            </div>
+          </div>
+          
+          <!-- 建议4 -->
+          <div class="flex items-start gap-3 bg-surface-container rounded-xl p-3">
+            <div class="w-6 h-6 bg-surface-container-high rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="droplets" class="w-3 h-3 text-on-surface-variant"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-on-surface">体脂率稳定，注意水分补充</p>
+              <p class="text-xs text-on-surface-variant mt-1">建议每日饮水2000ml以上</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    <!-- @main-content:end -->
+  </main>
+
+  <!-- 底部 TabBar（一级页专用） -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface
+              flex justify-around items-center h-14 pb-[env(safe-area-inset-bottom)]">
+    <a href="home.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">首页</span>
+    </a>
+    <a href="checkin.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">打卡</span>
+    </a>
+    <a href="data.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="trending-up" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">数据</span>
+    </a>
+    <a href="stats.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-primary"
+       aria-current="page">
+      <i data-lucide="bar-chart" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">统计</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">我的</span>
+    </a>
+  </nav>
+  <!-- @nav:end 导航组件，不需要的页面则不要复制此段 -->
+
+  <script>
+    lucide.createIcons();
+    
+    // 导航辅助函数
+    function navPush(route) {
+        console.log(`[原型演示] PUSH 到: ${route}`);
+        window.location.href = route;
+    }
+
+    function navReplace(route) {
+        console.log(`[原型演示] REPLACE 为: ${route}`);
+        window.location.replace(route);
+    }
+
+    function navReset(route) {
+        console.log(`[原型演示] RESET 到: ${route}`);
+        window.location.href = route;
+    }
+
+    function navBack() {
+        console.log(`[原型演示] BACK 返回上一页`);
+        if(window.history.length > 1) window.history.back();
+    }
+    
+    $(function() {
+        // 刷新按钮点击事件
+        $('#btn-refresh').on('click', function() {
+            console.log('[原型演示] 刷新统计数据');
+            // 刷新按钮旋转动画
+            const $icon = $(this).find('i');
+            $icon.addClass('animate-spin');
+            
+            // 模拟刷新延迟
+            setTimeout(function() {
+                $icon.removeClass('animate-spin');
+                console.log('[原型演示] 数据刷新完成');
+            }, 1000);
+        });
+        
+        // TabBar 导航
+        $('#nav-home').on('click', function(e) {
+            e.preventDefault();
+            navReset('home.html');
+        });
+    });
+  </script>
+  
+  <style>
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+  </style>
+</body>
+
+</html>

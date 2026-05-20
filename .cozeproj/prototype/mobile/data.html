@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/jquery/jquery-3.7.1.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/lucide/lucide-1.11.0.min.js"></script>
+  <script src="https://lf-code-agent.coze.cn/obj/x-ai-cn/cdn/tailwindcss/tailwindcss-browser-4.2.4.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* === 品牌色 === */
+      --color-primary:              #F26B3A;
+      --color-primary-container:    #FDE8DF;
+      --color-on-primary:           #ffffff;
+      /* === 背景 / 表面（M3 色调系统 + Apple HIG 呼吸感） === */
+      --color-background:                 #F7F4ED;
+      --color-surface-container-lowest:   #FFFFFF;
+      --color-surface:                    #FAF8F3;
+      --color-surface-container:          #F0EDE6;
+      --color-surface-container-high:     #E8E5DE;
+      --color-surface-container-highest:  #E0DDD6;
+      /* === 文字 === */
+      --color-on-surface:           #1E2933;
+      --color-on-surface-variant:   #6B7280;
+      /* === 功能色 === */
+      --color-success:  #3C8D6E;
+      --color-error:    #EF4444;
+      --color-warning:  #F59E0B;
+      /* === 边框 === */
+      --color-outline:          #D1D5DB;
+      --color-outline-variant:  #E4DED2;
+      /* === 圆角 === */
+      --radius-sm:   0.5rem;
+      --radius-md:   0.75rem;
+      --radius-lg:   1rem;
+      --radius-xl:   1.5rem;
+      --radius-2xl:  2rem;
+      --radius-full: 9999px;
+      /* === 阴影 === */
+      --shadow-card:   0 4px 12px rgba(0,0,0,0.08);
+      --shadow-float:  0 10px 25px rgba(0,0,0,0.08);
+      --shadow-dialog: 0 25px 50px rgba(0,0,0,0.12);
+      /* === 字体 === */
+      --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+  </style>
+
+  <style>
+    body {
+      min-height: max(812px, 100dvh);
+      font-family: system-ui, sans-serif;
+    }
+    
+    /* 图表数据点样式 */
+    .chart-point {
+      cursor: pointer;
+      transition: r 0.15s ease;
+    }
+    .chart-point:hover {
+      r: 6;
+    }
+    
+    /* 图表提示框 */
+    .chart-tooltip {
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .chart-tooltip.active {
+      opacity: 1;
+    }
+  </style>
+
+  <!-- 图片兜底 -->
+  <script>
+    document.addEventListener('error', function (e) {
+      const img = e.target;
+      if (img.tagName !== 'IMG' || img.dataset.fallback) return;
+      img.dataset.fallback = '1';
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const cat = img.getAttribute('data-category') || '其他';
+      const alt = img.getAttribute('alt') || '';
+      const label = esc(alt.length > 8 ? alt.slice(0, 8) + '…' : alt);
+      const icons = { '人物': '👤', '自然风景': '🏞', '动物': '🐾', '建筑城市': '🏙', '运动体育': '⚽', '交通工具': '🚗', '食物': '🍽', '服饰时尚': '👗', '商业科技': '💼', '游戏娱乐': '🎮', '艺术': '🎨', '其他': '🖼' };
+      const icon = icons[cat] || '🖼';
+      const w = img.width || 400, h = img.height || 300;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="%23f3f4f6"/><text x="50%" y="45%" text-anchor="middle" font-size="${Math.min(w, h) * 0.18}" dominant-baseline="central">${icon}</text><text x="50%" y="68%" text-anchor="middle" font-size="${Math.min(w, h) * 0.07}" fill="%239ca3af" font-family="system-ui,sans-serif" dominant-baseline="central">${label}</text></svg>`;
+      img.src = 'data:image/svg+xml,' + svg;
+    }, true);
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-sans">
+
+  <!-- @nav:start 导航组件 -->
+  <!-- 顶部 Header -->
+  <header class="bg-background sticky top-0 z-40 h-14 flex items-center justify-between px-4">
+    <div class="w-10 h-10 flex items-center justify-center">
+      <!-- 一级页不显示返回按钮 -->
+    </div>
+    <h1 class="text-base font-semibold text-on-surface">趋势分析</h1>
+    <button id="btn-share" class="w-10 h-10 flex items-center justify-center text-on-surface-variant rounded-full
+                   hover:bg-surface-container active:bg-surface-container-high transition-colors">
+      <i data-lucide="share-2" class="w-5 h-5"></i>
+    </button>
+  </header>
+
+  <main class="flex-1 overflow-y-auto pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+    <!-- @main-content:start -->
+    
+    <!-- 时间范围选择器 -->
+    <div class="px-4 pt-4 pb-2">
+      <div class="flex gap-2 overflow-x-auto no-scrollbar">
+        <!-- 时间选项-近7天 -->
+        <button id="time-7d" class="time-filter flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium
+                         bg-primary text-on-primary transition-colors">
+          近7天
+        </button>
+        <!-- 时间选项-近30天 -->
+        <button id="time-30d" class="time-filter flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium
+                         bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors">
+          近30天
+        </button>
+        <!-- 时间选项-近90天 -->
+        <button id="time-90d" class="time-filter flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium
+                         bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors">
+          近90天
+        </button>
+        <!-- 时间选项-全部 -->
+        <button id="time-all" class="time-filter flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium
+                         bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors">
+          全部
+        </button>
+      </div>
+    </div>
+
+    <!-- 体重趋势卡片 -->
+    <div class="px-4 pt-4">
+      <div class="bg-surface rounded-xl shadow-card p-4">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <i data-lucide="scale" class="w-4 h-4 text-primary"></i>
+            </div>
+            <span class="text-base font-semibold text-on-surface">体重趋势</span>
+          </div>
+          <span class="text-sm text-on-surface-variant">单位: kg</span>
+        </div>
+        
+        <!-- 体重 SVG 折线图 -->
+        <div class="relative" id="weight-chart-container">
+          <svg viewBox="0 0 340 180" class="w-full h-auto" id="weight-chart">
+            <!-- Y轴网格线和刻度 -->
+            <line x1="40" y1="20" x2="330" y2="20" stroke="#E4DED2" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="35" y="24" text-anchor="end" fill="#6B7280" font-size="10">75</text>
+            
+            <line x1="40" y1="60" x2="330" y2="60" stroke="#E4DED2" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="35" y="64" text-anchor="end" fill="#6B7280" font-size="10">73</text>
+            
+            <line x1="40" y1="100" x2="330" y2="100" stroke="#E4DED2" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="35" y="104" text-anchor="end" fill="#6B7280" font-size="10">71</text>
+            
+            <line x1="40" y1="140" x2="330" y2="140" stroke="#E4DED2" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="35" y="144" text-anchor="end" fill="#6B7280" font-size="10">69</text>
+            
+            <!-- X轴基线 -->
+            <line x1="40" y1="160" x2="330" y2="160" stroke="#E4DED2" stroke-width="1"/>
+            
+            <!-- X轴日期标签 -->
+            <text x="55" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/01</text>
+            <text x="103" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/02</text>
+            <text x="151" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/03</text>
+            <text x="199" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/04</text>
+            <text x="247" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/05</text>
+            <text x="295" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/06</text>
+            
+            <!-- 趋势线渐变填充 -->
+            <defs>
+              <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#F26B3A" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#F26B3A" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            
+            <!-- 渐变填充区域 -->
+            <path d="M55,80 L103,70 L151,90 L199,65 L247,55 L295,45 L295,160 L55,160 Z" 
+                  fill="url(#weightGradient)"/>
+            
+            <!-- 折线 -->
+            <polyline points="55,80 103,70 151,90 199,65 247,55 295,45" 
+                      fill="none" stroke="#F26B3A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <!-- 数据点 -->
+            <circle cx="55" cy="80" r="4" fill="#F26B3A" class="chart-point" data-value="72.0" data-date="12/01"/>
+            <circle cx="103" cy="70" r="4" fill="#F26B3A" class="chart-point" data-value="72.5" data-date="12/02"/>
+            <circle cx="151" cy="90" r="4" fill="#F26B3A" class="chart-point" data-value="71.5" data-date="12/03"/>
+            <circle cx="199" cy="65" r="4" fill="#F26B3A" class="chart-point" data-value="72.8" data-date="12/04"/>
+            <circle cx="247" cy="55" r="4" fill="#F26B3A" class="chart-point" data-value="73.2" data-date="12/05"/>
+            <circle cx="295" cy="45" r="4" fill="#F26B3A" class="chart-point" data-value="73.8" data-date="12/06"/>
+          </svg>
+          
+          <!-- 提示框 -->
+          <div id="weight-tooltip" class="chart-tooltip absolute bg-surface-container-highest rounded-lg px-3 py-2 shadow-float text-sm">
+            <div class="text-xs text-on-surface-variant" id="weight-tooltip-date">12/01</div>
+            <div class="text-base font-bold text-primary" id="weight-tooltip-value">72.0 kg</div>
+          </div>
+        </div>
+        
+        <!-- 统计摘要 -->
+        <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-outline-variant/20">
+          <div class="text-center">
+            <div class="text-xs text-on-surface-variant mb-1">起始值</div>
+            <div class="text-base font-semibold text-on-surface">72.0</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-on-surface-variant mb-1">结束值</div>
+            <div class="text-base font-semibold text-on-surface">73.8</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-on-surface-variant mb-1">变化量</div>
+            <div class="text-base font-semibold text-error">+1.8</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-on-surface-variant mb-1">变化率</div>
+            <div class="text-base font-semibold text-error">+2.5%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 腰围趋势卡片 -->
+    <div class="px-4 pt-4">
+      <div class="bg-surface rounded-xl shadow-card p-4">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center">
+              <i data-lucide="ruler" class="w-4 h-4 text-success"></i>
+            </div>
+            <span class="text-base font-semibold text-on-surface">腰围趋势</span>
+          </div>
+          <span class="text-sm text-on-surface-variant">单位: cm</span>
+        </div>
+        
+        <!-- 腰围 SVG 折线图 -->
+        <div class="relative" id="waist-chart-container">
+          <svg viewBox="0 0 340 180" class="w-full h-auto" id="waist-chart">
+            <!-- Y轴网格线和刻度 -->
+            <line x1="40" y1="20" x2="330" y2="20" stroke="#E4DED2" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="35" y="24" text-anchor="end" fill="#6B7280" font-size="10">85</text>
+            
+            <line x1="40" y1="60" x2="330" y2="60" stroke="#E4DED2" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="35" y="64" text-anchor="end" fill="#6B7280" font-size="10">83</text>
+            
+            <line x1="40" y1="100" x2="330" y2="100" stroke="#E4DED2" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="35" y="104" text-anchor="end" fill="#6B7280" font-size="10">81</text>
+            
+            <line x1="40" y1="140" x2="330" y2="140" stroke="#E4DED2" stroke-width="1" stroke-dasharray="4,4"/>
+            <text x="35" y="144" text-anchor="end" fill="#6B7280" font-size="10">79</text>
+            
+            <!-- X轴基线 -->
+            <line x1="40" y1="160" x2="330" y2="160" stroke="#E4DED2" stroke-width="1"/>
+            
+            <!-- X轴日期标签 -->
+            <text x="55" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/01</text>
+            <text x="103" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/02</text>
+            <text x="151" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/03</text>
+            <text x="199" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/04</text>
+            <text x="247" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/05</text>
+            <text x="295" y="175" text-anchor="middle" fill="#6B7280" font-size="9">12/06</text>
+            
+            <!-- 趋势线渐变填充 -->
+            <defs>
+              <linearGradient id="waistGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#3C8D6E" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#3C8D6E" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            
+            <!-- 渐变填充区域 -->
+            <path d="M55,50 L103,60 L151,55 L199,70 L247,80 L295,95 L295,160 L55,160 Z" 
+                  fill="url(#waistGradient)"/>
+            
+            <!-- 折线 -->
+            <polyline points="55,50 103,60 151,55 199,70 247,80 295,95" 
+                      fill="none" stroke="#3C8D6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <!-- 数据点 -->
+            <circle cx="55" cy="50" r="4" fill="#3C8D6E" class="chart-point" data-value="84.0" data-date="12/01"/>
+            <circle cx="103" cy="60" r="4" fill="#3C8D6E" class="chart-point" data-value="83.5" data-date="12/02"/>
+            <circle cx="151" cy="55" r="4" fill="#3C8D6E" class="chart-point" data-value="83.8" data-date="12/03"/>
+            <circle cx="199" cy="70" r="4" fill="#3C8D6E" class="chart-point" data-value="82.8" data-date="12/04"/>
+            <circle cx="247" cy="80" r="4" fill="#3C8D6E" class="chart-point" data-value="82.0" data-date="12/05"/>
+            <circle cx="295" cy="95" r="4" fill="#3C8D6E" class="chart-point" data-value="81.0" data-date="12/06"/>
+          </svg>
+          
+          <!-- 提示框 -->
+          <div id="waist-tooltip" class="chart-tooltip absolute bg-surface-container-highest rounded-lg px-3 py-2 shadow-float text-sm">
+            <div class="text-xs text-on-surface-variant" id="waist-tooltip-date">12/01</div>
+            <div class="text-base font-bold text-success" id="waist-tooltip-value">84.0 cm</div>
+          </div>
+        </div>
+        
+        <!-- 统计摘要 -->
+        <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-outline-variant/20">
+          <div class="text-center">
+            <div class="text-xs text-on-surface-variant mb-1">起始值</div>
+            <div class="text-base font-semibold text-on-surface">84.0</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-on-surface-variant mb-1">结束值</div>
+            <div class="text-base font-semibold text-on-surface">81.0</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-on-surface-variant mb-1">变化量</div>
+            <div class="text-base font-semibold text-success">-3.0</div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-on-surface-variant mb-1">变化率</div>
+            <div class="text-base font-semibold text-success">-3.6%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 导出按钮 -->
+    <div class="px-4 pt-6 pb-6">
+      <button id="btn-export" class="w-full bg-surface-container text-on-surface border-none py-3.5 rounded-xl text-base font-semibold
+                     hover:bg-surface-container-high active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2">
+        <i data-lucide="download" class="w-5 h-5"></i>
+        导出数据 (CSV)
+      </button>
+    </div>
+
+    <!-- @main-content:end -->
+  </main>
+
+  <!-- 底部 TabBar -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-surface
+              flex justify-around items-center h-14 pb-[env(safe-area-inset-bottom)]">
+    <a href="home.html" id="nav-home" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">首页</span>
+    </a>
+    <a href="checkin.html" id="nav-checkin" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">打卡</span>
+    </a>
+    <a href="data.html" id="nav-data" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-primary"
+       aria-current="page">
+      <i data-lucide="trending-up" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">数据</span>
+    </a>
+    <a href="stats.html" id="nav-stats" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="bar-chart" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">统计</span>
+    </a>
+    <a href="profile.html" id="nav-profile" class="flex flex-col items-center gap-0.5 px-5 py-1.5 text-on-surface-variant
+                       hover:text-on-surface transition-colors">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-[10px] font-bold tracking-wide">我的</span>
+    </a>
+  </nav>
+
+  <script>
+    $(function() {
+      lucide.createIcons();
+      
+      // 导航辅助函数
+      function navPush(route) {
+        console.log(`[原型演示] PUSH 到: ${route}`);
+        window.location.href = route;
+      }
+
+      function navReplace(route) {
+        console.log(`[原型演示] REPLACE 为: ${route}`);
+        window.location.replace(route);
+      }
+
+      function navReset(route) {
+        console.log(`[原型演示] RESET 到: ${route}`);
+        window.location.href = route;
+      }
+
+      function navBack() {
+        console.log(`[原型演示] BACK 返回上一页`);
+        if(window.history.length > 1) window.history.back();
+      }
+      
+      // TabBar 导航
+      $('#nav-home').on('click', function(e) {
+        e.preventDefault();
+        navReset('home.html');
+      });
+      
+      $('#nav-checkin').on('click', function(e) {
+        e.preventDefault();
+        navReset('checkin.html');
+      });
+      
+      $('#nav-stats').on('click', function(e) {
+        e.preventDefault();
+        navReset('stats.html');
+      });
+      
+      $('#nav-profile').on('click', function(e) {
+        e.preventDefault();
+        navReset('profile.html');
+      });
+      
+      // 时间范围选择器
+      $('.time-filter').on('click', function() {
+        $('.time-filter').removeClass('bg-primary text-on-primary')
+                        .addClass('bg-surface-container text-on-surface-variant');
+        $(this).removeClass('bg-surface-container text-on-surface-variant')
+               .addClass('bg-primary text-on-primary');
+        
+        // 根据选择的时间范围，应更新图表数据
+        // 实际实现需要：1. 根据时间范围筛选数据 2. 重新计算 Y 轴刻度 3. 重绘 SVG 图表
+        console.log('切换时间范围:', $(this).text().trim());
+      });
+      
+      // 体重图表触摸交互
+      $('#weight-chart .chart-point').on('mouseenter touchstart', function(e) {
+        e.preventDefault();
+        const $point = $(this);
+        const value = $point.data('value');
+        const date = $point.data('date');
+        const cx = parseFloat($point.attr('cx'));
+        const cy = parseFloat($point.attr('cy'));
+        
+        // 获取 SVG 和容器的实际尺寸
+        const $svg = $('#weight-chart');
+        const svgWidth = $svg[0].viewBox.baseVal.width;
+        const svgHeight = $svg[0].viewBox.baseVal.height;
+        const containerWidth = $('#weight-chart-container').width();
+        const containerHeight = $('#weight-chart-container').height();
+        
+        // 计算实际位置
+        const scale = containerWidth / svgWidth;
+        const actualX = cx * scale;
+        const actualY = cy * scale;
+        
+        // 更新提示框内容
+        $('#weight-tooltip-date').text(date);
+        $('#weight-tooltip-value').text(value + ' kg');
+        
+        // 定位提示框
+        const $tooltip = $('#weight-tooltip');
+        $tooltip.css({
+          left: (actualX - 40) + 'px',
+          top: (actualY - 60) + 'px'
+        }).addClass('active');
+      });
+      
+      $('#weight-chart .chart-point').on('mouseleave touchend', function() {
+        $('#weight-tooltip').removeClass('active');
+      });
+      
+      // 腰围图表触摸交互
+      $('#waist-chart .chart-point').on('mouseenter touchstart', function(e) {
+        e.preventDefault();
+        const $point = $(this);
+        const value = $point.data('value');
+        const date = $point.data('date');
+        const cx = parseFloat($point.attr('cx'));
+        const cy = parseFloat($point.attr('cy'));
+        
+        // 获取 SVG 和容器的实际尺寸
+        const $svg = $('#waist-chart');
+        const svgWidth = $svg[0].viewBox.baseVal.width;
+        const containerWidth = $('#waist-chart-container').width();
+        
+        // 计算实际位置
+        const scale = containerWidth / svgWidth;
+        const actualX = cx * scale;
+        const actualY = cy * scale;
+        
+        // 更新提示框内容
+        $('#waist-tooltip-date').text(date);
+        $('#waist-tooltip-value').text(value + ' cm');
+        
+        // 定位提示框
+        const $tooltip = $('#waist-tooltip');
+        $tooltip.css({
+          left: (actualX - 40) + 'px',
+          top: (actualY - 60) + 'px'
+        }).addClass('active');
+      });
+      
+      $('#waist-chart .chart-point').on('mouseleave touchend', function() {
+        $('#waist-tooltip').removeClass('active');
+      });
+      
+      // 分享按钮
+      $('#btn-share').on('click', function() {
+        // 分享功能需要调用系统原生分享 API 或第三方分享 SDK
+        // 实际实现：
+        // 1. 检查 navigator.share 是否可用
+        // 2. 可用时调用 navigator.share({ title, text, url })
+        // 3. 不可用时显示自定义分享面板（微信、微博等）
+        console.log('分享趋势数据图表');
+        alert('分享功能需要调用系统原生分享 API 或第三方分享 SDK');
+      });
+      
+      // 导出 CSV 按钮
+      $('#btn-export').on('click', function() {
+        // 导出 CSV 功能：
+        // 1. 收集当前筛选时间范围内的体重和腰围数据
+        // 2. 生成 CSV 格式字符串：日期,体重(kg),腰围(cm)
+        // 3. 创建 Blob 对象并生成下载链接
+        // 4. 触发浏览器下载
+        // 示例 CSV 内容：
+        // 日期,体重(kg),腰围(cm)
+        // 2024-12-01,72.0,84.0
+        // 2024-12-02,72.5,83.5
+        // ...
+        console.log('导出 CSV 数据');
+        alert('CSV 文件已生成并下载');
+      });
+    });
+  </script>
+</body>
+
+</html>
