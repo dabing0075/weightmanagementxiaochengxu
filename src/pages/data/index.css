@@ -1,4 +1,4 @@
-/* 数据页面样式 - 与原型保持一致 */
+/* 数据页面样式 - 字体和图标已优化 */
 
 .data-page {
   min-height: 100vh;
@@ -7,114 +7,158 @@
 }
 
 /* Header */
-.header {
+.data-header {
   position: sticky;
   top: 0;
   z-index: 40;
-  height: 56px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 20px;
   background-color: #F7F4ED;
 }
 
-.header-left,
-.header-right {
-  width: 40px;
-  height: 40px;
+.data-header-left,
+.data-header-right {
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.header-title {
-  font-size: 16px;
+.data-header-title {
+  font-size: 20px;
   font-weight: 600;
   color: #1E2933;
 }
 
 /* 主内容区域 */
-.main-content {
-  padding: 0 16px;
+.data-main-content {
+  padding: 0 20px;
 }
 
 /* 时间范围选择器 */
 .time-range-selector {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
-}
-
-.time-range-item {
-  flex: 1;
-  height: 36px;
+  margin-bottom: 20px;
   background-color: #FAF8F3;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
+  border-radius: 12px;
+  padding: 6px;
 }
 
-.time-range-active {
-  background-color: #F26B3A;
-}
-
-.time-range-text {
+.time-range-option {
+  flex: 1;
+  padding: 12px 16px;
+  text-align: center;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
   color: #6B7280;
+  transition: all 0.2s;
 }
 
-.time-range-text-active {
-  color: #FFFFFF;
+.time-range-option.active {
+  background-color: #F26B3A;
+  color: white;
+  font-weight: 600;
 }
 
-/* 图表区块 */
-.chart-section {
-  margin-bottom: 16px;
+/* 图表卡片 */
+.chart-card {
+  background-color: #FAF8F3;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
-.section-header {
+.chart-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.section-title {
-  font-size: 16px;
+.chart-title {
+  font-size: 17px;
   font-weight: 600;
   color: #1E2933;
 }
 
-.section-change {
-  font-size: 12px;
-  font-weight: 500;
+.chart-subtitle {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+/* SVG 图表容器 */
+.chart-container {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  background-color: #FAFAFA;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* 统计摘要 */
+.chart-summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.summary-item {
+  background-color: #F3F0E8;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #6B7280;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1E2933;
+}
+
+.summary-change {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.summary-change.positive {
   color: #3C8D6E;
 }
 
-.chart-card {
-  background-color: #FAF8F3;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 16px;
+.summary-change.negative {
+  color: #EF4444;
 }
 
-.chart-container {
-  height: 128px;
-  position: relative;
-}
-
-.chart-svg {
-  width: 100%;
-  height: 100%;
-}
-
+/* 空状态 */
 .chart-empty {
   width: 100%;
-  height: 100%;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #9CA3AF;
+}
+
+.chart-empty-icon {
+  width: 52px;
+  height: 52px;
+  background-color: rgba(156, 163, 175, 0.1);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,65 +166,37 @@
 
 .chart-empty-text {
   font-size: 14px;
-  color: #6B7280;
 }
 
-/* 统计摘要 */
-.chart-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(228, 222, 210, 0.5);
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #6B7280;
-}
-
-.stat-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1E2933;
-}
-
-.stat-value-success {
-  color: #3C8D6E;
-}
-
-.stat-value-warning {
-  color: #F59E0B;
-}
-
-/* 导出按钮 */
+/* 数据导出按钮 */
 .export-button {
-  margin-top: 16px;
-  height: 48px;
   background-color: #FAF8F3;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 0.2s;
+  gap: 10px;
+  transition: opacity 0.2s;
 }
 
 .export-button:active {
-  background-color: #F0EDE6;
-  transform: scale(0.98);
+  opacity: 0.9;
 }
 
 .export-button-text {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
-  color: #F26B3A;
+  color: #1E2933;
+}
+
+/* 加载状态 */
+.data-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 15px;
+  color: #6B7280;
 }

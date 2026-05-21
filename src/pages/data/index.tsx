@@ -111,7 +111,7 @@ export default function DataPage() {
         <View className="header-left" />
         <Text className="header-title">趋势分析</Text>
         <View className="header-right" onClick={handleShare}>
-          <Share2 size={20} color="#6B7280" />
+          <Share2 size={26} color="#6B7280" />
         </View>
       </View>
 
@@ -327,7 +327,7 @@ export default function DataPage() {
 
         {/* 数据导出按钮 */}
         <View className="export-button" onClick={handleExport}>
-          <Download size={20} color="#F26B3A" />
+          <Download size={26} color="#F26B3A" />
           <Text className="export-button-text">导出数据 (CSV)</Text>
         </View>
       </View>

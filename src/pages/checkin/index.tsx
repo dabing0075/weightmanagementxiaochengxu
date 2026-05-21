@@ -142,7 +142,7 @@ export default function CheckinPage() {
         <View className="header-left" />
         <Text className="header-title">记录数据</Text>
         <View className="header-right" onClick={() => Taro.switchTab({ url: '/pages/data/index' })}>
-          <History size={20} color="#6B7280" />
+          <History size={28} color="#6B7280" />
         </View>
       </View>
 
@@ -151,7 +151,7 @@ export default function CheckinPage() {
         {/* 今日打卡状态提示 */}
         <View className="checkin-status-card">
           <View className="checkin-status-icon">
-            <CircleCheck size={20} color="#3C8D6E" />
+            <CircleCheck size={28} color="#3C8D6E" />
           </View>
           <Text className="checkin-status-title">
             {todayRecord ? '今日已打卡' : '今日未打卡'}

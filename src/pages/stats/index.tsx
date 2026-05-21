@@ -89,7 +89,7 @@ export default function StatsPage() {
         <View className="header-left" />
         <Text className="header-title">统计分析</Text>
         <View className={`header-right ${refreshing ? 'refreshing' : ''}`} onClick={handleRefresh}>
-          <RefreshCw size={20} color="#6B7280" />
+          <RefreshCw size={28} color="#6B7280" />
         </View>
       </View>
 
@@ -246,7 +246,7 @@ export default function StatsPage() {
             {stats?.suggestions?.map((suggestion, index) => (
               <View key={index} className="suggestion-item">
                 <View className="suggestion-icon">
-                  <TrendingDown size={16} color="#3C8D6E" />
+                  <TrendingDown size={22} color="#3C8D6E" />
                 </View>
                 <Text className="suggestion-text">{suggestion}</Text>
               </View>
@@ -254,25 +254,25 @@ export default function StatsPage() {
               <>
                 <View className="suggestion-item">
                   <View className="suggestion-icon">
-                    <TrendingDown size={16} color="#3C8D6E" />
+                    <TrendingDown size={22} color="#3C8D6E" />
                   </View>
                   <Text className="suggestion-text">体重呈下降趋势，继续保持良好的生活习惯</Text>
                 </View>
                 <View className="suggestion-item">
                   <View className="suggestion-icon">
-                    <Minus size={16} color="#3C8D6E" />
+                    <Minus size={22} color="#3C8D6E" />
                   </View>
                   <Text className="suggestion-text">BMI在正常范围，保持健康饮食和适量运动</Text>
                 </View>
                 <View className="suggestion-item">
                   <View className="suggestion-icon">
-                    <TrendingUp size={16} color="#F59E0B" />
+                    <TrendingUp size={22} color="#F59E0B" />
                   </View>
                   <Text className="suggestion-text">腰围接近目标值，继续坚持锻炼</Text>
                 </View>
                 <View className="suggestion-item">
                   <View className="suggestion-icon">
-                    <TrendingDown size={16} color="#3C8D6E" />
+                    <TrendingDown size={22} color="#3C8D6E" />
                   </View>
                   <Text className="suggestion-text">建议每天饮水2000ml以上，促进新陈代谢</Text>
                 </View>

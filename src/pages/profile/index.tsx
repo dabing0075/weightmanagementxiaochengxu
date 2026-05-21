@@ -108,7 +108,7 @@ export default function ProfilePage() {
         <View className="header-left" />
         <Text className="header-title">个人中心</Text>
         <View className="header-right">
-          <Settings size={20} color="#6B7280" />
+          <Settings size={26} color="#6B7280" />
         </View>
       </View>
 
@@ -124,7 +124,7 @@ export default function ProfilePage() {
             <Text className="user-signature">坚持打卡，健康生活</Text>
           </View>
           <View className="user-edit" onClick={handleEditProfile}>
-            <ChevronRight size={20} color="#6B7280" />
+            <ChevronRight size={26} color="#6B7280" />
           </View>
         </View>
 
@@ -182,7 +182,7 @@ export default function ProfilePage() {
           
           <View className="view-all-button" onClick={handleViewRecords}>
             <Text className="view-all-text">查看全部</Text>
-            <ChevronRight size={16} color="#6B7280" />
+            <ChevronRight size={24} color="#6B7280" />
           </View>
         </View>
 
@@ -194,17 +194,17 @@ export default function ProfilePage() {
             <View className="goal-item">
               <Text className="goal-label">目标体重</Text>
               <Text className="goal-value">{profile.target_weight ? `${profile.target_weight} kg` : '未设置'}</Text>
-              <ChevronRight size={20} color="#6B7280" />
+              <ChevronRight size={26} color="#6B7280" />
             </View>
             <View className="goal-item">
               <Text className="goal-label">目标腰围</Text>
               <Text className="goal-value">{profile.target_waist ? `${profile.target_waist} cm` : '未设置'}</Text>
-              <ChevronRight size={20} color="#6B7280" />
+              <ChevronRight size={26} color="#6B7280" />
             </View>
             <View className="goal-item">
               <Text className="goal-label">提醒时间</Text>
               <Text className="goal-value">{profile.reminder_time || '每日 08:00'}</Text>
-              <ChevronRight size={20} color="#6B7280" />
+              <ChevronRight size={26} color="#6B7280" />
             </View>
           </View>
         </View>
@@ -213,39 +213,39 @@ export default function ProfilePage() {
         <View className="menu-card">
           <View className="menu-item" onClick={handleExportData}>
             <View className="menu-left">
-              <Download size={20} color="#F26B3A" />
+              <Download size={26} color="#F26B3A" />
               <Text className="menu-text">数据导出</Text>
             </View>
-            <ChevronRight size={20} color="#6B7280" />
+            <ChevronRight size={26} color="#6B7280" />
           </View>
           
           <View className="menu-item">
             <View className="menu-left">
-              <Info size={20} color="#F26B3A" />
+              <Info size={26} color="#F26B3A" />
               <Text className="menu-text">关于我们</Text>
             </View>
             <View className="menu-right">
               <Text className="menu-hint">v1.0.0</Text>
-              <ChevronRight size={20} color="#6B7280" />
+              <ChevronRight size={26} color="#6B7280" />
             </View>
           </View>
           
           <View className="menu-item">
             <View className="menu-left">
-              <MessageCircle size={20} color="#F26B3A" />
+              <MessageCircle size={26} color="#F26B3A" />
               <Text className="menu-text">意见反馈</Text>
             </View>
-            <ChevronRight size={20} color="#6B7280" />
+            <ChevronRight size={26} color="#6B7280" />
           </View>
           
           <View className="menu-item" onClick={handleClearCache}>
             <View className="menu-left">
-              <Trash2 size={20} color="#EF4444" />
+              <Trash2 size={26} color="#EF4444" />
               <Text className="menu-text-danger">清除缓存</Text>
             </View>
             <View className="menu-right">
               <Text className="menu-hint">12.5 MB</Text>
-              <ChevronRight size={20} color="#6B7280" />
+              <ChevronRight size={26} color="#6B7280" />
             </View>
           </View>
         </View>

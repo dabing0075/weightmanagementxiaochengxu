@@ -117,7 +117,7 @@ export default function HomePage() {
         <View className="header-left" />
         <Text className="header-title">健康管理</Text>
         <View className="header-right">
-          <Bell size={20} color="#6B7280" />
+          <Bell size={26} color="#6B7280" />
         </View>
       </View>
 
@@ -127,7 +127,7 @@ export default function HomePage() {
         <View className="checkin-status-card">
           <View className="checkin-status-left">
             <View className="checkin-status-icon">
-              <CircleCheck size={20} color="#3C8D6E" />
+              <CircleCheck size={26} color="#3C8D6E" />
             </View>
             <View className="checkin-status-text">
               <Text className="checkin-status-title">
@@ -153,7 +153,7 @@ export default function HomePage() {
             <View className="metric-card">
               <View className="metric-header">
                 <View className="metric-icon metric-icon-primary">
-                  <Scale size={16} color="#F26B3A" />
+                  <Scale size={24} color="#F26B3A" />
                 </View>
                 <Text className="metric-label">体重</Text>
               </View>
@@ -175,7 +175,7 @@ export default function HomePage() {
             <View className="metric-card">
               <View className="metric-header">
                 <View className="metric-icon metric-icon-success">
-                  <Ruler size={16} color="#3C8D6E" />
+                  <Ruler size={24} color="#3C8D6E" />
                 </View>
                 <Text className="metric-label">腰围</Text>
               </View>
@@ -192,7 +192,7 @@ export default function HomePage() {
             <View className="metric-card">
               <View className="metric-header">
                 <View className="metric-icon metric-icon-primary">
-                  <Activity size={16} color="#F26B3A" />
+                  <Activity size={24} color="#F26B3A" />
                 </View>
                 <Text className="metric-label">BMI</Text>
               </View>
@@ -210,7 +210,7 @@ export default function HomePage() {
             <View className="metric-card">
               <View className="metric-header">
                 <View className="metric-icon metric-icon-warning">
-                  <Percent size={16} color="#F59E0B" />
+                  <Percent size={24} color="#F59E0B" />
                 </View>
                 <Text className="metric-label">体脂率</Text>
               </View>
@@ -299,7 +299,7 @@ export default function HomePage() {
             {/* 一键打卡 */}
             <View className="quick-action-item" onClick={goToCheckin}>
               <View className="quick-action-icon quick-action-icon-primary">
-                <CircleCheck size={24} color="#F26B3A" />
+                <CircleCheck size={28} color="#F26B3A" />
               </View>
               <Text className="quick-action-label">一键打卡</Text>
             </View>
@@ -307,7 +307,7 @@ export default function HomePage() {
             {/* 详细数据 */}
             <View className="quick-action-item" onClick={goToData}>
               <View className="quick-action-icon quick-action-icon-success">
-                <FileText size={24} color="#3C8D6E" />
+                <FileText size={28} color="#3C8D6E" />
               </View>
               <Text className="quick-action-label">详细数据</Text>
             </View>
@@ -315,7 +315,7 @@ export default function HomePage() {
             {/* 设置目标 */}
             <View className="quick-action-item" onClick={goToProfile}>
               <View className="quick-action-icon quick-action-icon-warning">
-                <Target size={24} color="#F59E0B" />
+                <Target size={28} color="#F59E0B" />
               </View>
               <Text className="quick-action-label">设置目标</Text>
             </View>
