@@ -227,6 +227,16 @@
   overflow: hidden;
 }
 
+.recent-empty {
+  padding: 40px 16px;
+  text-align: center;
+}
+
+.recent-empty-text {
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
 .recent-item {
   display: flex;
   align-items: center;

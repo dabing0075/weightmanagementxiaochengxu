@@ -40,14 +40,17 @@ export default function CheckinPage() {
         Network.request({ url: '/api/records/recent', data: { days: 7 } })
       ])
 
-      if (todayRes.data) {
-        setTodayRecord(todayRes.data)
-        setWeight(todayRes.data.weight)
-        setWaist(todayRes.data.waist)
+      console.log('今日记录响应:', todayRes)
+      console.log('最近记录响应:', recentRes)
+
+      if (todayRes.data?.data) {
+        setTodayRecord(todayRes.data.data)
+        setWeight(todayRes.data.data.weight || '')
+        setWaist(todayRes.data.data.waist || '')
       }
 
-      if (recentRes.data) {
-        setRecentRecords(recentRes.data)
+      if (recentRes.data?.data && Array.isArray(recentRes.data.data)) {
+        setRecentRecords(recentRes.data.data)
       }
     } catch (error) {
       console.error('加载数据失败:', error)
@@ -220,28 +223,34 @@ export default function CheckinPage() {
           </View>
           
           <View className="recent-list">
-            {recentRecords.map((record, index) => {
-              const { date, label } = formatDate(record.record_date)
-              return (
-                <View 
-                  key={record.record_date}
-                  className={index < recentRecords.length - 1 ? 'recent-item recent-item-border' : 'recent-item'}
-                >
-                  <View className="recent-item-left">
-                    <Text className="recent-item-date">{date}</Text>
-                    <Text className="recent-item-label">{label}</Text>
+            {Array.isArray(recentRecords) && recentRecords.length > 0 ? (
+              recentRecords.map((record, index) => {
+                const { date, label } = formatDate(record.record_date)
+                return (
+                  <View 
+                    key={record.record_date}
+                    className={index < recentRecords.length - 1 ? 'recent-item recent-item-border' : 'recent-item'}
+                  >
+                    <View className="recent-item-left">
+                      <Text className="recent-item-date">{date}</Text>
+                      <Text className="recent-item-label">{label}</Text>
+                    </View>
+                    <View className="recent-item-right">
+                      <Text className="recent-item-value">
+                        {record.weight}<Text className="recent-item-unit">kg</Text>
+                      </Text>
+                      <Text className="recent-item-value">
+                        {record.waist}<Text className="recent-item-unit">cm</Text>
+                      </Text>
+                    </View>
                   </View>
-                  <View className="recent-item-right">
-                    <Text className="recent-item-value">
-                      {record.weight}<Text className="recent-item-unit">kg</Text>
-                    </Text>
-                    <Text className="recent-item-value">
-                      {record.waist}<Text className="recent-item-unit">cm</Text>
-                    </Text>
-                  </View>
-                </View>
-              )
-            })}
+                )
+              })
+            ) : (
+              <View className="recent-empty">
+                <Text className="recent-empty-text">暂无打卡记录</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>

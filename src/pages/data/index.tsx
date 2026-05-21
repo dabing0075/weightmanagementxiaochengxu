@@ -27,11 +27,16 @@ export default function DataPage() {
         data: { days: parseInt(activeRange) } 
       })
       
-      if (res.data && res.data.length > 0) {
-        setTrendData(res.data)
+      console.log('趋势数据:', res)
+      
+      // 解包数据：后端返回 { code, msg, data: [...] }
+      const trendRecords = res.data?.data || res.data || []
+      
+      if (trendRecords && Array.isArray(trendRecords) && trendRecords.length > 0) {
+        setTrendData(trendRecords)
         
-        const weights = res.data.map((r: TrendRecord) => parseFloat(r.weight))
-        const waists = res.data.map((r: TrendRecord) => parseFloat(r.waist))
+        const weights = trendRecords.map((r: TrendRecord) => parseFloat(r.weight))
+        const waists = trendRecords.map((r: TrendRecord) => parseFloat(r.waist))
         
         setWeightStats({
           start: weights[0],

@@ -69,10 +69,10 @@ export default function HomePage() {
       console.log('健康统计:', statsRes)
       console.log('最近记录:', recentRes)
 
-      if (userRes.data) setUserInfo(userRes.data)
-      if (todayRes.data) setTodayRecord(todayRes.data)
-      if (statsRes.data) setHealthStats(statsRes.data)
-      if (recentRes.data) setRecentRecords(recentRes.data)
+      if (userRes.data?.data) setUserInfo(userRes.data.data)
+      if (todayRes.data?.data) setTodayRecord(todayRes.data.data)
+      if (statsRes.data?.data) setHealthStats(statsRes.data.data)
+      if (recentRes.data?.data && Array.isArray(recentRes.data.data)) setRecentRecords(recentRes.data.data)
     } catch (error) {
       console.error('加载数据失败:', error)
     }
@@ -99,7 +99,7 @@ export default function HomePage() {
   }
 
   const generateTrendPath = () => {
-    if (recentRecords.length === 0) return ''
+    if (!Array.isArray(recentRecords) || recentRecords.length === 0) return ''
     
     const weights = recentRecords.map(r => parseFloat(r.weight))
     const minWeight = Math.min(...weights)
@@ -282,7 +282,7 @@ export default function HomePage() {
                   />
                   
                   {/* 数据点 */}
-                  {recentRecords.map((record, index) => {
+                  {Array.isArray(recentRecords) && recentRecords.map((record, index) => {
                     const weights = recentRecords.map(r => parseFloat(r.weight))
                     const minWeight = Math.min(...weights)
                     const maxWeight = Math.max(...weights)

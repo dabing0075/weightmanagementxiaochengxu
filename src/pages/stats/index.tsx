@@ -38,8 +38,11 @@ export default function StatsPage() {
   const loadStats = async () => {
     try {
       const res = await Network.request({ url: '/api/records/stats/detail' })
-      if (res.data) {
-        setStats(res.data)
+      console.log('统计数据:', res)
+      // 解包数据：后端返回 { code, msg, data: {...} }
+      const statsData = res.data?.data || res.data
+      if (statsData) {
+        setStats(statsData)
       }
     } catch (error) {
       console.error('加载统计数据失败:', error)

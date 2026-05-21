@@ -30,8 +30,11 @@ export default function ProfilePage() {
   const loadProfile = async () => {
     try {
       const res = await Network.request({ url: '/api/user/profile' })
-      if (res.data) {
-        setProfile(res.data)
+      console.log('用户信息:', res)
+      // 解包数据：后端返回 { code, msg, data: {...} }
+      const profileData = res.data?.data || res.data
+      if (profileData) {
+        setProfile(profileData)
       }
     } catch (error) {
       console.error('加载用户信息失败:', error)
@@ -41,11 +44,14 @@ export default function ProfilePage() {
   const loadCheckinStats = async () => {
     try {
       const res = await Network.request({ url: '/api/records/stats' })
-      if (res.data) {
+      console.log('打卡统计:', res)
+      // 解包数据：后端返回 { code, msg, data: {...} }
+      const statsData = res.data?.data || res.data
+      if (statsData) {
         setCheckinStats({
-          totalDays: res.data.totalDays || 128,
-          consecutiveDays: res.data.consecutiveDays || 15,
-          monthDays: res.data.monthDays || 18
+          totalDays: statsData.totalDays || 128,
+          consecutiveDays: statsData.consecutiveDays || 15,
+          monthDays: statsData.monthDays || 18
         })
       }
     } catch (error) {
