@@ -3,6 +3,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
 import { ChevronRight, Download, Info, MessageCircle, Trash2, Settings } from 'lucide-react-taro'
+import './index.css'
 
 interface UserProfile {
   name: string

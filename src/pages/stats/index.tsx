@@ -3,6 +3,7 @@ import { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
 import { RefreshCw, TrendingDown, TrendingUp, Minus } from 'lucide-react-taro'
+import './index.css'
 
 interface DetailedStats {
   weightStats: {

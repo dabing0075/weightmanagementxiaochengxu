@@ -3,6 +3,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import { useState } from 'react'
 import { Network } from '@/network'
 import { History, CircleCheck } from 'lucide-react-taro'
+import './index.css'
 
 interface WeightRecord {
   id: string
