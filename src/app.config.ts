@@ -1,11 +1,54 @@
 export default defineAppConfig({
   pages: [
-    'pages/index/index'
+    'pages/index/index',
+    'pages/checkin/index',
+    'pages/data/index',
+    'pages/stats/index',
+    'pages/profile/index',
   ],
   window: {
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#fff',
-    navigationBarTitleText: 'WeChat',
-    navigationBarTextStyle: 'black'
-  }
+    navigationBarBackgroundColor: '#F7F4ED',
+    navigationBarTitleText: '体重管理',
+    navigationBarTextStyle: 'black',
+    backgroundColor: '#F7F4ED',
+  },
+  tabBar: {
+    color: '#6B7280',
+    selectedColor: '#F26B3A',
+    backgroundColor: '#FAF8F3',
+    borderStyle: 'black',
+    list: [
+      {
+        pagePath: 'pages/index/index',
+        text: '首页',
+        iconPath: './assets/tabbar/home.png',
+        selectedIconPath: './assets/tabbar/home-active.png',
+      },
+      {
+        pagePath: 'pages/checkin/index',
+        text: '打卡',
+        iconPath: './assets/tabbar/circle-plus.png',
+        selectedIconPath: './assets/tabbar/circle-plus-active.png',
+      },
+      {
+        pagePath: 'pages/data/index',
+        text: '数据',
+        iconPath: './assets/tabbar/trending-up.png',
+        selectedIconPath: './assets/tabbar/trending-up-active.png',
+      },
+      {
+        pagePath: 'pages/stats/index',
+        text: '统计',
+        iconPath: './assets/tabbar/bar-chart.png',
+        selectedIconPath: './assets/tabbar/bar-chart-active.png',
+      },
+      {
+        pagePath: 'pages/profile/index',
+        text: '我的',
+        iconPath: './assets/tabbar/user.png',
+        selectedIconPath: './assets/tabbar/user-active.png',
+      },
+    ],
+  },
 })
