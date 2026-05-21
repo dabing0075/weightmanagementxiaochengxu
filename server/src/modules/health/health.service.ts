@@ -219,4 +219,111 @@ export class HealthService {
     }
     return age
   }
+
+  /**
+   * 获取健康统计数据
+   */
+  async getHealthStats() {
+    const client = getSupabaseClient()
+    
+    // 获取所有记录
+    const { data: records, error } = await client
+      .from('weight_records')
+      .select('*')
+      .order('record_date', { ascending: false })
+    
+    if (error) throw new Error(`获取记录失败: ${error.message}`)
+    
+    if (!records || records.length === 0) {
+      return {
+        weightStats: { avg: 0, max: 0, maxDate: '', min: 0, minDate: '', stdDev: 0 },
+        waistStats: { avg: 0, max: 0, maxDate: '', min: 0, minDate: '', stdDev: 0 },
+        bmiLevel: { current: 0, level: '--', distribution: { underweight: 0, normal: 0, overweight: 0, obese: 0 } },
+        bodyFatLevel: { current: 0, status: '--', healthyRange: { min: 0, max: 0 } }
+      }
+    }
+
+    // 获取用户信息
+    const { data: users } = await client
+      .from('users')
+      .select('*')
+      .limit(1)
+    
+    const user = users?.[0]
+
+    // 计算体重统计
+    const weights = records.map(r => r.weight).filter(w => w !== null)
+    const avgWeight = weights.reduce((a, b) => a + b, 0) / weights.length
+    const maxWeight = Math.max(...weights)
+    const minWeight = Math.min(...weights)
+    const weightVariance = weights.reduce((sum, w) => sum + Math.pow(w - avgWeight, 2), 0) / weights.length
+    const weightStdDev = Math.sqrt(weightVariance)
+
+    const maxWeightRecord = records.find(r => r.weight === maxWeight)
+    const minWeightRecord = records.find(r => r.weight === minWeight)
+
+    // 计算腰围统计
+    const waists = records.map(r => r.waist).filter(w => w !== null)
+    const avgWaist = waists.reduce((a, b) => a + b, 0) / waists.length
+    const maxWaist = Math.max(...waists)
+    const minWaist = Math.min(...waists)
+    const waistVariance = waists.reduce((sum, w) => sum + Math.pow(w - avgWaist, 2), 0) / waists.length
+    const waistStdDev = Math.sqrt(waistVariance)
+
+    const maxWaistRecord = records.find(r => r.waist === maxWaist)
+    const minWaistRecord = records.find(r => r.waist === minWaist)
+
+    // 计算 BMI
+    let currentBmi = 0
+    let bmiLevel = '--'
+    if (user?.height && records[0]?.weight) {
+      currentBmi = parseFloat((records[0].weight / Math.pow(user.height / 100, 2)).toFixed(1))
+      bmiLevel = this.getBmiLevel(currentBmi)
+    }
+
+    // 计算体脂率
+    let currentBodyFat = 0
+    let bodyFatStatus = '--'
+    if (user && records[0]) {
+      currentBodyFat = this.calculateBodyFat(
+        records[0].weight,
+        user.height,
+        user.gender,
+        this.calculateAge(user.birth_date)
+      )
+      bodyFatStatus = currentBodyFat < (user.gender === 'male' ? 20 : 28) ? '健康' : '偏高'
+    }
+
+    return {
+      weightStats: {
+        avg: parseFloat(avgWeight.toFixed(1)),
+        max: parseFloat(maxWeight.toFixed(1)),
+        maxDate: maxWeightRecord?.record_date || '',
+        min: parseFloat(minWeight.toFixed(1)),
+        minDate: minWeightRecord?.record_date || '',
+        stdDev: parseFloat(weightStdDev.toFixed(1))
+      },
+      waistStats: {
+        avg: parseFloat(avgWaist.toFixed(1)),
+        max: parseFloat(maxWaist.toFixed(1)),
+        maxDate: maxWaistRecord?.record_date || '',
+        min: parseFloat(minWaist.toFixed(1)),
+        minDate: minWaistRecord?.record_date || '',
+        stdDev: parseFloat(waistStdDev.toFixed(1))
+      },
+      bmiLevel: {
+        current: currentBmi,
+        level: bmiLevel,
+        distribution: { underweight: 0, normal: 0, overweight: 0, obese: 0 }
+      },
+      bodyFatLevel: {
+        current: currentBodyFat,
+        status: bodyFatStatus,
+        healthyRange: {
+          min: user?.gender === 'male' ? 10 : 18,
+          max: user?.gender === 'male' ? 20 : 28
+        }
+      }
+    }
+  }
 }

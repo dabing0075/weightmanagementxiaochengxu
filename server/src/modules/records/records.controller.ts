@@ -26,4 +26,10 @@ export class RecordsController {
     console.log('[RecordsController] GET /api/records/history', { startDate, endDate });
     return this.recordsService.getHistory(startDate, endDate);
   }
+
+  @Get('stats')
+  async getStats() {
+    console.log('[RecordsController] GET /api/records/stats');
+    return this.recordsService.getCheckinStats();
+  }
 }

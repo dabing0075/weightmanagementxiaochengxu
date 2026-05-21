@@ -1,11 +1,352 @@
-import { View, Text } from '@tarojs/components'
+import { useState, useEffect } from 'react'
+import { View, Text, ScrollView } from '@tarojs/components'
+import Taro from '@tarojs/taro'
+import { User, Target, Calendar, Download, Info, MessageSquare, Trash2, ChevronRight, Settings, Pencil } from 'lucide-react-taro'
+import { Card, CardContent } from '@/components/ui/card'
+import { Network } from '@/network'
+
+interface UserInfo {
+  id: string
+  nickname: string
+  gender: string
+  birth_date: string
+  height: number
+  target_weight: number
+  target_waist: number
+}
+
+interface CheckinStats {
+  totalDays: number
+  continuousDays: number
+  monthDays: number
+}
 
 export default function ProfilePage() {
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
+  const [checkinStats, setCheckinStats] = useState<CheckinStats>({
+    totalDays: 0,
+    continuousDays: 0,
+    monthDays: 0
+  })
+  const [cacheSize] = useState('12.5 MB')
+
+  async function fetchUserInfo() {
+    try {
+      const res = await Network.request({
+        url: '/api/user/info',
+        method: 'GET'
+      })
+      console.log('User info response:', res.data)
+      if (res.data?.code === 200 && res.data?.data) {
+        setUserInfo(res.data.data)
+      }
+    } catch (error) {
+      console.error('Fetch user info error:', error)
+    }
+  }
+
+  async function fetchCheckinStats() {
+    try {
+      const res = await Network.request({
+        url: '/api/records/stats',
+        method: 'GET'
+      })
+      console.log('Checkin stats response:', res.data)
+      if (res.data?.code === 200 && res.data?.data) {
+        setCheckinStats(res.data.data)
+      }
+    } catch (error) {
+      console.error('Fetch checkin stats error:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchUserInfo()
+    fetchCheckinStats()
+  }, [])
+
+  function getGenderText(gender: string) {
+    return gender === 'male' ? '男' : gender === 'female' ? '女' : '未设置'
+  }
+
+  function calculateAge(birthDate: string) {
+    if (!birthDate) return '-'
+    const today = new Date()
+    const birth = new Date(birthDate)
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    return age
+  }
+
+  function handleEditProfile() {
+    Taro.showToast({ title: '功能开发中', icon: 'none' })
+  }
+
+  function handleMenuClick(type: string) {
+    switch (type) {
+      case 'records':
+        Taro.switchTab({ url: '/pages/data/index' })
+        break
+      case 'export':
+        Taro.showToast({ title: '功能开发中', icon: 'none' })
+        break
+      case 'about':
+        Taro.showModal({
+          title: '关于我们',
+          content: '体重管理助手 v1.0.0\n\n帮助你科学管理体重，记录健康数据，分析趋势变化。',
+          showCancel: false
+        })
+        break
+      case 'feedback':
+        Taro.showToast({ title: '功能开发中', icon: 'none' })
+        break
+      case 'cache':
+        Taro.showModal({
+          title: '清除缓存',
+          content: `当前缓存大小: ${cacheSize}\n确定要清除吗？`,
+          success: (res) => {
+            if (res.confirm) {
+              Taro.showToast({ title: '清除成功', icon: 'success' })
+            }
+          }
+        })
+        break
+      default:
+        break
+    }
+  }
+
   return (
     <View className="flex flex-col min-h-screen bg-[#F7F4ED]">
-      <View className="flex-1 flex items-center justify-center">
-        <Text className="text-[#6B7280]">我的页面开发中...</Text>
+      {/* Header */}
+      <View className="sticky top-0 z-40 h-14 flex items-center justify-between px-4 bg-[#F7F4ED]">
+        <View className="w-10 h-10" />
+        <Text className="text-base font-semibold text-[#1E2933]">个人中心</Text>
+        <View className="w-10 h-10 flex items-center justify-center rounded-full">
+          <Settings size={20} color="#6B7280" />
+        </View>
       </View>
+
+      {/* Content */}
+      <ScrollView scrollY className="flex-1 pb-20">
+        {/* 用户头像和昵称 */}
+        <View className="px-4 py-6">
+          <View className="flex items-center gap-4">
+            <View className="w-16 h-16 rounded-full bg-gradient-to-br from-[#F26B3A] to-[#3C8D6E] flex items-center justify-center">
+              <Text className="text-2xl font-bold text-white">
+                {userInfo?.nickname?.[0] || '初'}
+              </Text>
+            </View>
+            <View className="flex-1 min-w-0">
+              <Text className="text-lg font-semibold text-[#1E2933] truncate">
+                {userInfo?.nickname || '未设置昵称'}
+              </Text>
+              <Text className="text-sm text-[#6B7280] mt-1">
+                坚持打卡，健康生活
+              </Text>
+            </View>
+            <View 
+              className="w-10 h-10 rounded-full bg-[#F0EDE6] flex items-center justify-center"
+              onClick={handleEditProfile}
+            >
+              <Pencil size={18} color="#6B7280" />
+            </View>
+          </View>
+        </View>
+
+        {/* 个人信息卡片 */}
+        <View className="px-4">
+          <Card className="bg-white shadow-md">
+            <CardContent className="p-4">
+              <View className="flex items-center justify-between mb-3">
+                <View className="flex items-center gap-2">
+                  <User size={16} color="#F26B3A" />
+                  <Text className="text-base font-semibold text-[#1E2933]">个人信息</Text>
+                </View>
+                <View 
+                  className="px-2 py-1 rounded-md bg-[#F0EDE6]"
+                  onClick={handleEditProfile}
+                >
+                  <Text className="text-xs text-[#F26B3A]">编辑</Text>
+                </View>
+              </View>
+
+              <View className="grid grid-cols-2 gap-3">
+                <View className="bg-[#F7F4ED] rounded-xl p-3">
+                  <Text className="text-xs text-[#6B7280] mb-1 block">姓名</Text>
+                  <Text className="text-sm font-medium text-[#1E2933]">
+                    {userInfo?.nickname || '-'}
+                  </Text>
+                </View>
+                <View className="bg-[#F7F4ED] rounded-xl p-3">
+                  <Text className="text-xs text-[#6B7280] mb-1 block">性别</Text>
+                  <Text className="text-sm font-medium text-[#1E2933]">
+                    {getGenderText(userInfo?.gender || '')}
+                  </Text>
+                </View>
+                <View className="bg-[#F7F4ED] rounded-xl p-3">
+                  <Text className="text-xs text-[#6B7280] mb-1 block">年龄</Text>
+                  <Text className="text-sm font-medium text-[#1E2933]">
+                    {calculateAge(userInfo?.birth_date || '')} 岁
+                  </Text>
+                </View>
+                <View className="bg-[#F7F4ED] rounded-xl p-3">
+                  <Text className="text-xs text-[#6B7280] mb-1 block">身高</Text>
+                  <Text className="text-sm font-medium text-[#1E2933]">
+                    {userInfo?.height || '-'} cm
+                  </Text>
+                </View>
+              </View>
+            </CardContent>
+          </Card>
+        </View>
+
+        {/* 打卡记录卡片 */}
+        <View className="px-4 pt-4">
+          <Card className="bg-white shadow-md">
+            <CardContent className="p-4">
+              <View className="flex items-center gap-2 mb-3">
+                <Calendar size={16} color="#F26B3A" />
+                <Text className="text-base font-semibold text-[#1E2933]">打卡记录</Text>
+              </View>
+
+              <View className="grid grid-cols-3 gap-3">
+                <View className="text-center bg-[#F7F4ED] rounded-xl p-3">
+                  <Text className="text-2xl font-bold text-[#F26B3A]">
+                    {checkinStats.totalDays}
+                  </Text>
+                  <Text className="text-xs text-[#6B7280] mt-1 block">总打卡天数</Text>
+                </View>
+                <View className="text-center bg-[#F7F4ED] rounded-xl p-3">
+                  <Text className="text-2xl font-bold text-[#3C8D6E]">
+                    {checkinStats.continuousDays}
+                  </Text>
+                  <Text className="text-xs text-[#6B7280] mt-1 block">连续打卡</Text>
+                </View>
+                <View className="text-center bg-[#F7F4ED] rounded-xl p-3">
+                  <Text className="text-2xl font-bold text-[#6366F1]">
+                    {checkinStats.monthDays}
+                  </Text>
+                  <Text className="text-xs text-[#6B7280] mt-1 block">本月打卡</Text>
+                </View>
+              </View>
+
+              <View 
+                className="mt-3 flex items-center justify-center gap-1 py-2 rounded-lg bg-[#F0EDE6]"
+                onClick={() => handleMenuClick('records')}
+              >
+                <Text className="text-sm text-[#F26B3A]">查看全部记录</Text>
+                <ChevronRight size={16} color="#F26B3A" />
+              </View>
+            </CardContent>
+          </Card>
+        </View>
+
+        {/* 健康目标设置卡片 */}
+        <View className="px-4 pt-4">
+          <Card className="bg-white shadow-md">
+            <CardContent className="p-4">
+              <View className="flex items-center gap-2 mb-3">
+                <Target size={16} color="#F26B3A" />
+                <Text className="text-base font-semibold text-[#1E2933]">健康目标</Text>
+              </View>
+
+              <View className="space-y-3">
+                <View className="flex items-center justify-between py-2 border-b border-[#E4DED2]">
+                  <Text className="text-sm text-[#6B7280]">目标体重</Text>
+                  <View className="flex items-center gap-2">
+                    <Text className="text-sm font-medium text-[#1E2933]">
+                      {userInfo?.target_weight || '-'} kg
+                    </Text>
+                    <ChevronRight size={16} color="#6B7280" />
+                  </View>
+                </View>
+                <View className="flex items-center justify-between py-2 border-b border-[#E4DED2]">
+                  <Text className="text-sm text-[#6B7280]">目标腰围</Text>
+                  <View className="flex items-center gap-2">
+                    <Text className="text-sm font-medium text-[#1E2933]">
+                      {userInfo?.target_waist || '-'} cm
+                    </Text>
+                    <ChevronRight size={16} color="#6B7280" />
+                  </View>
+                </View>
+                <View className="flex items-center justify-between py-2">
+                  <Text className="text-sm text-[#6B7280]">提醒时间</Text>
+                  <View className="flex items-center gap-2">
+                    <Text className="text-sm font-medium text-[#1E2933]">每日 08:00</Text>
+                    <ChevronRight size={16} color="#6B7280" />
+                  </View>
+                </View>
+              </View>
+            </CardContent>
+          </Card>
+        </View>
+
+        {/* 其他功能入口 */}
+        <View className="px-4 pt-4">
+          <Card className="bg-white shadow-md">
+            <CardContent className="p-0">
+              <View 
+                className="flex items-center justify-between px-4 py-4 border-b border-[#E4DED2]"
+                onClick={() => handleMenuClick('export')}
+              >
+                <View className="flex items-center gap-3">
+                  <Download size={18} color="#6B7280" />
+                  <Text className="text-sm text-[#1E2933]">数据导出</Text>
+                </View>
+                <ChevronRight size={18} color="#6B7280" />
+              </View>
+
+              <View 
+                className="flex items-center justify-between px-4 py-4 border-b border-[#E4DED2]"
+                onClick={() => handleMenuClick('about')}
+              >
+                <View className="flex items-center gap-3">
+                  <Info size={18} color="#6B7280" />
+                  <Text className="text-sm text-[#1E2933]">关于我们</Text>
+                </View>
+                <View className="flex items-center gap-2">
+                  <Text className="text-xs text-[#6B7280]">v1.0.0</Text>
+                  <ChevronRight size={18} color="#6B7280" />
+                </View>
+              </View>
+
+              <View 
+                className="flex items-center justify-between px-4 py-4 border-b border-[#E4DED2]"
+                onClick={() => handleMenuClick('feedback')}
+              >
+                <View className="flex items-center gap-3">
+                  <MessageSquare size={18} color="#6B7280" />
+                  <Text className="text-sm text-[#1E2933]">意见反馈</Text>
+                </View>
+                <ChevronRight size={18} color="#6B7280" />
+              </View>
+
+              <View 
+                className="flex items-center justify-between px-4 py-4"
+                onClick={() => handleMenuClick('cache')}
+              >
+                <View className="flex items-center gap-3">
+                  <Trash2 size={18} color="#6B7280" />
+                  <Text className="text-sm text-[#1E2933]">清除缓存</Text>
+                </View>
+                <View className="flex items-center gap-2">
+                  <Text className="text-xs text-[#6B7280]">{cacheSize}</Text>
+                  <ChevronRight size={18} color="#6B7280" />
+                </View>
+              </View>
+            </CardContent>
+          </Card>
+        </View>
+
+        {/* 版本信息 */}
+        <View className="py-6 text-center">
+          <Text className="text-xs text-[#6B7280]">体重管理助手 v1.0.0</Text>
+        </View>
+      </ScrollView>
     </View>
   )
 }

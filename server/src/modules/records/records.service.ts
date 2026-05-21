@@ -111,4 +111,57 @@ export class RecordsService {
     console.log('[RecordsService] 获取历史记录成功', data?.length || 0, '条');
     return { code: 200, msg: 'success', data };
   }
+
+  async getCheckinStats() {
+    // 获取所有记录
+    const { data: records, error } = await this.supabase
+      .from('weight_records')
+      .select('record_date')
+      .eq('user_id', this.DEFAULT_USER_ID)
+      .order('record_date', { ascending: false });
+
+    if (error) {
+      console.error('[RecordsService] 获取打卡统计失败', error);
+      return { code: 500, msg: '获取统计失败', data: null };
+    }
+
+    const totalDays = records?.length || 0;
+
+    // 计算连续打卡天数
+    let continuousDays = 0;
+    if (records && records.length > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      for (let i = 0; i < records.length; i++) {
+        const recordDate = new Date(records[i].record_date);
+        recordDate.setHours(0, 0, 0, 0);
+        
+        const expectedDate = new Date(today);
+        expectedDate.setDate(expectedDate.getDate() - i);
+        
+        if (recordDate.getTime() === expectedDate.getTime()) {
+          continuousDays++;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // 计算本月打卡天数
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthDays = records?.filter(r => new Date(r.record_date) >= monthStart).length || 0;
+
+    console.log('[RecordsService] 打卡统计', { totalDays, continuousDays, monthDays });
+    return {
+      code: 200,
+      msg: 'success',
+      data: {
+        totalDays,
+        continuousDays,
+        monthDays
+      }
+    };
+  }
 }

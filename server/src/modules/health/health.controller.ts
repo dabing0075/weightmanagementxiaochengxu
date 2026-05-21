@@ -37,4 +37,20 @@ export class HealthController {
       data
     }
   }
+
+  /**
+   * 获取统计数据
+   * 返回体重、腰围、BMI、体脂率的统计分析
+   */
+  @Get('stats')
+  async getStats() {
+    console.log('[HealthController] GET /api/health/stats')
+    const data = await this.healthService.getHealthStats()
+    console.log('[HealthController] 返回数据:', data)
+    return {
+      code: 200,
+      msg: 'success',
+      data
+    }
+  }
 }
