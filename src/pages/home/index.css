@@ -1,9 +1,8 @@
-/* 首页样式 - 字体和图标已优化 */
-
-.home-page {
+/* 页面容器 */
+.page-container {
   min-height: 100vh;
   background-color: #F7F4ED;
-  padding-bottom: 120px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 /* Header */
@@ -11,325 +10,335 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  height: 60px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 16px;
   background-color: #F7F4ED;
 }
 
-.header-left,
-.header-right {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.header-left {
+  width: 40px;
+  height: 40px;
 }
 
 .header-title {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   color: #1E2933;
 }
 
-/* 主内容区域 */
-.main-content {
-  padding: 0 20px;
+.header-right {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
 }
 
-/* 今日打卡状态卡片 */
+/* Main Content */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: calc(56px + env(safe-area-inset-bottom));
+}
+
+/* 打卡状态卡片 */
 .checkin-status-card {
+  margin: 12px 16px 8px;
   background-color: #FAF8F3;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
 }
 
 .checkin-status-left {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex: 1;
+  gap: 12px;
 }
 
-.checkin-status-icon {
-  width: 52px;
-  height: 52px;
+.checkin-icon {
+  width: 40px;
+  height: 40px;
   background-color: rgba(60, 141, 110, 0.15);
-  border-radius: 50%;
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.checkin-status-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.checkin-status-title {
-  font-size: 17px;
+.checkin-title {
+  font-size: 14px;
   font-weight: 600;
   color: #1E2933;
+  display: block;
 }
 
-.checkin-status-desc {
-  font-size: 14px;
+.checkin-subtitle {
+  font-size: 12px;
   color: #6B7280;
+  margin-top: 2px;
+  display: block;
 }
 
 .checkin-button {
-  padding: 10px 20px;
+  padding: 8px 16px;
   background-color: #F26B3A;
-  border-radius: 12px;
-  transition: opacity 0.2s;
-}
-
-.checkin-button:active {
-  opacity: 0.9;
-  transform: scale(0.98);
+  border-radius: 8px;
 }
 
 .checkin-button-text {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: #ffffff;
 }
 
-/* 健康指标卡片 */
-.health-metrics-section {
-  margin-bottom: 20px;
+/* Section */
+.section {
+  padding: 16px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #1E2933;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  display: block;
 }
 
+.section-header .section-title {
+  margin-bottom: 0;
+}
+
+.section-link {
+  font-size: 12px;
+  font-weight: 500;
+  color: #F26B3A;
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* 健康指标网格 */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .metric-card {
   background-color: #FAF8F3;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
 }
 
 .metric-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .metric-icon {
-  width: 44px;
-  height: 44px;
-  background-color: rgba(242, 107, 58, 0.12);
-  border-radius: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.metric-icon-primary {
+  background-color: rgba(242, 107, 58, 0.15);
+}
+
+.metric-icon-success {
+  background-color: rgba(60, 141, 110, 0.15);
+}
+
+.metric-icon-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+}
+
 .metric-label {
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 500;
   color: #6B7280;
 }
 
 .metric-value {
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
   color: #1E2933;
-  line-height: 1.2;
+  display: block;
 }
 
 .metric-unit {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 400;
   color: #6B7280;
   margin-left: 4px;
 }
 
-.metric-status {
-  font-size: 14px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 12px;
-  display: inline-block;
-  align-self: flex-start;
-}
-
-.metric-status.normal {
-  background-color: rgba(60, 141, 110, 0.12);
-  color: #3C8D6E;
-}
-
-.metric-status.warning {
-  background-color: rgba(245, 158, 11, 0.12);
-  color: #F59E0B;
-}
-
-.metric-status.danger {
-  background-color: rgba(239, 68, 68, 0.12);
-  color: #EF4444;
-}
-
-/* 体重趋势图 */
-.trend-section {
-  margin-bottom: 20px;
-}
-
-.trend-card {
-  background-color: #FAF8F3;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  padding: 20px;
-}
-
-.trend-header {
+.metric-footer {
+  margin-top: 8px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 4px;
 }
 
-.trend-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1E2933;
-}
-
-.trend-value {
-  font-size: 15px;
+.metric-target {
+  font-size: 12px;
   color: #6B7280;
 }
 
-.trend-chart {
-  width: 100%;
-  height: 160px;
-  position: relative;
-  background-color: #FAFAFA;
+.metric-diff {
+  font-size: 12px;
+  font-weight: 500;
+  color: #F59E0B;
+}
+
+.metric-status {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.metric-status-success {
+  color: #3C8D6E;
+}
+
+.metric-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.metric-badge-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 趋势图表 */
+.trend-card {
+  background-color: #FAF8F3;
   border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 16px;
 }
 
-.trend-chart-empty {
+.trend-chart {
+  position: relative;
+  height: 128px;
+}
+
+.trend-svg {
   width: 100%;
-  height: 160px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: #9CA3AF;
+  height: 100%;
 }
 
-.trend-chart-empty-icon {
-  width: 48px;
-  height: 48px;
-  background-color: rgba(107, 114, 128, 0.1);
-  border-radius: 50%;
+.trend-empty {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.trend-chart-empty-text {
+.trend-empty-text {
   font-size: 14px;
+  color: #6B7280;
+}
+
+.trend-label {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background-color: #F26B3A;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.trend-label-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.trend-dates {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.trend-date {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.trend-date-active {
+  font-size: 12px;
+  font-weight: 500;
+  color: #F26B3A;
 }
 
 /* 快速操作 */
-.quick-actions-section {
-  margin-bottom: 20px;
-}
-
-.quick-actions-grid {
+.quick-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
-.quick-action-button {
+.quick-action {
   background-color: #FAF8F3;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  padding: 20px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  transition: opacity 0.2s;
-}
-
-.quick-action-button:active {
-  opacity: 0.9;
-  transform: scale(0.98);
+  gap: 8px;
 }
 
 .quick-action-icon {
   width: 48px;
   height: 48px;
-  background-color: rgba(242, 107, 58, 0.12);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.quick-action-icon-primary {
+  background-color: rgba(242, 107, 58, 0.15);
+}
+
+.quick-action-icon-success {
+  background-color: rgba(60, 141, 110, 0.15);
+}
+
+.quick-action-icon-warning {
+  background-color: rgba(245, 158, 11, 0.15);
 }
 
 .quick-action-text {
   font-size: 14px;
   font-weight: 500;
   color: #1E2933;
-  text-align: center;
-}
-
-/* 加载状态 */
-.loading-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  font-size: 15px;
-  color: #6B7280;
-}
-
-/* 空状态 */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  color: #9CA3AF;
-}
-
-.empty-icon {
-  width: 64px;
-  height: 64px;
-  background-color: rgba(156, 163, 175, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.empty-text {
-  font-size: 15px;
 }

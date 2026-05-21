@@ -1,16 +1,23 @@
 import { View, Text } from '@tarojs/components'
-import Taro, { useDidShow } from '@tarojs/taro'
-import { useState } from 'react'
+import Taro from '@tarojs/taro'
+import { useEffect, useState } from 'react'
 import { Network } from '@/network'
-import { History, CircleCheck } from 'lucide-react-taro'
+import { Check, Calendar, History } from 'lucide-react-taro'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import './index.css'
 
-interface WeightRecord {
+interface TodayRecord {
   id: string
+  weight: string
+  waist: string
+  record_date: string
+}
+
+interface RecentRecord {
   record_date: string
   weight: string
-  waist?: string
-  note?: string
+  waist: string
 }
 
 export default function CheckinPage() {
@@ -18,72 +25,33 @@ export default function CheckinPage() {
   const [weight, setWeight] = useState('')
   const [waist, setWaist] = useState('')
   const [note, setNote] = useState('')
-  const [todayRecord, setTodayRecord] = useState<WeightRecord | null>(null)
-  const [recentRecords, setRecentRecords] = useState<WeightRecord[]>([])
-  const [loading, setLoading] = useState(false)
+  const [todayRecord, setTodayRecord] = useState<TodayRecord | null>(null)
+  const [recentRecords, setRecentRecords] = useState<RecentRecord[]>([])
 
-  useDidShow(() => {
-    fetchTodayRecord()
-    fetchRecentRecords()
-  })
+  useEffect(() => {
+    loadData()
+  }, [])
 
-  const fetchTodayRecord = async () => {
+  const loadData = async () => {
     try {
       const today = new Date().toISOString().split('T')[0]
-      const res = await Network.request({
-        url: `/api/records/today?date=${today}`,
-        method: 'GET'
-      })
-      console.log('今日记录:', res.data)
-      
-      if (res.data?.code === 200 && res.data?.data) {
-        setTodayRecord(res.data.data)
-        setWeight(res.data.data.weight || '')
-        setWaist(res.data.data.waist || '')
-        setNote(res.data.data.note || '')
+      const [todayRes, recentRes] = await Promise.all([
+        Network.request({ url: '/api/records/today', data: { date: today } }),
+        Network.request({ url: '/api/records/recent', data: { days: 7 } })
+      ])
+
+      if (todayRes.data) {
+        setTodayRecord(todayRes.data)
+        setWeight(todayRes.data.weight)
+        setWaist(todayRes.data.waist)
+      }
+
+      if (recentRes.data) {
+        setRecentRecords(recentRes.data)
       }
     } catch (error) {
-      console.error('获取今日记录失败:', error)
+      console.error('加载数据失败:', error)
     }
-  }
-
-  const fetchRecentRecords = async () => {
-    try {
-      const res = await Network.request({
-        url: '/api/records/recent?days=7',
-        method: 'GET'
-      })
-      console.log('最近记录:', res.data)
-      
-      if (res.data?.code === 200 && res.data?.data) {
-        setRecentRecords(res.data.data)
-      }
-    } catch (error) {
-      console.error('获取最近记录失败:', error)
-    }
-  }
-
-  const handleDateChange = () => {
-    Taro.showActionSheet({
-      itemList: ['今天', '昨天', '前天', '选择日期'],
-      success: (res) => {
-        const today = new Date()
-        if (res.tapIndex === 0) {
-          setSelectedDate(today.toISOString().split('T')[0])
-        } else if (res.tapIndex === 1) {
-          const yesterday = new Date(today)
-          yesterday.setDate(yesterday.getDate() - 1)
-          setSelectedDate(yesterday.toISOString().split('T')[0])
-        } else if (res.tapIndex === 2) {
-          const dayBefore = new Date(today)
-          dayBefore.setDate(dayBefore.getDate() - 2)
-          setSelectedDate(dayBefore.toISOString().split('T')[0])
-        } else if (res.tapIndex === 3) {
-          // 可以集成日期选择器组件
-          Taro.showToast({ title: '日期选择功能开发中', icon: 'none' })
-        }
-      }
-    })
   }
 
   const handleSubmit = async () => {
@@ -91,93 +59,110 @@ export default function CheckinPage() {
       Taro.showToast({ title: '请输入体重', icon: 'none' })
       return
     }
+    if (!waist) {
+      Taro.showToast({ title: '请输入腰围', icon: 'none' })
+      return
+    }
 
     try {
-      setLoading(true)
-      const res = await Network.request({
+      await Network.request({
         url: '/api/records',
         method: 'POST',
         data: {
           record_date: selectedDate,
-          weight: parseFloat(weight),
-          waist: waist ? parseFloat(waist) : null,
-          note: note || null
+          weight,
+          waist,
+          note
         }
       })
-      console.log('提交结果:', res.data)
+
+      Taro.showToast({ title: '打卡成功！', icon: 'success' })
       
-      if (res.data?.code === 200) {
-        Taro.showToast({ title: '打卡成功', icon: 'success' })
-        setWeight('')
-        setWaist('')
-        setNote('')
-        fetchTodayRecord()
-        fetchRecentRecords()
-      }
+      // 重新加载数据
+      loadData()
     } catch (error) {
-      console.error('打卡失败:', error)
-      Taro.showToast({ title: '打卡失败', icon: 'error' })
-    } finally {
-      setLoading(false)
+      console.error('提交失败:', error)
+      Taro.showToast({ title: '提交失败', icon: 'error' })
     }
   }
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
-    const month = date.getMonth() + 1
-    const day = date.getDate()
-    const weekDays = ['日', '一', '二', '三', '四', '五', '六']
-    const weekDay = weekDays[date.getDay()]
-    return `${month}月${day}日 周${weekDay}`
-  }
-
-  const isToday = (dateStr: string) => {
-    return dateStr === new Date().toISOString().split('T')[0]
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    
+    if (dateStr === today.toISOString().split('T')[0]) {
+      return { date: `${date.getMonth() + 1}月${date.getDate()}日`, label: '今天' }
+    } else if (dateStr === yesterday.toISOString().split('T')[0]) {
+      return { date: `${date.getMonth() + 1}月${date.getDate()}日`, label: '昨天' }
+    } else {
+      const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+      return { 
+        date: `${date.getMonth() + 1}月${date.getDate()}日`, 
+        label: weekDays[date.getDay()] 
+      }
+    }
   }
 
   return (
-    <View className="checkin-page">
+    <View className="page-container">
       {/* Header */}
       <View className="header">
         <View className="header-left" />
         <Text className="header-title">记录数据</Text>
-        <View className="header-right" onClick={() => Taro.switchTab({ url: '/pages/data/index' })}>
-          <History size={28} color="#6B7280" />
+        <View 
+          className="header-right"
+          onClick={() => Taro.switchTab({ url: '/pages/data/index' })}
+        >
+          <History size={20} color="#6B7280" />
         </View>
       </View>
 
-      {/* 主内容区域 */}
       <View className="main-content">
         {/* 今日打卡状态提示 */}
-        <View className="checkin-status-card">
-          <View className="checkin-status-icon">
-            <CircleCheck size={28} color="#3C8D6E" />
+        <View className="checkin-tip">
+          <View className="checkin-tip-icon">
+            <Check size={20} color="#3C8D6E" />
           </View>
-          <Text className="checkin-status-title">
-            {todayRecord ? '今日已打卡' : '今日未打卡'}
-          </Text>
+          <View className="checkin-tip-content">
+            <Text className="checkin-tip-title">
+              {todayRecord ? '今日已打卡' : '今日未打卡'}
+            </Text>
+            <Text className="checkin-tip-subtitle">坚持就是胜利，继续保持！</Text>
+          </View>
         </View>
 
         {/* 打卡表单卡片 */}
-        <View className="checkin-form-card">
+        <View className="form-card">
           {/* 日期选择 */}
           <View className="form-item">
-            <Text className="form-label">日期</Text>
-            <View className="date-selector" onClick={handleDateChange}>
-              <Text className="date-text">{formatDate(selectedDate)}</Text>
+            <Text className="form-label">打卡日期</Text>
+            <View className="input-wrapper">
+              <Input 
+                type="text"
+                placeholder="选择日期"
+                value={selectedDate}
+                onInput={(e) => setSelectedDate(e.detail.value)}
+                className="input-field"
+              />
+              <View className="input-icon">
+                <Calendar size={20} color="#6B7280" />
+              </View>
             </View>
+            <Text className="form-hint">可选择历史日期补录数据</Text>
           </View>
 
           {/* 体重输入 */}
           <View className="form-item">
             <Text className="form-label">体重</Text>
             <View className="input-wrapper">
-              <input
+              <Input 
                 type="digit"
-                className="form-input"
                 placeholder="请输入体重"
                 value={weight}
-                onInput={(e: any) => setWeight(e.detail.value)}
+                onInput={(e) => setWeight(e.detail.value)}
+                className="input-field"
               />
               <Text className="input-unit">kg</Text>
             </View>
@@ -187,12 +172,12 @@ export default function CheckinPage() {
           <View className="form-item">
             <Text className="form-label">腰围</Text>
             <View className="input-wrapper">
-              <input
+              <Input 
                 type="digit"
-                className="form-input"
-                placeholder="请输入腰围（选填）"
+                placeholder="请输入腰围"
                 value={waist}
-                onInput={(e: any) => setWaist(e.detail.value)}
+                onInput={(e) => setWaist(e.detail.value)}
+                className="input-field"
               />
               <Text className="input-unit">cm</Text>
             </View>
@@ -200,59 +185,63 @@ export default function CheckinPage() {
 
           {/* 备注输入 */}
           <View className="form-item">
-            <Text className="form-label">备注</Text>
-            <View className="textarea-wrapper">
-              <textarea
-                className="form-textarea"
-                placeholder="记录今天的心情或状态（选填）"
-                value={note}
-                onInput={(e: any) => setNote(e.detail.value)}
-                maxLength={100}
-              />
-              <Text className="textarea-count">{note.length}/100</Text>
+            <Text className="form-label">
+              备注 <Text className="form-label-optional">(可选)</Text>
+            </Text>
+            <Textarea 
+              placeholder="记录今天的感受或变化..."
+              maxlength={100}
+              value={note}
+              onInput={(e) => setNote(e.detail.value)}
+              className="textarea-field"
+            />
+            <View className="textarea-count">
+              <Text className="textarea-count-text">{note.length}/100</Text>
             </View>
           </View>
 
           {/* 提交按钮 */}
-          <View 
-            className={`submit-button ${loading ? 'submit-button-disabled' : ''}`}
-            onClick={loading ? undefined : handleSubmit}
-          >
-            <Text className="submit-button-text">
-              {loading ? '提交中...' : '提交打卡'}
-            </Text>
+          <View className="submit-button" onClick={handleSubmit}>
+            <Check size={20} color="#ffffff" />
+            <Text className="submit-button-text">提交打卡</Text>
           </View>
         </View>
 
         {/* 最近7天打卡记录 */}
         <View className="recent-section">
-          <Text className="section-title">最近7天记录</Text>
+          <View className="recent-header">
+            <Text className="recent-title">最近7天记录</Text>
+            <Text 
+              className="recent-link"
+              onClick={() => Taro.switchTab({ url: '/pages/data/index' })}
+            >
+              查看全部
+            </Text>
+          </View>
           
           <View className="recent-list">
-            {recentRecords.length > 0 ? (
-              recentRecords.map((record) => (
-                <View key={record.id} className="recent-item">
-                  <View className="recent-left">
-                    <Text className="recent-date">{formatDate(record.record_date)}</Text>
-                    {isToday(record.record_date) && (
-                      <View className="recent-badge">
-                        <Text className="recent-badge-text">今天</Text>
-                      </View>
-                    )}
+            {recentRecords.map((record, index) => {
+              const { date, label } = formatDate(record.record_date)
+              return (
+                <View 
+                  key={record.record_date}
+                  className={index < recentRecords.length - 1 ? 'recent-item recent-item-border' : 'recent-item'}
+                >
+                  <View className="recent-item-left">
+                    <Text className="recent-item-date">{date}</Text>
+                    <Text className="recent-item-label">{label}</Text>
                   </View>
-                  <View className="recent-right">
-                    <Text className="recent-weight">{record.weight}kg</Text>
-                    {record.waist && (
-                      <Text className="recent-waist">{record.waist}cm</Text>
-                    )}
+                  <View className="recent-item-right">
+                    <Text className="recent-item-value">
+                      {record.weight}<Text className="recent-item-unit">kg</Text>
+                    </Text>
+                    <Text className="recent-item-value">
+                      {record.waist}<Text className="recent-item-unit">cm</Text>
+                    </Text>
                   </View>
                 </View>
-              ))
-            ) : (
-              <View className="recent-empty">
-                <Text className="recent-empty-text">暂无记录，开始打卡吧</Text>
-              </View>
-            )}
+              )
+            })}
           </View>
         </View>
       </View>
