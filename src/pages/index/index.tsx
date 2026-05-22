@@ -444,7 +444,7 @@ export default function HomePage() {
           
           <View className="grid grid-cols-3 gap-3">
             <Card className="shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
-              <CardContent className="p-4 flex flex-col items-center gap-2">
+              <CardContent className="p-4 flex flex-col items-center gap-2" onClick={goToCheckin}>
                 <View className="w-12 h-12 bg-[#F26B3A]/15 rounded-xl flex items-center justify-center">
                   <CircleCheck size={24} color="#F26B3A" />
                 </View>
