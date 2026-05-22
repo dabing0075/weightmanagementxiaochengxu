@@ -40,15 +40,32 @@ interface HealthMetrics {
 }
 
 // 趋势数据接口
-interface TrendData {
+interface TrendPoint {
   date: string
   weight: number
+}
+
+interface TrendResponse {
+  weightTrend: TrendPoint[]
+  waistTrend: Array<{ date: string; waist: number }>
+  weightStats: {
+    start: number
+    end: number
+    change: number
+    changePercent: number
+  }
+  waistStats: {
+    start: number
+    end: number
+    change: number
+    changePercent: number
+  }
 }
 
 export default function HomePage() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
   const [metrics, setMetrics] = useState<HealthMetrics | null>(null)
-  const [trendData, setTrendData] = useState<TrendData[]>([])
+  const [trendData, setTrendData] = useState<TrendResponse | null>(null)
 
   useEffect(() => {
     loadData()
@@ -108,19 +125,20 @@ export default function HomePage() {
 
   // 计算趋势图路径
   const generateTrendPath = () => {
-    if (trendData.length === 0) return { path: '', areaPath: '', points: [] }
+    const weightTrend = trendData?.weightTrend || []
+    if (weightTrend.length === 0) return { path: '', areaPath: '', points: [] }
     
     const width = 320
     const height = 100
     const padding = 10
-    const weights = trendData.map(d => d.weight)
+    const weights = weightTrend.map(d => d.weight)
     const minWeight = Math.min(...weights) - 1
     const maxWeight = Math.max(...weights) + 1
     
-    const xStep = (width - padding * 2) / (trendData.length - 1 || 1)
+    const xStep = (width - padding * 2) / (weightTrend.length - 1 || 1)
     const yScale = (height - padding * 2) / (maxWeight - minWeight || 1)
     
-    const points = trendData.map((d, i) => ({
+    const points = weightTrend.map((d, i) => ({
       x: padding + i * xStep,
       y: height - padding - (d.weight - minWeight) * yScale,
       weight: d.weight,
@@ -285,7 +303,7 @@ export default function HomePage() {
           
           <Card className="shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
             <CardContent className="p-4">
-              {trendData.length > 0 ? (
+              {trendData?.weightTrend && trendData.weightTrend.length > 0 ? (
                 <>
                   {/* SVG 折线图 */}
                   <View className="relative h-32">
@@ -337,10 +355,10 @@ export default function HomePage() {
                   
                   {/* 日期标签 */}
                   <View className="flex justify-between mt-3">
-                    {trendData.map((d, i) => (
+                    {trendData?.weightTrend?.map((d, i) => (
                       <Text 
                         key={i} 
-                        className={`text-xs ${i === trendData.length - 1 ? 'text-[#F26B3A] font-medium' : 'text-[#6B7280]'}`}
+                        className={`text-xs ${i === (trendData?.weightTrend?.length || 0) - 1 ? 'text-[#F26B3A] font-medium' : 'text-[#6B7280]'}`}
                       >
                         {getWeekday(d.date)}
                       </Text>
