@@ -137,16 +137,17 @@ export default function DataPage() {
             {timeOptions.map(option => (
               <View
                 key={option.value}
-                className={`flex-1 py-2 rounded-xl ${
+                className={`flex-1 py-3 rounded-xl flex items-center justify-center ${
                   timeRange === option.value 
                     ? 'bg-[#F26B3A]' 
                     : 'bg-[#F0EDE6]'
                 }`}
                 onClick={() => setTimeRange(option.value)}
               >
-                <Text className={`text-sm font-medium text-center ${
-                  timeRange === option.value ? 'text-white' : 'text-[#6B7280]'
-                }`}
+                <Text
+                  className={`text-sm font-medium ${
+                    timeRange === option.value ? 'text-white' : 'text-[#6B7280]'
+                  }`}
                 >
                   {option.label}
                 </Text>
