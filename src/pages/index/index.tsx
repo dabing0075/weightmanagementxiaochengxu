@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { 
   Bell, 
   Scale, 
@@ -12,7 +13,10 @@ import {
   Percent,
   CircleCheck,
   FileText,
-  Target
+  Target,
+  Calendar,
+  Trophy,
+  Info
 } from 'lucide-react-taro'
 
 // 用户信息接口
@@ -63,10 +67,23 @@ interface TrendResponse {
   }
 }
 
+// 通知接口
+interface Notification {
+  id: string
+  type: 'checkin' | 'goal' | 'system' | 'achievement'
+  title: string
+  content: string
+  date: string
+  read: boolean
+}
+
 export default function HomePage() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
   const [metrics, setMetrics] = useState<HealthMetrics | null>(null)
   const [trendData, setTrendData] = useState<TrendResponse | null>(null)
+  const [showNotificationDialog, setShowNotificationDialog] = useState(false)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loadingNotifications, setLoadingNotifications] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -147,6 +164,109 @@ export default function HomePage() {
     }
   }
 
+  // 加载通知
+  const loadNotifications = async () => {
+    setLoadingNotifications(true)
+    try {
+      const res = await Network.request({
+        url: '/api/notifications',
+        method: 'GET'
+      })
+      console.log('通知响应:', res.data)
+      
+      if (res.data?.code === 200 && res.data.data) {
+        setNotifications(res.data.data)
+      }
+    } catch (error) {
+      console.error('加载通知失败:', error)
+      // 如果接口不存在，显示模拟通知
+      setNotifications(generateMockNotifications())
+    } finally {
+      setLoadingNotifications(false)
+    }
+  }
+
+  // 生成模拟通知（当后端接口未实现时使用）
+  const generateMockNotifications = (): Notification[] => {
+    const today = new Date()
+    const formatDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    
+    return [
+      {
+        id: '1',
+        type: 'checkin',
+        title: '打卡提醒',
+        content: '今日还未打卡，记得记录您的体重数据哦！',
+        date: formatDate(today),
+        read: !metrics?.todayCheckedIn
+      },
+      {
+        id: '2',
+        type: 'goal',
+        title: '目标进度',
+        content: metrics?.weightDiff 
+          ? `距离目标体重还差 ${Math.abs(metrics.weightDiff).toFixed(1)} 公斤，继续加油！`
+          : '快去设置您的目标体重吧！',
+        date: formatDate(new Date(today.getTime() - 86400000)),
+        read: true
+      },
+      {
+        id: '3',
+        type: 'achievement',
+        title: '健康小贴士',
+        content: '每天保持规律作息，有助于维持健康的体重和良好的身体状态。',
+        date: formatDate(new Date(today.getTime() - 86400000 * 2)),
+        read: true
+      },
+      {
+        id: '4',
+        type: 'system',
+        title: '系统通知',
+        content: '欢迎使用健康管理小程序，祝您早日达成健康目标！',
+        date: formatDate(new Date(today.getTime() - 86400000 * 3)),
+        read: true
+      }
+    ]
+  }
+
+  // 打开通知弹窗
+  const handleNotificationClick = () => {
+    loadNotifications()
+    setShowNotificationDialog(true)
+  }
+
+  // 获取通知图标
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'checkin':
+        return Calendar
+      case 'goal':
+        return Target
+      case 'achievement':
+        return Trophy
+      case 'system':
+        return Info
+      default:
+        return Bell
+    }
+  }
+
+  // 获取通知图标颜色
+  const getNotificationIconColor = (type: string) => {
+    switch (type) {
+      case 'checkin':
+        return '#F26B3A'
+      case 'goal':
+        return '#3C8D6E'
+      case 'achievement':
+        return '#F59E0B'
+      case 'system':
+        return '#6B7280'
+      default:
+        return '#6B7280'
+    }
+  }
+
   const goToCheckin = () => {
     Taro.switchTab({ url: '/pages/checkin/index' })
   }
@@ -202,8 +322,14 @@ export default function HomePage() {
       <View className="sticky top-0 z-40 h-14 flex items-center justify-between px-4 bg-[#F7F4ED]">
         <View className="w-10 h-10" />
         <Text className="text-base font-semibold text-[#1E2933]">健康管理</Text>
-        <View className="w-10 h-10 flex items-center justify-center">
+        <View 
+          className="w-10 h-10 flex items-center justify-center relative"
+          onClick={handleNotificationClick}
+        >
           <Bell size={20} color="#6B7280" />
+          {notifications.some(n => !n.read) && (
+            <View className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          )}
         </View>
       </View>
 
@@ -472,6 +598,72 @@ export default function HomePage() {
           </View>
         </View>
       </View>
+
+      {/* 通知弹窗 */}
+      <Dialog open={showNotificationDialog} onOpenChange={setShowNotificationDialog}>
+        <DialogContent className="max-w-[90vw] max-h-[70vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell size={20} color="#F26B3A" />
+              <Text className="text-lg font-semibold">消息通知</Text>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <View className="flex-1 overflow-y-auto">
+            {loadingNotifications ? (
+              <View className="flex items-center justify-center py-8">
+                <Text className="text-gray-500">加载中...</Text>
+              </View>
+            ) : notifications.length === 0 ? (
+              <View className="flex flex-col items-center justify-center py-8">
+                <Bell size={48} color="#D1D5DB" />
+                <Text className="text-gray-400 mt-4">暂无通知</Text>
+              </View>
+            ) : (
+              <View className="flex flex-col gap-3">
+                {notifications.map((notification) => {
+                  const IconComponent = getNotificationIcon(notification.type)
+                  const iconColor = getNotificationIconColor(notification.type)
+                  
+                  return (
+                    <View 
+                      key={notification.id}
+                      className={`flex gap-3 p-3 rounded-xl ${notification.read ? 'bg-gray-50' : 'bg-orange-50'}`}
+                    >
+                      <View 
+                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: `${iconColor}20` }}
+                      >
+                        <IconComponent size={18} color={iconColor} />
+                      </View>
+                      <View className="flex-1 min-w-0">
+                        <View className="flex items-center justify-between mb-1">
+                          <Text className="text-sm font-semibold text-[#1E2933]">{notification.title}</Text>
+                          {!notification.read && (
+                            <View className="w-2 h-2 bg-red-500 rounded-full" />
+                          )}
+                        </View>
+                        <Text className="text-xs text-gray-600 leading-relaxed">{notification.content}</Text>
+                        <Text className="text-xs text-gray-400 mt-1">{notification.date}</Text>
+                      </View>
+                    </View>
+                  )
+                })}
+              </View>
+            )}
+          </View>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setShowNotificationDialog(false)}
+            >
+              <Text className="text-sm">关闭</Text>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </View>
   )
 }

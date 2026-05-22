@@ -281,11 +281,11 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
       return
     }
     
-    const weightData = trendData.weightTrend.map(d => 
+    const csvWeightData = trendData.weightTrend.map(d => 
       `${d.date},${d.weight}`
     ).join('\n')
     
-    const data = `日期,体重(kg)\n${weightData}`
+    const data = `日期,体重(kg)\n${csvWeightData}`
     
     await Taro.setClipboardData({ data })
     Taro.showToast({ title: '数据已复制', icon: 'success' })
