@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Picker } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Calendar, Scale, History } from 'lucide-react-taro'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,7 @@ interface Record {
 }
 
 export default function CheckinPage() {
-  const [selectedDate] = useState(getTodayDate())
+  const [selectedDate, setSelectedDate] = useState(getTodayDate())
   const [weight, setWeight] = useState('')
   const [waist, setWaist] = useState('')
   const [note, setNote] = useState('')
@@ -28,6 +28,41 @@ export default function CheckinPage() {
   function getTodayDate() {
     const today = new Date()
     return today.toISOString().split('T')[0]
+  }
+
+  function onDateChange(e) {
+    const newDate = e.detail.value
+    setSelectedDate(newDate)
+    // 检查选择的日期是否已有记录
+    checkExistingRecord(newDate)
+  }
+
+  async function checkExistingRecord(date: string) {
+    try {
+      const res = await Network.request({
+        url: '/api/records/date/' + date,
+        method: 'GET'
+      })
+      console.log('Check existing record:', res.data)
+      if (res.data?.code === 200 && res.data?.data) {
+        // 已有记录，填充数据
+        const record = res.data.data
+        setWeight(record.weight?.toString() || '')
+        setWaist(record.waist?.toString() || '')
+        setNote(record.note || '')
+      } else {
+        // 无记录，清空表单
+        setWeight('')
+        setWaist('')
+        setNote('')
+      }
+    } catch (error) {
+      console.error('Check existing record error:', error)
+      // 出错也清空表单
+      setWeight('')
+      setWaist('')
+      setNote('')
+    }
   }
 
   function formatDate(dateStr: string) {
@@ -160,11 +195,16 @@ export default function CheckinPage() {
               {/* 日期选择 */}
               <View>
                 <Text className="text-sm font-medium text-[#1E2933] mb-2 block">打卡日期</Text>
-                <View className="bg-[#F0EDE6] rounded-xl px-4 py-3 flex items-center justify-between">
-                  <Text className="text-base text-[#1E2933]">{selectedDate}</Text>
-                  <Calendar size={20} color="#6B7280" />
-                </View>
-                <Text className="text-xs text-[#6B7280] mt-1 block">可选择历史日期补录数据</Text>
+                <Picker mode="date" value={selectedDate} onChange={onDateChange} end={getTodayDate()}>
+                  <View className="bg-[#F0EDE6] rounded-xl px-4 py-3 flex items-center justify-between">
+                    <Text className="text-base text-[#1E2933]">{selectedDate}</Text>
+                    <View className="flex items-center gap-2">
+                      <Text className="text-xs text-[#F26B3A]">点击选择</Text>
+                      <Calendar size={20} color="#F26B3A" />
+                    </View>
+                  </View>
+                </Picker>
+                <Text className="text-xs text-[#6B7280] mt-1 block">点击日历图标可选择历史日期补录数据</Text>
               </View>
 
               {/* 体重输入 */}

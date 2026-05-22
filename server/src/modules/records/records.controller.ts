@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param } from '@nestjs/common';
 import { RecordsService } from './records.service';
 
 @Controller('records')
@@ -16,6 +16,12 @@ export class RecordsController {
     const daysNum = days ? parseInt(days, 10) : 7;
     console.log('[RecordsController] GET /api/records/recent', { days: daysNum });
     return this.recordsService.getRecentRecords(daysNum);
+  }
+
+  @Get('date/:date')
+  async getRecordByDate(@Param('date') date: string) {
+    console.log('[RecordsController] GET /api/records/date/' + date);
+    return this.recordsService.getRecordByDate(date);
   }
 
   @Get('history')

@@ -88,6 +88,28 @@ export class RecordsService {
     return { code: 200, msg: 'success', data };
   }
 
+  async getRecordByDate(date: string) {
+    const { data, error } = await this.supabase
+      .from('weight_records')
+      .select('*')
+      .eq('user_id', this.DEFAULT_USER_ID)
+      .eq('record_date', date)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('[RecordsService] 获取日期记录失败', error);
+      return { code: 500, msg: '获取记录失败', data: null };
+    }
+
+    if (!data) {
+      console.log('[RecordsService] 该日期无记录', date);
+      return { code: 404, msg: '该日期无记录', data: null };
+    }
+
+    console.log('[RecordsService] 获取日期记录成功', date, data);
+    return { code: 200, msg: 'success', data };
+  }
+
   async getHistory(startDate?: string, endDate?: string) {
     let query = this.supabase
       .from('weight_records')
