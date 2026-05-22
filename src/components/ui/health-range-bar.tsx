@@ -25,7 +25,7 @@ interface HealthRangeBarProps {
 export function HealthRangeBar({
   currentValue,
   ranges,
-  unit = '',
+  unit: _unit = '',
   minValue,
   maxValue
 }: HealthRangeBarProps) {
@@ -91,36 +91,31 @@ export function HealthRangeBar({
   return (
     <View className="mt-4">
       {/* 线段图 */}
-      <View className="relative bg-gray-100 rounded-lg overflow-visible" style={{ height: '32px', marginTop: '50px' }}>
+      <View className="relative bg-gray-100 rounded-lg overflow-visible" style={{ height: '32px' }}>
         {/* 区间色块 */}
         {renderRanges()}
         
-        {/* 当前值标记 - 钟表式指针（箭头向上） */}
+        {/* 当前值标记 - 钟表式指针（跨越整个区间段） */}
         <View
           className="absolute flex flex-col items-center z-10"
           style={{
             left: `${Math.min(Math.max(currentPosition, 2), 98)}%`,
-            bottom: '100%',
+            top: '-20px',
+            bottom: '-20px',
             transform: 'translateX(-50%)'
           }}
         >
-          {/* 数值标签 */}
-          <View className="px-2 py-1 bg-gray-800 rounded mb-1">
-            <Text className="text-xs text-white font-medium">
-              {currentValue.toFixed(1)}{unit}
-            </Text>
-          </View>
           {/* 向上箭头 */}
           <View
             className="w-0 h-0"
             style={{
-              borderLeft: '5px solid transparent',
-              borderRight: '5px solid transparent',
-              borderBottom: '8px solid #1f2937'
+              borderLeft: '4px solid transparent',
+              borderRight: '4px solid transparent',
+              borderBottom: '6px solid #1f2937'
             }}
           />
-          {/* 指针杆 */}
-          <View className="w-1 h-3 bg-gray-800" />
+          {/* 指针杆 - 跨越整个区间段 */}
+          <View className="flex-1 w-1 bg-gray-800" />
         </View>
       </View>
       
