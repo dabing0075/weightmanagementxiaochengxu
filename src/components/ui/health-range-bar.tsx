@@ -119,26 +119,39 @@ export function HealthRangeBar({
         </View>
       </View>
       
-      {/* 刻度值 - 紧挨线段 */}
+      {/* 刻度值 - 按照判定标准边界值标注 */}
       <View className="relative h-4 mt-1">
         {(() => {
           const ticks: JSX.Element[] = []
-          const tickCount = 5
-          for (let i = 0; i <= tickCount; i++) {
-            const value = minVal + (totalRange / tickCount) * i
-            const position = (i / tickCount) * 100
+          // 提取所有区间的边界值作为刻度
+          const tickValues = new Set<number>()
+          tickValues.add(minVal) // 添加最小值
+          tickValues.add(maxVal) // 添加最大值
+          
+          // 添加所有区间的边界值
+          allRanges.forEach(range => {
+            if (range.min !== undefined) tickValues.add(range.min)
+            if (range.max !== undefined) tickValues.add(range.max)
+          })
+          
+          // 排序并渲染刻度
+          const sortedTicks = Array.from(tickValues).sort((a, b) => a - b)
+          sortedTicks.forEach((value, index) => {
+            const position = ((value - minVal) / totalRange) * 100
+            // 根据数值大小决定小数位数
+            const displayValue = value < 10 ? value.toFixed(1) : value.toFixed(0)
             ticks.push(
               <View
-                key={`tick-${i}`}
+                key={`tick-${index}`}
                 className="absolute transform -translate-x-1/2"
                 style={{ left: `${position}%` }}
               >
                 <Text className="text-xs text-gray-400">
-                  {value.toFixed(0)}
+                  {displayValue}
                 </Text>
               </View>
             )
-          }
+          })
           return ticks
         })()}
       </View>
