@@ -29,7 +29,7 @@ export class HealthController {
   async getTrend(@Query('days') days?: string) {
     const dayCount = parseInt(days || '7', 10)
     console.log(`[HealthController] GET /api/health/trend?days=${dayCount}`)
-    const data = await this.healthService.getWeightTrend(dayCount)
+    const data = await this.healthService.getTrendData(dayCount)
     console.log('[HealthController] 返回数据:', data)
     return {
       code: 200,

@@ -102,10 +102,10 @@ export class HealthService {
   }
 
   /**
-   * 获取体重趋势数据
+   * 获取趋势数据（体重 + 腰围）
    * @param days 天数
    */
-  async getWeightTrend(days: number) {
+  async getTrendData(days: number) {
     const client = getSupabaseClient()
     
     // 计算起始日期
@@ -121,47 +121,88 @@ export class HealthService {
     // 查询记录
     const { data: records, error } = await client
       .from('weight_records')
-      .select('record_date, weight')
+      .select('record_date, weight, waist')
       .gte('record_date', startDateStr)
       .lte('record_date', endDateStr)
       .order('record_date', { ascending: true })
     
     if (error) throw new Error(`获取趋势数据失败: ${error.message}`)
     
-    // 填充缺失的日期
-    const result: { date: string; weight: number | null }[] = []
+    // 构建趋势数据
+    const weightTrend: { date: string; weight: number }[] = []
+    const waistTrend: { date: string; waist: number }[] = []
     const currentDate = new Date(startDate)
+    
+    // 如果没有数据，返回空数组
+    if (!records || records.length === 0) {
+      return {
+        weightTrend: [],
+        waistTrend: [],
+        weightStats: { start: 0, end: 0, change: 0, changePercent: 0 },
+        waistStats: { start: 0, end: 0, change: 0, changePercent: 0 }
+      }
+    }
+    
+    // 填充数据，对于缺失的日期使用最近的数据
+    let lastWeight = records[0]?.weight || 0
+    let lastWaist = records[0]?.waist || 0
     
     while (currentDate <= endDate) {
       const dateStr = currentDate.toISOString().split('T')[0]
       const record = records?.find(r => r.record_date === dateStr)
       
-      result.push({
+      if (record) {
+        lastWeight = record.weight || lastWeight
+        lastWaist = record.waist || lastWaist
+      }
+      
+      weightTrend.push({
         date: dateStr,
-        weight: record?.weight || null
+        weight: lastWeight
+      })
+      
+      waistTrend.push({
+        date: dateStr,
+        waist: lastWaist
       })
       
       currentDate.setDate(currentDate.getDate() + 1)
     }
     
-    // 如果数据不足7天，用最近的数据填充
-    const validRecords = records?.filter(r => r.weight !== null) || []
-    if (validRecords.length > 0) {
-      const lastWeight = validRecords[validRecords.length - 1].weight
-      result.forEach(item => {
-        if (item.weight === null) {
-          // 使用最近的体重数据
-          const nearest = validRecords.reduce((prev, curr) => {
-            const prevDiff = Math.abs(new Date(prev.record_date).getTime() - new Date(item.date).getTime())
-            const currDiff = Math.abs(new Date(curr.record_date).getTime() - new Date(item.date).getTime())
-            return currDiff < prevDiff ? curr : prev
-          })
-          item.weight = nearest.weight
-        }
-      })
+    // 计算统计数据
+    const validWeights = weightTrend.filter(d => d.weight > 0).map(d => d.weight)
+    const validWaists = waistTrend.filter(d => d.waist > 0).map(d => d.waist)
+    
+    const weightStats = {
+      start: validWeights[0] || 0,
+      end: validWeights[validWeights.length - 1] || 0,
+      change: 0,
+      changePercent: 0
     }
     
-    return result
+    if (validWeights.length >= 2) {
+      weightStats.change = weightStats.end - weightStats.start
+      weightStats.changePercent = parseFloat(((weightStats.change / weightStats.start) * 100).toFixed(1))
+    }
+    
+    const waistStats = {
+      start: validWaists[0] || 0,
+      end: validWaists[validWaists.length - 1] || 0,
+      change: 0,
+      changePercent: 0
+    }
+    
+    if (validWaists.length >= 2) {
+      waistStats.change = waistStats.end - waistStats.start
+      waistStats.changePercent = parseFloat(((waistStats.change / waistStats.start) * 100).toFixed(1))
+    }
+    
+    return {
+      weightTrend,
+      waistTrend,
+      weightStats,
+      waistStats
+    }
   }
 
   /**

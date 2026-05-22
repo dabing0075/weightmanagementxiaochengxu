@@ -17,7 +17,7 @@ interface Record {
 }
 
 export default function CheckinPage() {
-  const [selectedDate, _setSelectedDate] = useState(getTodayDate())
+  const [selectedDate] = useState(getTodayDate())
   const [weight, setWeight] = useState('')
   const [waist, setWaist] = useState('')
   const [note, setNote] = useState('')

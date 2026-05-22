@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Scale, Ruler, Download, Share2 } from 'lucide-react-taro'
+import { Scale, Ruler, Download, Share2, TrendingDown, TrendingUp } from 'lucide-react-taro'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Network } from '@/network'
@@ -72,14 +72,51 @@ export default function DataPage() {
     Taro.showToast({ title: '功能开发中', icon: 'none' })
   }
 
-  // 计算图表数据
+  // 获取图表数据
   const weightData = trendData?.weightTrend || []
   const waistData = trendData?.waistTrend || []
+
+  // 计算范围
+  const weights = weightData.map(d => d.weight).filter(w => w > 0)
+  const waists = waistData.map(d => d.waist).filter(w => w > 0)
   
-  const minWeight = weightData.length > 0 ? Math.min(...weightData.map(d => d.weight)) : 0
-  const maxWeight = weightData.length > 0 ? Math.max(...weightData.map(d => d.weight)) : 100
-  const minWaist = waistData.length > 0 ? Math.min(...waistData.map(d => d.waist)) : 0
-  const maxWaist = waistData.length > 0 ? Math.max(...waistData.map(d => d.waist)) : 100
+  const minWeight = weights.length > 0 ? Math.min(...weights) - 1 : 0
+  const maxWeight = weights.length > 0 ? Math.max(...weights) + 1 : 100
+  const minWaist = waists.length > 0 ? Math.min(...waists) - 1 : 0
+  const maxWaist = waists.length > 0 ? Math.max(...waists) + 1 : 100
+
+  // 生成折线路径
+  function generateLinePath(data: number[], min: number, max: number, width: number, height: number) {
+    if (data.length === 0) return ''
+    
+    const range = max - min || 1
+    const stepX = width / (data.length - 1 || 1)
+    
+    const points = data.map((value, index) => {
+      const x = index * stepX
+      const y = height - ((value - min) / range) * height
+      return `${x},${y}`
+    })
+    
+    return `M ${points.join(' L ')}`
+  }
+
+  // 生成填充区域路径
+  function generateAreaPath(data: number[], min: number, max: number, width: number, height: number) {
+    if (data.length === 0) return ''
+    
+    const range = max - min || 1
+    const stepX = width / (data.length - 1 || 1)
+    
+    const points = data.map((value, index) => {
+      const x = index * stepX
+      const y = height - ((value - min) / range) * height
+      return `${x},${y}`
+    })
+    
+    // 闭合路径：从最后一个点到底部，再到第一个点的底部
+    return `M 0,${height} L ${points.join(' L ')} L ${width},${height} Z`
+  }
 
   return (
     <View className="flex flex-col min-h-screen bg-[#F7F4ED]">
@@ -96,18 +133,18 @@ export default function DataPage() {
       <ScrollView scrollY className="flex-1 pb-20">
         {/* 时间范围选择器 */}
         <View className="px-4 pt-4 pb-2">
-          <ScrollView scrollX className="flex flex-row gap-2">
+          <View className="flex flex-row gap-2">
             {timeOptions.map(option => (
               <View
                 key={option.value}
-                className={`flex-shrink-0 px-4 py-2 rounded-full ${
+                className={`flex-1 py-2 rounded-xl ${
                   timeRange === option.value 
                     ? 'bg-[#F26B3A]' 
                     : 'bg-[#F0EDE6]'
                 }`}
                 onClick={() => setTimeRange(option.value)}
               >
-                <Text className={`text-sm font-medium ${
+                <Text className={`text-sm font-medium text-center ${
                   timeRange === option.value ? 'text-white' : 'text-[#6B7280]'
                 }`}
                 >
@@ -115,7 +152,7 @@ export default function DataPage() {
                 </Text>
               </View>
             ))}
-          </ScrollView>
+          </View>
         </View>
 
         {loading ? (
@@ -138,25 +175,56 @@ export default function DataPage() {
                     <Text className="text-sm text-[#6B7280]">单位: kg</Text>
                   </View>
 
-                  {/* 简化趋势图 */}
-                  {weightData.length > 0 ? (
-                    <View className="space-y-2">
-                      {weightData.slice(-7).map((item, index) => (
-                        <View key={index} className="flex items-center gap-3">
-                          <Text className="text-xs text-[#6B7280] w-12">{formatDate(item.date)}</Text>
-                          <View className="flex-1 h-6 bg-[#F0EDE6] rounded overflow-hidden">
-                            <View 
-                              className="h-full bg-[#F26B3A] rounded"
-                              style={{
-                                width: `${((item.weight - minWeight) / (maxWeight - minWeight || 1)) * 100}%`
-                              }}
-                            />
-                          </View>
-                          <Text className="text-sm font-medium text-[#1E2933] w-12 text-right">
-                            {item.weight.toFixed(1)}
+                  {/* SVG 折线图 */}
+                  {weights.length > 0 ? (
+                    <View className="relative">
+                      <View className="w-full" style={{ height: '200px' }}>
+                        <svg width="100%" height="200" viewBox="0 0 350 200" preserveAspectRatio="none">
+                          {/* 网格线 */}
+                          <line x1="0" y1="50" x2="350" y2="50" stroke="#E4DED2" strokeWidth="1" />
+                          <line x1="0" y1="100" x2="350" y2="100" stroke="#E4DED2" strokeWidth="1" />
+                          <line x1="0" y1="150" x2="350" y2="150" stroke="#E4DED2" strokeWidth="1" />
+                          
+                          {/* Y轴刻度 */}
+                          <text x="5" y="20" fill="#6B7280" fontSize="10">{maxWeight.toFixed(0)}</text>
+                          <text x="5" y="105" fill="#6B7280" fontSize="10">{((maxWeight + minWeight) / 2).toFixed(0)}</text>
+                          <text x="5" y="195" fill="#6B7280" fontSize="10">{minWeight.toFixed(0)}</text>
+                          
+                          {/* 填充区域 */}
+                          <path
+                            d={generateAreaPath(weights, minWeight, maxWeight, 350, 180)}
+                            fill="url(#weightGradient)"
+                            opacity="0.3"
+                          />
+                          
+                          {/* 折线 */}
+                          <path
+                            d={generateLinePath(weights, minWeight, maxWeight, 350, 180)}
+                            fill="none"
+                            stroke="#F26B3A"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          
+                          {/* 渐变定义 */}
+                          <defs>
+                            <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#F26B3A" />
+                              <stop offset="100%" stopColor="#F26B3A" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                      </View>
+                      
+                      {/* X轴日期标签 */}
+                      <View className="flex flex-row justify-between px-2 mt-2">
+                        {weightData.filter((_, i) => i % Math.ceil(weightData.length / 5) === 0).slice(0, 5).map((item, index) => (
+                          <Text key={index} className="text-xs text-[#6B7280]">
+                            {formatDate(item.date)}
                           </Text>
-                        </View>
-                      ))}
+                        ))}
+                      </View>
                     </View>
                   ) : (
                     <View className="py-8 text-center">
@@ -165,7 +233,7 @@ export default function DataPage() {
                   )}
 
                   {/* 统计摘要 */}
-                  {trendData?.weightStats && (
+                  {trendData?.weightStats && weights.length > 0 && (
                     <View className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-[#E4DED2]">
                       <View className="text-center">
                         <Text className="text-xs text-[#6B7280] mb-1 block">起始值</Text>
@@ -181,12 +249,19 @@ export default function DataPage() {
                       </View>
                       <View className="text-center">
                         <Text className="text-xs text-[#6B7280] mb-1 block">变化量</Text>
-                        <Text className={`text-base font-semibold ${
-                          trendData.weightStats.change > 0 ? 'text-[#EF4444]' : 'text-[#3C8D6E]'
-                        }`}
-                        >
-                          {trendData.weightStats.change > 0 ? '+' : ''}{trendData.weightStats.change.toFixed(1)}
-                        </Text>
+                        <View className="flex items-center justify-center gap-1">
+                          {trendData.weightStats.change > 0 ? (
+                            <TrendingUp size={12} color="#EF4444" />
+                          ) : (
+                            <TrendingDown size={12} color="#3C8D6E" />
+                          )}
+                          <Text className={`text-base font-semibold ${
+                            trendData.weightStats.change > 0 ? 'text-[#EF4444]' : 'text-[#3C8D6E]'
+                          }`}
+                          >
+                            {trendData.weightStats.change > 0 ? '+' : ''}{trendData.weightStats.change.toFixed(1)}
+                          </Text>
+                        </View>
                       </View>
                       <View className="text-center">
                         <Text className="text-xs text-[#6B7280] mb-1 block">变化率</Text>
@@ -217,25 +292,56 @@ export default function DataPage() {
                     <Text className="text-sm text-[#6B7280]">单位: cm</Text>
                   </View>
 
-                  {/* 简化趋势图 */}
-                  {waistData.length > 0 ? (
-                    <View className="space-y-2">
-                      {waistData.slice(-7).map((item, index) => (
-                        <View key={index} className="flex items-center gap-3">
-                          <Text className="text-xs text-[#6B7280] w-12">{formatDate(item.date)}</Text>
-                          <View className="flex-1 h-6 bg-[#F0EDE6] rounded overflow-hidden">
-                            <View 
-                              className="h-full bg-[#3C8D6E] rounded"
-                              style={{
-                                width: `${((item.waist - minWaist) / (maxWaist - minWaist || 1)) * 100}%`
-                              }}
-                            />
-                          </View>
-                          <Text className="text-sm font-medium text-[#1E2933] w-12 text-right">
-                            {item.waist.toFixed(1)}
+                  {/* SVG 折线图 */}
+                  {waists.length > 0 ? (
+                    <View className="relative">
+                      <View className="w-full" style={{ height: '200px' }}>
+                        <svg width="100%" height="200" viewBox="0 0 350 200" preserveAspectRatio="none">
+                          {/* 网格线 */}
+                          <line x1="0" y1="50" x2="350" y2="50" stroke="#E4DED2" strokeWidth="1" />
+                          <line x1="0" y1="100" x2="350" y2="100" stroke="#E4DED2" strokeWidth="1" />
+                          <line x1="0" y1="150" x2="350" y2="150" stroke="#E4DED2" strokeWidth="1" />
+                          
+                          {/* Y轴刻度 */}
+                          <text x="5" y="20" fill="#6B7280" fontSize="10">{maxWaist.toFixed(0)}</text>
+                          <text x="5" y="105" fill="#6B7280" fontSize="10">{((maxWaist + minWaist) / 2).toFixed(0)}</text>
+                          <text x="5" y="195" fill="#6B7280" fontSize="10">{minWaist.toFixed(0)}</text>
+                          
+                          {/* 填充区域 */}
+                          <path
+                            d={generateAreaPath(waists, minWaist, maxWaist, 350, 180)}
+                            fill="url(#waistGradient)"
+                            opacity="0.3"
+                          />
+                          
+                          {/* 折线 */}
+                          <path
+                            d={generateLinePath(waists, minWaist, maxWaist, 350, 180)}
+                            fill="none"
+                            stroke="#3C8D6E"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          
+                          {/* 渐变定义 */}
+                          <defs>
+                            <linearGradient id="waistGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#3C8D6E" />
+                              <stop offset="100%" stopColor="#3C8D6E" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                      </View>
+                      
+                      {/* X轴日期标签 */}
+                      <View className="flex flex-row justify-between px-2 mt-2">
+                        {waistData.filter((_, i) => i % Math.ceil(waistData.length / 5) === 0).slice(0, 5).map((item, index) => (
+                          <Text key={index} className="text-xs text-[#6B7280]">
+                            {formatDate(item.date)}
                           </Text>
-                        </View>
-                      ))}
+                        ))}
+                      </View>
                     </View>
                   ) : (
                     <View className="py-8 text-center">
@@ -244,7 +350,7 @@ export default function DataPage() {
                   )}
 
                   {/* 统计摘要 */}
-                  {trendData?.waistStats && (
+                  {trendData?.waistStats && waists.length > 0 && (
                     <View className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-[#E4DED2]">
                       <View className="text-center">
                         <Text className="text-xs text-[#6B7280] mb-1 block">起始值</Text>
@@ -260,12 +366,19 @@ export default function DataPage() {
                       </View>
                       <View className="text-center">
                         <Text className="text-xs text-[#6B7280] mb-1 block">变化量</Text>
-                        <Text className={`text-base font-semibold ${
-                          trendData.waistStats.change > 0 ? 'text-[#EF4444]' : 'text-[#3C8D6E]'
-                        }`}
-                        >
-                          {trendData.waistStats.change > 0 ? '+' : ''}{trendData.waistStats.change.toFixed(1)}
-                        </Text>
+                        <View className="flex items-center justify-center gap-1">
+                          {trendData.waistStats.change > 0 ? (
+                            <TrendingUp size={12} color="#EF4444" />
+                          ) : (
+                            <TrendingDown size={12} color="#3C8D6E" />
+                          )}
+                          <Text className={`text-base font-semibold ${
+                            trendData.waistStats.change > 0 ? 'text-[#EF4444]' : 'text-[#3C8D6E]'
+                          }`}
+                          >
+                            {trendData.waistStats.change > 0 ? '+' : ''}{trendData.waistStats.change.toFixed(1)}
+                          </Text>
+                        </View>
                       </View>
                       <View className="text-center">
                         <Text className="text-xs text-[#6B7280] mb-1 block">变化率</Text>
