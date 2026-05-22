@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import { Scale, Ruler, Activity, TrendingUp, RefreshCw, CircleUser } from 'lucide-react-taro'
 import { Card, CardContent } from '@/components/ui/card'
+import { HealthRangeBar } from '@/components/ui/health-range-bar'
 import { Network } from '@/network'
 
 interface StatsData {
@@ -153,6 +154,138 @@ export default function StatsPage() {
               </View>
             )}
 
+            {/* BMI 变化趋势 */}
+            <Card className="bg-white shadow-md">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-4">
+                  <View className="w-8 h-8 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
+                    <Activity size={16} color="#6366F1" />
+                  </View>
+                  <Text className="text-base font-semibold text-[#1E2933]">BMI 变化趋势</Text>
+                </View>
+
+                <View className="flex items-center justify-between mb-4">
+                  <View>
+                    <Text className="text-sm text-[#6B7280]">当前 BMI</Text>
+                    <Text className="text-2xl font-bold text-[#1E2933]">
+                      {statsData?.bmiLevel.current.toFixed(1) || '-'}
+                    </Text>
+                  </View>
+                  <View
+                    className="px-4 py-2 rounded-full"
+                    style={{ backgroundColor: getBmiColor(statsData?.bmiLevel.level || '') + '20' }}
+                  >
+                    <Text
+                      className="text-sm font-semibold"
+                      style={{ color: getBmiColor(statsData?.bmiLevel.level || '') }}
+                    >
+                      {statsData?.bmiLevel.level || '-'}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* BMI 健康区间线段图 */}
+                {statsData?.bmiLevel && (
+                  <HealthRangeBar
+                    currentValue={statsData.bmiLevel.current}
+                    ranges={statsData.bmiLevel.ranges}
+                    unit=""
+                    minValue={15}
+                    maxValue={35}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 体脂率变化趋势 */}
+            <Card className="bg-white shadow-md">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-4">
+                  <View className="w-8 h-8 rounded-full bg-[#EC4899]/10 flex items-center justify-center">
+                    <TrendingUp size={16} color="#EC4899" />
+                  </View>
+                  <Text className="text-base font-semibold text-[#1E2933]">体脂率变化趋势</Text>
+                </View>
+
+                <View className="flex items-center justify-between mb-4">
+                  <View>
+                    <Text className="text-sm text-[#6B7280]">当前体脂率</Text>
+                    <Text className="text-2xl font-bold text-[#1E2933]">
+                      {statsData?.bodyFatLevel.current.toFixed(1) || '-'}%
+                    </Text>
+                  </View>
+                  <View
+                    className="px-4 py-2 rounded-full"
+                    style={{ backgroundColor: getLevelColor(statsData?.bodyFatLevel.status || '') + '20' }}
+                  >
+                    <Text
+                      className="text-sm font-semibold"
+                      style={{ color: getLevelColor(statsData?.bodyFatLevel.status || '') }}
+                    >
+                      {statsData?.bodyFatLevel.status || '-'}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* 体脂率健康区间线段图 */}
+                {statsData?.bodyFatLevel && (
+                  <HealthRangeBar
+                    currentValue={statsData.bodyFatLevel.current}
+                    ranges={statsData.bodyFatLevel.ranges}
+                    unit="%"
+                    minValue={5}
+                    maxValue={40}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 腰围健康等级 */}
+            {statsData?.waistLevel && (
+              <Card className="bg-white shadow-md">
+                <CardContent className="p-4">
+                  <View className="flex items-center justify-between mb-4">
+                    <View className="flex items-center gap-2">
+                      <View className="w-8 h-8 rounded-full bg-[#3C8D6E]/10 flex items-center justify-center">
+                        <Ruler size={16} color="#3C8D6E" />
+                      </View>
+                      <Text className="text-base font-semibold text-[#1E2933]">腰围健康等级</Text>
+                    </View>
+                    <View
+                      className="px-3 py-1 rounded-full"
+                      style={{ backgroundColor: getLevelColor(statsData.waistLevel.level) + '20' }}
+                    >
+                      <Text
+                        className="text-xs font-semibold"
+                        style={{ color: getLevelColor(statsData.waistLevel.level) }}
+                      >
+                        {statsData.waistLevel.level}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View className="flex items-center justify-between mb-4">
+                    <View>
+                      <Text className="text-sm text-[#6B7280]">当前腰围</Text>
+                      <Text className="text-2xl font-bold text-[#1E2933]">
+                        {statsData.waistLevel.current.toFixed(1) || '-'}
+                        <Text className="text-sm font-normal text-[#6B7280] ml-1">cm</Text>
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* 腰围健康区间线段图 */}
+                  <HealthRangeBar
+                    currentValue={statsData.waistLevel.current}
+                    ranges={statsData.waistLevel.ranges}
+                    unit="cm"
+                    minValue={60}
+                    maxValue={100}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
             {/* 体重统计卡片 */}
             <Card className="bg-white shadow-md">
               <CardContent className="p-4">
@@ -206,26 +339,11 @@ export default function StatsPage() {
             {/* 腰围统计卡片 */}
             <Card className="bg-white shadow-md">
               <CardContent className="p-4">
-                <View className="flex items-center justify-between mb-4">
-                  <View className="flex items-center gap-2">
-                    <View className="w-8 h-8 rounded-full bg-[#3C8D6E]/10 flex items-center justify-center">
-                      <Ruler size={16} color="#3C8D6E" />
-                    </View>
-                    <Text className="text-base font-semibold text-[#1E2933]">腰围统计</Text>
+                <View className="flex items-center gap-2 mb-4">
+                  <View className="w-8 h-8 rounded-full bg-[#3C8D6E]/10 flex items-center justify-center">
+                    <Ruler size={16} color="#3C8D6E" />
                   </View>
-                  {statsData?.waistStats.level && (
-                    <View
-                      className="px-3 py-1 rounded-full"
-                      style={{ backgroundColor: getLevelColor(statsData.waistStats.level) + '20' }}
-                    >
-                      <Text
-                        className="text-xs font-semibold"
-                        style={{ color: getLevelColor(statsData.waistStats.level) }}
-                      >
-                        {statsData.waistStats.level}
-                      </Text>
-                    </View>
-                  )}
+                  <Text className="text-base font-semibold text-[#1E2933]">腰围统计</Text>
                 </View>
 
                 <View className="grid grid-cols-2 gap-4">
@@ -262,251 +380,6 @@ export default function StatsPage() {
                     </Text>
                     <Text className="text-xs text-[#6B7280] mt-1">
                       {statsData?.waistStats.minDate ? formatDate(statsData.waistStats.minDate) : '-'}
-                    </Text>
-                  </View>
-                </View>
-              </CardContent>
-            </Card>
-
-            {/* 腰围健康等级 */}
-            {statsData?.waistLevel && (
-              <Card className="bg-white shadow-md">
-                <CardContent className="p-4">
-                  <View className="flex items-center gap-2 mb-4">
-                    <View className="w-8 h-8 rounded-full bg-[#F59E0B]/10 flex items-center justify-center">
-                      <Ruler size={16} color="#F59E0B" />
-                    </View>
-                    <Text className="text-base font-semibold text-[#1E2933]">腰围健康等级</Text>
-                  </View>
-
-                  <View className="flex items-center justify-between mb-4">
-                    <View>
-                      <Text className="text-sm text-[#6B7280]">当前腰围</Text>
-                      <Text className="text-2xl font-bold text-[#1E2933]">
-                        {statsData.waistLevel.current.toFixed(1)} cm
-                      </Text>
-                    </View>
-                    <View
-                      className="px-4 py-2 rounded-full"
-                      style={{ backgroundColor: getLevelColor(statsData.waistLevel.level) + '20' }}
-                    >
-                      <Text
-                        className="text-sm font-semibold"
-                        style={{ color: getLevelColor(statsData.waistLevel.level) }}
-                      >
-                        {statsData.waistLevel.level}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View className="bg-[#F7F4ED] rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-2 block">
-                      {genderText}腰围健康标准
-                    </Text>
-                    <View className="space-y-2">
-                      <View className="flex items-center justify-between">
-                        <View className="flex items-center gap-2">
-                          <View className="w-3 h-3 rounded bg-[#3C8D6E]" />
-                          <Text className="text-xs text-[#6B7280]">正常</Text>
-                        </View>
-                        <Text className="text-xs text-[#1E2933] font-medium">
-                          &lt;{statsData.waistLevel.ranges.normal.max} cm
-                        </Text>
-                      </View>
-                      <View className="flex items-center justify-between">
-                        <View className="flex items-center gap-2">
-                          <View className="w-3 h-3 rounded bg-[#F59E0B]" />
-                          <Text className="text-xs text-[#6B7280]">中心型肥胖前期</Text>
-                        </View>
-                        <Text className="text-xs text-[#1E2933] font-medium">
-                          {statsData.waistLevel.ranges.preObese.min}-{statsData.waistLevel.ranges.preObese.max} cm
-                        </Text>
-                      </View>
-                      <View className="flex items-center justify-between">
-                        <View className="flex items-center gap-2">
-                          <View className="w-3 h-3 rounded bg-[#EF4444]" />
-                          <Text className="text-xs text-[#6B7280]">中心型肥胖</Text>
-                        </View>
-                        <Text className="text-xs text-[#1E2933] font-medium">
-                          ≥{statsData.waistLevel.ranges.obese.min} cm
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* BMI 变化趋势 */}
-            <Card className="bg-white shadow-md">
-              <CardContent className="p-4">
-                <View className="flex items-center gap-2 mb-4">
-                  <View className="w-8 h-8 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
-                    <Activity size={16} color="#6366F1" />
-                  </View>
-                  <Text className="text-base font-semibold text-[#1E2933]">BMI 变化趋势</Text>
-                </View>
-
-                <View className="flex items-center justify-between mb-3">
-                  <View>
-                    <Text className="text-sm text-[#6B7280]">当前 BMI</Text>
-                    <Text className="text-2xl font-bold text-[#1E2933]">
-                      {statsData?.bmiLevel.current.toFixed(1) || '-'}
-                    </Text>
-                  </View>
-                  <View
-                    className="px-4 py-2 rounded-full"
-                    style={{ backgroundColor: getBmiColor(statsData?.bmiLevel.level || '') + '20' }}
-                  >
-                    <Text
-                      className="text-sm font-semibold"
-                      style={{ color: getBmiColor(statsData?.bmiLevel.level || '') }}
-                    >
-                      {statsData?.bmiLevel.level || '-'}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* BMI 等级分布 */}
-                {statsData?.bmiLevel.ranges && (
-                  <View className="bg-[#F7F4ED] rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-2 block">健康等级标准</Text>
-                    <View className="flex justify-between text-xs">
-                      <View className="text-center">
-                        <View className="w-4 h-4 rounded bg-[#3B82F6] mb-1 mx-auto" />
-                        <Text className="text-[#6B7280]">偏瘦</Text>
-                        <Text className="text-[#6B7280]">&lt;{statsData.bmiLevel.ranges.underweight.max}</Text>
-                      </View>
-                      <View className="text-center">
-                        <View className="w-4 h-4 rounded bg-[#3C8D6E] mb-1 mx-auto" />
-                        <Text className="text-[#6B7280]">正常</Text>
-                        <Text className="text-[#6B7280]">{statsData.bmiLevel.ranges.normal.min}-{statsData.bmiLevel.ranges.normal.max}</Text>
-                      </View>
-                      <View className="text-center">
-                        <View className="w-4 h-4 rounded bg-[#F59E0B] mb-1 mx-auto" />
-                        <Text className="text-[#6B7280]">超重</Text>
-                        <Text className="text-[#6B7280]">{statsData.bmiLevel.ranges.overweight.min}-{statsData.bmiLevel.ranges.overweight.max}</Text>
-                      </View>
-                      <View className="text-center">
-                        <View className="w-4 h-4 rounded bg-[#EF4444] mb-1 mx-auto" />
-                        <Text className="text-[#6B7280]">肥胖</Text>
-                        <Text className="text-[#6B7280]">≥{statsData.bmiLevel.ranges.obese.min}</Text>
-                      </View>
-                    </View>
-                  </View>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* 体脂率变化趋势 */}
-            <Card className="bg-white shadow-md">
-              <CardContent className="p-4">
-                <View className="flex items-center gap-2 mb-4">
-                  <View className="w-8 h-8 rounded-full bg-[#EC4899]/10 flex items-center justify-center">
-                    <TrendingUp size={16} color="#EC4899" />
-                  </View>
-                  <Text className="text-base font-semibold text-[#1E2933]">体脂率变化趋势</Text>
-                </View>
-
-                <View className="flex items-center justify-between mb-3">
-                  <View>
-                    <Text className="text-sm text-[#6B7280]">当前体脂率</Text>
-                    <Text className="text-2xl font-bold text-[#1E2933]">
-                      {statsData?.bodyFatLevel.current.toFixed(1) || '-'}%
-                    </Text>
-                  </View>
-                  <View
-                    className="px-4 py-2 rounded-full"
-                    style={{ backgroundColor: getLevelColor(statsData?.bodyFatLevel.status || '') + '20' }}
-                  >
-                    <Text
-                      className="text-sm font-semibold"
-                      style={{ color: getLevelColor(statsData?.bodyFatLevel.status || '') }}
-                    >
-                      {statsData?.bodyFatLevel.status || '-'}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* 体脂率健康区间 */}
-                {statsData?.bodyFatLevel.ranges && (
-                  <View className="bg-[#F7F4ED] rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-2 block">
-                      {genderText}体脂率健康标准
-                    </Text>
-                    <View className="space-y-2">
-                      <View className="flex items-center justify-between">
-                        <View className="flex items-center gap-2">
-                          <View className="w-3 h-3 rounded bg-[#3B82F6]" />
-                          <Text className="text-xs text-[#6B7280]">偏低</Text>
-                        </View>
-                        <Text className="text-xs text-[#1E2933] font-medium">
-                          &lt;{statsData.bodyFatLevel.ranges.low.max}%
-                        </Text>
-                      </View>
-                      <View className="flex items-center justify-between">
-                        <View className="flex items-center gap-2">
-                          <View className="w-3 h-3 rounded bg-[#3C8D6E]" />
-                          <Text className="text-xs text-[#6B7280]">正常</Text>
-                        </View>
-                        <Text className="text-xs text-[#1E2933] font-medium">
-                          {statsData.bodyFatLevel.ranges.normal.min}-{statsData.bodyFatLevel.ranges.normal.max}%
-                        </Text>
-                      </View>
-                      <View className="flex items-center justify-between">
-                        <View className="flex items-center gap-2">
-                          <View className="w-3 h-3 rounded bg-[#F59E0B]" />
-                          <Text className="text-xs text-[#6B7280]">偏高</Text>
-                        </View>
-                        <Text className="text-xs text-[#1E2933] font-medium">
-                          {statsData.bodyFatLevel.ranges.high.min}-{statsData.bodyFatLevel.ranges.high.max}%
-                        </Text>
-                      </View>
-                      <View className="flex items-center justify-between">
-                        <View className="flex items-center gap-2">
-                          <View className="w-3 h-3 rounded bg-[#EF4444]" />
-                          <Text className="text-xs text-[#6B7280]">肥胖</Text>
-                        </View>
-                        <Text className="text-xs text-[#1E2933] font-medium">
-                          ≥{statsData.bodyFatLevel.ranges.obese.min}%
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* 健康建议卡片 */}
-            <Card className="bg-gradient-to-br from-[#F26B3A]/10 to-[#3C8D6E]/10 shadow-md">
-              <CardContent className="p-4">
-                <View className="flex items-center gap-2 mb-3">
-                  <Text className="text-base font-semibold text-[#1E2933]">健康建议</Text>
-                </View>
-
-                <View className="space-y-2">
-                  <View className="flex items-start gap-2">
-                    <View className="w-2 h-2 rounded-full bg-[#F26B3A] mt-2" />
-                    <Text className="text-sm text-[#1E2933] flex-1">
-                      体重呈下降趋势，继续保持健康饮食和适量运动
-                    </Text>
-                  </View>
-                  <View className="flex items-start gap-2">
-                    <View className="w-2 h-2 rounded-full bg-[#3C8D6E] mt-2" />
-                    <Text className="text-sm text-[#1E2933] flex-1">
-                      BMI 在正常范围内，保持良好的生活习惯
-                    </Text>
-                  </View>
-                  <View className="flex items-start gap-2">
-                    <View className="w-2 h-2 rounded-full bg-[#6366F1] mt-2" />
-                    <Text className="text-sm text-[#1E2933] flex-1">
-                      腰围接近目标值，继续坚持核心训练
-                    </Text>
-                  </View>
-                  <View className="flex items-start gap-2">
-                    <View className="w-2 h-2 rounded-full bg-[#EC4899] mt-2" />
-                    <Text className="text-sm text-[#1E2933] flex-1">
-                      每天保持充足水分摄入，促进新陈代谢
                     </Text>
                   </View>
                 </View>
