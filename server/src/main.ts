@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import * as express from 'express';
 import { HttpStatusInterceptor } from '@/interceptors/http-status.interceptor';
+import { join } from 'path';
 
 function parsePort(): number {
   const args = process.argv.slice(2);
@@ -26,6 +27,9 @@ async function bootstrap() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+  // 服务管理后台静态文件
+  app.use('/admin', express.static(join(__dirname, '..', '..', 'admin')));
+
   // 全局拦截器：统一将 POST 请求的 201 状态码改为 200
   app.useGlobalInterceptors(new HttpStatusInterceptor());
   // 1. 开启优雅关闭 Hooks (关键!)
@@ -36,9 +40,10 @@ async function bootstrap() {
   try {
     await app.listen(port);
     console.log(`Server running on http://localhost:${port}`);
+    console.log(`Admin panel: http://localhost:${port}/admin`);
   } catch (err) {
     if (err.code === 'EADDRINUSE') {
-      console.error(`❌ 端口 \({port} 被占用! 请运行 'npx kill-port \){port}' 然后重试。`);
+      console.error(`Port ${port} is in use!`);
       process.exit(1);
     } else {
       throw err;

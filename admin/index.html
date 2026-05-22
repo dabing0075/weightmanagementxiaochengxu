@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>靓健体重日志 - 管理后台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#F26B3A',
+            secondary: '#3C8D6E',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .sidebar-item.active { background-color: rgba(242, 107, 58, 0.1); border-left: 3px solid #F26B3A; }
+    .sidebar-item:hover { background-color: rgba(242, 107, 58, 0.05); }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <!-- 登录页面 -->
+  <div id="loginPage" class="min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+      <div class="text-center mb-8">
+        <i class="fas fa-weight text-primary text-4xl mb-4"></i>
+        <h1 class="text-2xl font-bold text-gray-800">靓健体重日志</h1>
+        <p class="text-gray-500 mt-2">管理后台登录</p>
+      </div>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+          <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入用户名">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+          <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入密码">
+        </div>
+        <button type="submit" class="w-full bg-primary text-white py-2 rounded-lg hover:bg-orange-600 transition">
+          登录
+        </button>
+      </form>
+      <p class="text-center text-gray-400 text-sm mt-4">默认账号: admin / admin123</p>
+    </div>
+  </div>
+
+  <!-- 主页面 -->
+  <div id="mainPage" class="hidden">
+    <!-- 顶部导航 -->
+    <nav class="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
+      <div class="flex items-center justify-between px-6 py-4">
+        <div class="flex items-center gap-4">
+          <i class="fas fa-weight text-primary text-2xl"></i>
+          <span class="text-xl font-bold text-gray-800">靓健体重日志 - 管理后台</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-gray-600">管理员</span>
+          <button onclick="logout()" class="text-gray-500 hover:text-red-500">
+            <i class="fas fa-sign-out-alt"></i> 退出
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="flex pt-16">
+      <!-- 侧边栏 -->
+      <aside class="w-64 bg-white h-[calc(100vh-4rem)] fixed left-0 shadow-sm">
+        <nav class="py-4">
+          <a href="#" onclick="showSection('dashboard')" class="sidebar-item active flex items-center gap-3 px-6 py-3 text-gray-700">
+            <i class="fas fa-chart-line w-5"></i> 数据概览
+          </a>
+          <a href="#" onclick="showSection('customers')" class="sidebar-item flex items-center gap-3 px-6 py-3 text-gray-700">
+            <i class="fas fa-users w-5"></i> 客户管理
+          </a>
+          <a href="#" onclick="showSection('ranking')" class="sidebar-item flex items-center gap-3 px-6 py-3 text-gray-700">
+            <i class="fas fa-trophy w-5"></i> 减重排行
+          </a>
+          <a href="#" onclick="showSection('notifications')" class="sidebar-item flex items-center gap-3 px-6 py-3 text-gray-700">
+            <i class="fas fa-bell w-5"></i> 通知管理
+          </a>
+        </nav>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="ml-64 flex-1 p-6">
+        <!-- 数据概览 -->
+        <section id="dashboard" class="section">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">数据概览</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-500 text-sm">总用户数</p>
+                  <p id="statUsers" class="text-3xl font-bold text-gray-800 mt-1">0</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-users text-blue-500"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-500 text-sm">今日打卡</p>
+                  <p id="statToday" class="text-3xl font-bold text-gray-800 mt-1">0</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-calendar-check text-green-500"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-500 text-sm">总打卡次数</p>
+                  <p id="statRecords" class="text-3xl font-bold text-gray-800 mt-1">0</p>
+                </div>
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-clipboard-list text-orange-500"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-500 text-sm">累计减重(kg)</p>
+                  <p id="statWeightLost" class="text-3xl font-bold text-primary mt-1">0</p>
+                </div>
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-weight text-red-500"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 快速排行 -->
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">减重排行榜 TOP 10</h3>
+            <div id="quickRanking" class="space-y-3"></div>
+          </div>
+        </section>
+
+        <!-- 客户管理 -->
+        <section id="customers" class="section hidden">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">客户管理</h2>
+            <div class="flex items-center gap-4">
+              <select id="sortField" onchange="loadCustomers()" class="px-4 py-2 border border-gray-300 rounded-lg">
+                <option value="created_at">按注册时间</option>
+                <option value="weightLost">按减重量</option>
+                <option value="currentWeight">按当前体重</option>
+              </select>
+              <select id="sortOrder" onchange="loadCustomers()" class="px-4 py-2 border border-gray-300 rounded-lg">
+                <option value="desc">降序</option>
+                <option value="asc">升序</option>
+              </select>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">用户</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">性别</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">初始体重</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前体重</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">已减重</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">目标体重</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">最后打卡</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                </tr>
+              </thead>
+              <tbody id="customersTable" class="divide-y divide-gray-200"></tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between mt-4">
+            <p id="customersInfo" class="text-gray-500 text-sm"></p>
+            <div class="flex gap-2">
+              <button onclick="prevCustomersPage()" id="prevPageBtn" class="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50" disabled>上一页</button>
+              <button onclick="nextCustomersPage()" id="nextPageBtn" class="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50">下一页</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 减重排行 -->
+        <section id="ranking" class="section hidden">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">减重排行榜</h2>
+          <div id="rankingList" class="space-y-4"></div>
+        </section>
+
+        <!-- 通知管理 -->
+        <section id="notifications" class="section hidden">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">通知管理</h2>
+            <button onclick="openNotificationModal()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
+              <i class="fas fa-plus mr-2"></i>发送通知
+            </button>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">标题</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">类型</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">发送时间</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                </tr>
+              </thead>
+              <tbody id="notificationsTable" class="divide-y divide-gray-200"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 发送通知弹窗 -->
+  <div id="notificationModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-lg">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">发送通知</h3>
+      <form id="notificationForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">通知标题</label>
+          <input type="text" id="notifTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="请输入标题">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">通知内容</label>
+          <textarea id="notifContent" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="请输入通知内容"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">通知类型</label>
+          <select id="notifType" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+            <option value="system">系统通知</option>
+            <option value="checkin">打卡提醒</option>
+            <option value="goal">目标进度</option>
+            <option value="achievement">成就通知</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">发送对象</label>
+          <select id="notifTarget" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="toggleUserSelect()">
+            <option value="all">所有用户</option>
+            <option value="selected">指定用户</option>
+          </select>
+        </div>
+        <div id="userSelectContainer" class="hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-1">选择用户</label>
+          <div id="userSelectList" class="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2"></div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="closeNotificationModal()" class="px-4 py-2 border border-gray-300 rounded-lg">取消</button>
+          <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-orange-600">发送</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 客户详情弹窗 -->
+  <div id="customerDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold text-gray-800">客户详情</h3>
+        <button onclick="closeCustomerDetailModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div id="customerDetailContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin + '/api/admin';
+    let token = null;
+    let currentPage = 1;
+    let customersPageSize = 10;
+
+    // 登录
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          token = data.token;
+          localStorage.setItem('adminToken', token);
+          showMainPage();
+        } else {
+          alert(data.message || '登录失败');
+        }
+      } catch (err) {
+        alert('登录失败，请检查网络');
+      }
+    });
+
+    // 显示主页面
+    function showMainPage() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('mainPage').classList.remove('hidden');
+      loadStatistics();
+      loadRanking();
+    }
+
+    // 退出登录
+    function logout() {
+      token = null;
+      localStorage.removeItem('adminToken');
+      document.getElementById('mainPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.remove('hidden');
+    }
+
+    // 切换侧边栏
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(sectionId).classList.remove('hidden');
+      document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+      event.target.closest('.sidebar-item').classList.add('active');
+
+      if (sectionId === 'dashboard') {
+        loadStatistics();
+        loadRanking();
+      } else if (sectionId === 'customers') {
+        loadCustomers();
+      } else if (sectionId === 'ranking') {
+        loadRanking();
+      } else if (sectionId === 'notifications') {
+        loadNotifications();
+        loadUsersForSelect();
+      }
+    }
+
+    // 加载统计数据
+    async function loadStatistics() {
+      try {
+        const res = await fetch(`${API_BASE}/statistics`);
+        const result = await res.json();
+        const data = result.data;
+
+        document.getElementById('statUsers').textContent = data.totalUsers;
+        document.getElementById('statToday').textContent = data.todayCheckins;
+        document.getElementById('statRecords').textContent = data.totalRecords;
+        document.getElementById('statWeightLost').textContent = data.totalWeightLost;
+      } catch (err) {
+        console.error('加载统计数据失败:', err);
+      }
+    }
+
+    // 加载排行榜
+    async function loadRanking() {
+      try {
+        const res = await fetch(`${API_BASE}/ranking?limit=10`);
+        const result = await res.json();
+        const data = result.data;
+
+        const container = document.getElementById('quickRanking');
+        container.innerHTML = '';
+
+        if (data.length === 0) {
+          container.innerHTML = '<p class="text-gray-500 text-center py-4">暂无数据</p>';
+          return;
+        }
+
+        data.forEach((item, index) => {
+          const medal = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}`;
+          const html = `
+            <div class="flex items-center justify-between py-3 ${index < data.length - 1 ? 'border-b border-gray-100' : ''}">
+              <div class="flex items-center gap-3">
+                <span class="text-xl w-8">${medal}</span>
+                <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                  <i class="fas fa-user text-gray-500"></i>
+                </div>
+                <span class="font-medium">${item.nickname}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-primary font-bold text-lg">-${item.weightLost} kg</span>
+                <p class="text-gray-400 text-sm">${item.startWeight}kg → ${item.currentWeight}kg</p>
+              </div>
+            </div>
+          `;
+          container.innerHTML += html;
+        });
+
+        // 排行榜页面
+        const rankingList = document.getElementById('rankingList');
+        rankingList.innerHTML = '';
+        data.forEach((item, index) => {
+          const medal = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}`;
+          const html = `
+            <div class="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <span class="text-2xl w-10">${medal}</span>
+                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                  <i class="fas fa-user text-gray-500"></i>
+                </div>
+                <div>
+                  <p class="font-semibold">${item.nickname}</p>
+                  <p class="text-gray-500 text-sm">开始日期: ${item.startDate}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-primary font-bold text-xl">-${item.weightLost} kg</p>
+                <p class="text-gray-500">${item.startWeight}kg → ${item.currentWeight}kg</p>
+              </div>
+            </div>
+          `;
+          rankingList.innerHTML += html;
+        });
+      } catch (err) {
+        console.error('加载排行榜失败:', err);
+      }
+    }
+
+    // 加载客户列表
+    async function loadCustomers() {
+      const sortBy = document.getElementById('sortField').value;
+      const sortOrder = document.getElementById('sortOrder').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/customers?page=${currentPage}&pageSize=${customersPageSize}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
+        const data = await res.json();
+
+        const tbody = document.getElementById('customersTable');
+        tbody.innerHTML = '';
+
+        if (data.data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500">暂无数据</td></tr>';
+          return;
+        }
+
+        data.data.forEach(user => {
+          const gender = user.gender === 'male' ? '男' : user.gender === 'female' ? '女' : '未知';
+          const weightLostClass = user.weightLost > 0 ? 'text-green-500' : user.weightLost < 0 ? 'text-red-500' : 'text-gray-500';
+          const weightLostText = user.weightLost > 0 ? `-${user.weightLost}` : user.weightLost < 0 ? `+${Math.abs(user.weightLost)}` : '0';
+
+          const html = `
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-gray-500 text-sm"></i>
+                  </div>
+                  <span>${user.nickname || '未设置昵称'}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">${gender}</td>
+              <td class="px-6 py-4">${user.startWeight || '-'} kg</td>
+              <td class="px-6 py-4">${user.currentWeight || '-'} kg</td>
+              <td class="px-6 py-4 font-semibold ${weightLostClass}">${weightLostText} kg</td>
+              <td class="px-6 py-4">${user.target_weight || '-'} kg</td>
+              <td class="px-6 py-4 text-gray-500 text-sm">${user.latestRecordDate || '-'}</td>
+              <td class="px-6 py-4">
+                <button onclick="viewCustomerDetail('${user.id}')" class="text-primary hover:underline">查看详情</button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += html;
+        });
+
+        document.getElementById('customersInfo').textContent = `共 ${data.total} 条记录，当前第 ${data.page} 页`;
+        document.getElementById('prevPageBtn').disabled = currentPage === 1;
+        document.getElementById('nextPageBtn').disabled = currentPage * customersPageSize >= data.total;
+      } catch (err) {
+        console.error('加载客户列表失败:', err);
+      }
+    }
+
+    function prevCustomersPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        loadCustomers();
+      }
+    }
+
+    function nextCustomersPage() {
+      currentPage++;
+      loadCustomers();
+    }
+
+    // 查看客户详情
+    async function viewCustomerDetail(userId) {
+      try {
+        const res = await fetch(`${API_BASE}/customers/${userId}`);
+        const result = await res.json();
+        const data = result.data;
+
+        const gender = data.user.gender === 'male' ? '男' : data.user.gender === 'female' ? '女' : '未知';
+
+        let recordsHtml = '';
+        data.records.slice().reverse().slice(0, 10).forEach(record => {
+          recordsHtml += `
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+              <span class="text-gray-600">${record.date}</span>
+              <div>
+                <span class="font-medium">${record.weight} kg</span>
+                ${record.waist ? `<span class="text-gray-400 ml-2">腰围: ${record.waist} cm</span>` : ''}
+              </div>
+            </div>
+          `;
+        });
+
+        document.getElementById('customerDetailContent').innerHTML = `
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-gray-500 text-sm">昵称</p>
+              <p class="font-semibold">${data.user.nickname || '未设置'}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-gray-500 text-sm">性别</p>
+              <p class="font-semibold">${gender}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-gray-500 text-sm">身高</p>
+              <p class="font-semibold">${data.user.height || '-'} cm</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-gray-500 text-sm">目标体重</p>
+              <p class="font-semibold">${data.user.target_weight || '-'} kg</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-green-50 p-4 rounded-lg text-center">
+              <p class="text-gray-500 text-sm">初始体重</p>
+              <p class="font-bold text-lg text-green-600">${data.summary.startWeight} kg</p>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg text-center">
+              <p class="text-gray-500 text-sm">当前体重</p>
+              <p class="font-bold text-lg text-blue-600">${data.summary.currentWeight} kg</p>
+            </div>
+            <div class="bg-primary/10 p-4 rounded-lg text-center">
+              <p class="text-gray-500 text-sm">已减重</p>
+              <p class="font-bold text-lg text-primary">${data.summary.weightLost} kg</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg text-center">
+              <p class="text-gray-500 text-sm">打卡天数</p>
+              <p class="font-bold text-lg text-purple-600">${data.summary.totalDays} 天</p>
+            </div>
+          </div>
+          <h4 class="font-semibold mb-2">最近打卡记录</h4>
+          <div class="bg-gray-50 rounded-lg p-4">
+            ${recordsHtml || '<p class="text-gray-500 text-center">暂无打卡记录</p>'}
+          </div>
+        `;
+
+        document.getElementById('customerDetailModal').classList.remove('hidden');
+      } catch (err) {
+        console.error('获取客户详情失败:', err);
+      }
+    }
+
+    function closeCustomerDetailModal() {
+      document.getElementById('customerDetailModal').classList.add('hidden');
+    }
+
+    // 加载通知列表
+    async function loadNotifications() {
+      try {
+        const res = await fetch(`${API_BASE}/notifications`);
+        const data = await res.json();
+
+        const tbody = document.getElementById('notificationsTable');
+        tbody.innerHTML = '';
+
+        if (data.data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">暂无通知</td></tr>';
+          return;
+        }
+
+        data.data.forEach(notif => {
+          const typeMap = {
+            system: '系统通知',
+            checkin: '打卡提醒',
+            goal: '目标进度',
+            achievement: '成就通知'
+          };
+          const html = `
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 font-medium">${notif.title}</td>
+              <td class="px-6 py-4">${typeMap[notif.type] || notif.type}</td>
+              <td class="px-6 py-4 text-gray-500 text-sm">${new Date(notif.created_at).toLocaleString()}</td>
+              <td class="px-6 py-4">
+                <button onclick="deleteNotification('${notif.id}')" class="text-red-500 hover:underline">删除</button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += html;
+        });
+      } catch (err) {
+        console.error('加载通知列表失败:', err);
+      }
+    }
+
+    // 加载用户列表用于选择
+    async function loadUsersForSelect() {
+      try {
+        const res = await fetch(`${API_BASE}/users`);
+        const result = await res.json();
+        const data = result.data;
+
+        const container = document.getElementById('userSelectList');
+        container.innerHTML = '';
+
+        data.forEach(user => {
+          const html = `
+            <label class="flex items-center gap-2 py-1">
+              <input type="checkbox" value="${user.id}" class="user-checkbox">
+              <span>${user.nickname || '未设置昵称'}</span>
+            </label>
+          `;
+          container.innerHTML += html;
+        });
+      } catch (err) {
+        console.error('加载用户列表失败:', err);
+      }
+    }
+
+    function toggleUserSelect() {
+      const target = document.getElementById('notifTarget').value;
+      document.getElementById('userSelectContainer').classList.toggle('hidden', target === 'all');
+    }
+
+    function openNotificationModal() {
+      document.getElementById('notificationModal').classList.remove('hidden');
+    }
+
+    function closeNotificationModal() {
+      document.getElementById('notificationModal').classList.add('hidden');
+      document.getElementById('notifTitle').value = '';
+      document.getElementById('notifContent').value = '';
+    }
+
+    // 发送通知
+    document.getElementById('notificationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('notifTitle').value;
+      const content = document.getElementById('notifContent').value;
+      const type = document.getElementById('notifType').value;
+      const target = document.getElementById('notifTarget').value;
+
+      let targetUsers = null;
+      if (target === 'selected') {
+        const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+        targetUsers = Array.from(checkboxes).map(cb => cb.value);
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, content, type, targetUsers })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          alert('通知发送成功');
+          closeNotificationModal();
+          loadNotifications();
+        } else {
+          alert(data.message || '发送失败');
+        }
+      } catch (err) {
+        alert('发送失败，请检查网络');
+      }
+    });
+
+    // 删除通知
+    async function deleteNotification(id) {
+      if (!confirm('确定要删除这条通知吗？')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/notifications/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (data.success) {
+          loadNotifications();
+        } else {
+          alert(data.message || '删除失败');
+        }
+      } catch (err) {
+        alert('删除失败');
+      }
+    }
+
+    // 检查登录状态
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedToken = localStorage.getItem('adminToken');
+      if (savedToken) {
+        token = savedToken;
+        showMainPage();
+      }
+    });
+  </script>
+</body>
+</html>
