@@ -1,7 +1,7 @@
 export default typeof definePageConfig === 'function'
   ? definePageConfig({
-      navigationBarTitleText: '记录数据',
+      navigationBarTitleText: '靓健体重日记',
     })
   : {
-      navigationBarTitleText: '记录数据',
+      navigationBarTitleText: '靓健体重日记',
     }
