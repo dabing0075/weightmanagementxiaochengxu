@@ -125,13 +125,11 @@ export function HealthRangeBar({
           const ticks: JSX.Element[] = []
           // 提取所有区间的边界值作为刻度
           const tickValues = new Set<number>()
-          tickValues.add(minVal) // 添加最小值
-          tickValues.add(maxVal) // 添加最大值
           
-          // 添加所有区间的边界值
+          // 添加所有区间的边界值（不包含最小值和最大值）
           allRanges.forEach(range => {
-            if (range.min !== undefined) tickValues.add(range.min)
-            if (range.max !== undefined) tickValues.add(range.max)
+            if (range.min !== undefined && range.min !== minVal) tickValues.add(range.min)
+            if (range.max !== undefined && range.max !== maxVal) tickValues.add(range.max)
           })
           
           // 排序并渲染刻度
