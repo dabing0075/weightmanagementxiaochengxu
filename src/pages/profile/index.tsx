@@ -165,13 +165,64 @@ export default function ProfilePage() {
     }
   }
 
+  function handleSettings() {
+    Taro.showActionSheet({
+      itemList: ['清除缓存', '关于我们', '退出登录'],
+      success: (res) => {
+        switch (res.tapIndex) {
+          case 0:
+            // 清除缓存
+            Taro.showModal({
+              title: '清除缓存',
+              content: `当前缓存大小: ${cacheSize}\n确定要清除吗？`,
+              success: (modalRes) => {
+                if (modalRes.confirm) {
+                  Taro.showToast({ title: '清除成功', icon: 'success' })
+                }
+              }
+            })
+            break
+          case 1:
+            // 关于我们
+            Taro.showModal({
+              title: '关于我们',
+              content: '体重管理助手 v1.0.0\n\n帮助你科学管理体重，记录健康数据，分析趋势变化。\n\n© 2024 体重管理团队',
+              showCancel: false
+            })
+            break
+          case 2:
+            // 退出登录
+            Taro.showModal({
+              title: '退出登录',
+              content: '确定要退出登录吗？',
+              success: (modalRes) => {
+                if (modalRes.confirm) {
+                  // 清除本地数据
+                  Taro.removeStorageSync('userInfo')
+                  Taro.showToast({ title: '已退出登录', icon: 'success' })
+                  // 刷新页面
+                  setTimeout(() => {
+                    fetchUserInfo()
+                  }, 1000)
+                }
+              }
+            })
+            break
+        }
+      }
+    })
+  }
+
   return (
     <View className="flex flex-col min-h-screen bg-[#F7F4ED]">
       {/* Header */}
       <View className="sticky top-0 z-40 h-14 flex items-center justify-between px-4 bg-[#F7F4ED]">
         <View className="w-10 h-10" />
         <Text className="text-base font-semibold text-[#1E2933]">个人中心</Text>
-        <View className="w-10 h-10 flex items-center justify-center rounded-full">
+        <View 
+          className="w-10 h-10 flex items-center justify-center rounded-full"
+          onClick={handleSettings}
+        >
           <Settings size={20} color="#6B7280" />
         </View>
       </View>
