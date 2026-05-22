@@ -154,6 +154,106 @@ export default function StatsPage() {
               </View>
             )}
 
+            {/* 体重统计卡片 */}
+            <Card className="bg-white shadow-md">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-4">
+                  <View className="w-8 h-8 rounded-full bg-[#F26B3A]/10 flex items-center justify-center">
+                    <Scale size={16} color="#F26B3A" />
+                  </View>
+                  <Text className="text-base font-semibold text-[#1E2933]">体重统计</Text>
+                </View>
+
+                <View className="grid grid-cols-2 gap-4">
+                  <View className="bg-[#F7F4ED] rounded-xl p-3">
+                    <Text className="text-xs text-[#6B7280] mb-1 block">平均值</Text>
+                    <Text className="text-xl font-bold text-[#1E2933]">
+                      {statsData?.weightStats.avg.toFixed(1) || '-'}
+                      <Text className="text-sm font-normal text-[#6B7280] ml-1">kg</Text>
+                    </Text>
+                  </View>
+                  <View className="bg-[#F7F4ED] rounded-xl p-3">
+                    <Text className="text-xs text-[#6B7280] mb-1 block">标准差</Text>
+                    <Text className="text-xl font-bold text-[#1E2933]">
+                      {statsData?.weightStats.stdDev.toFixed(1) || '-'}
+                      <Text className="text-sm font-normal text-[#6B7280] ml-1">kg</Text>
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="grid grid-cols-2 gap-4 mt-3">
+                  <View className="bg-[#EF4444]/10 rounded-xl p-3">
+                    <Text className="text-xs text-[#6B7280] mb-1 block">最大值</Text>
+                    <Text className="text-lg font-bold text-[#EF4444]">
+                      {statsData?.weightStats.max.toFixed(1) || '-'} kg
+                    </Text>
+                    <Text className="text-xs text-[#6B7280] mt-1">
+                      {statsData?.weightStats.maxDate ? formatDate(statsData.weightStats.maxDate) : '-'}
+                    </Text>
+                  </View>
+                  <View className="bg-[#3C8D6E]/10 rounded-xl p-3">
+                    <Text className="text-xs text-[#6B7280] mb-1 block">最小值</Text>
+                    <Text className="text-lg font-bold text-[#3C8D6E]">
+                      {statsData?.weightStats.min.toFixed(1) || '-'} kg
+                    </Text>
+                    <Text className="text-xs text-[#6B7280] mt-1">
+                      {statsData?.weightStats.minDate ? formatDate(statsData.weightStats.minDate) : '-'}
+                    </Text>
+                  </View>
+                </View>
+              </CardContent>
+            </Card>
+
+            {/* 腰围统计卡片 */}
+            <Card className="bg-white shadow-md">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-4">
+                  <View className="w-8 h-8 rounded-full bg-[#3C8D6E]/10 flex items-center justify-center">
+                    <Ruler size={16} color="#3C8D6E" />
+                  </View>
+                  <Text className="text-base font-semibold text-[#1E2933]">腰围统计</Text>
+                </View>
+
+                <View className="grid grid-cols-2 gap-4">
+                  <View className="bg-[#F7F4ED] rounded-xl p-3">
+                    <Text className="text-xs text-[#6B7280] mb-1 block">平均值</Text>
+                    <Text className="text-xl font-bold text-[#1E2933]">
+                      {statsData?.waistStats.avg.toFixed(1) || '-'}
+                      <Text className="text-sm font-normal text-[#6B7280] ml-1">cm</Text>
+                    </Text>
+                  </View>
+                  <View className="bg-[#F7F4ED] rounded-xl p-3">
+                    <Text className="text-xs text-[#6B7280] mb-1 block">标准差</Text>
+                    <Text className="text-xl font-bold text-[#1E2933]">
+                      {statsData?.waistStats.stdDev.toFixed(1) || '-'}
+                      <Text className="text-sm font-normal text-[#6B7280] ml-1">cm</Text>
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="grid grid-cols-2 gap-4 mt-3">
+                  <View className="bg-[#EF4444]/10 rounded-xl p-3">
+                    <Text className="text-xs text-[#6B7280] mb-1 block">最大值</Text>
+                    <Text className="text-lg font-bold text-[#EF4444]">
+                      {statsData?.waistStats.max.toFixed(1) || '-'} cm
+                    </Text>
+                    <Text className="text-xs text-[#6B7280] mt-1">
+                      {statsData?.waistStats.maxDate ? formatDate(statsData.waistStats.maxDate) : '-'}
+                    </Text>
+                  </View>
+                  <View className="bg-[#3C8D6E]/10 rounded-xl p-3">
+                    <Text className="text-xs text-[#6B7280] mb-1 block">最小值</Text>
+                    <Text className="text-lg font-bold text-[#3C8D6E]">
+                      {statsData?.waistStats.min.toFixed(1) || '-'} cm
+                    </Text>
+                    <Text className="text-xs text-[#6B7280] mt-1">
+                      {statsData?.waistStats.minDate ? formatDate(statsData.waistStats.minDate) : '-'}
+                    </Text>
+                  </View>
+                </View>
+              </CardContent>
+            </Card>
+
             {/* BMI 变化趋势 */}
             <Card className="bg-white shadow-md">
               <CardContent className="p-4">
@@ -285,106 +385,6 @@ export default function StatsPage() {
                 </CardContent>
               </Card>
             )}
-
-            {/* 体重统计卡片 */}
-            <Card className="bg-white shadow-md">
-              <CardContent className="p-4">
-                <View className="flex items-center gap-2 mb-4">
-                  <View className="w-8 h-8 rounded-full bg-[#F26B3A]/10 flex items-center justify-center">
-                    <Scale size={16} color="#F26B3A" />
-                  </View>
-                  <Text className="text-base font-semibold text-[#1E2933]">体重统计</Text>
-                </View>
-
-                <View className="grid grid-cols-2 gap-4">
-                  <View className="bg-[#F7F4ED] rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-1 block">平均值</Text>
-                    <Text className="text-xl font-bold text-[#1E2933]">
-                      {statsData?.weightStats.avg.toFixed(1) || '-'}
-                      <Text className="text-sm font-normal text-[#6B7280] ml-1">kg</Text>
-                    </Text>
-                  </View>
-                  <View className="bg-[#F7F4ED] rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-1 block">标准差</Text>
-                    <Text className="text-xl font-bold text-[#1E2933]">
-                      {statsData?.weightStats.stdDev.toFixed(1) || '-'}
-                      <Text className="text-sm font-normal text-[#6B7280] ml-1">kg</Text>
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="grid grid-cols-2 gap-4 mt-3">
-                  <View className="bg-[#EF4444]/10 rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-1 block">最大值</Text>
-                    <Text className="text-lg font-bold text-[#EF4444]">
-                      {statsData?.weightStats.max.toFixed(1) || '-'} kg
-                    </Text>
-                    <Text className="text-xs text-[#6B7280] mt-1">
-                      {statsData?.weightStats.maxDate ? formatDate(statsData.weightStats.maxDate) : '-'}
-                    </Text>
-                  </View>
-                  <View className="bg-[#3C8D6E]/10 rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-1 block">最小值</Text>
-                    <Text className="text-lg font-bold text-[#3C8D6E]">
-                      {statsData?.weightStats.min.toFixed(1) || '-'} kg
-                    </Text>
-                    <Text className="text-xs text-[#6B7280] mt-1">
-                      {statsData?.weightStats.minDate ? formatDate(statsData.weightStats.minDate) : '-'}
-                    </Text>
-                  </View>
-                </View>
-              </CardContent>
-            </Card>
-
-            {/* 腰围统计卡片 */}
-            <Card className="bg-white shadow-md">
-              <CardContent className="p-4">
-                <View className="flex items-center gap-2 mb-4">
-                  <View className="w-8 h-8 rounded-full bg-[#3C8D6E]/10 flex items-center justify-center">
-                    <Ruler size={16} color="#3C8D6E" />
-                  </View>
-                  <Text className="text-base font-semibold text-[#1E2933]">腰围统计</Text>
-                </View>
-
-                <View className="grid grid-cols-2 gap-4">
-                  <View className="bg-[#F7F4ED] rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-1 block">平均值</Text>
-                    <Text className="text-xl font-bold text-[#1E2933]">
-                      {statsData?.waistStats.avg.toFixed(1) || '-'}
-                      <Text className="text-sm font-normal text-[#6B7280] ml-1">cm</Text>
-                    </Text>
-                  </View>
-                  <View className="bg-[#F7F4ED] rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-1 block">标准差</Text>
-                    <Text className="text-xl font-bold text-[#1E2933]">
-                      {statsData?.waistStats.stdDev.toFixed(1) || '-'}
-                      <Text className="text-sm font-normal text-[#6B7280] ml-1">cm</Text>
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="grid grid-cols-2 gap-4 mt-3">
-                  <View className="bg-[#EF4444]/10 rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-1 block">最大值</Text>
-                    <Text className="text-lg font-bold text-[#EF4444]">
-                      {statsData?.waistStats.max.toFixed(1) || '-'} cm
-                    </Text>
-                    <Text className="text-xs text-[#6B7280] mt-1">
-                      {statsData?.waistStats.maxDate ? formatDate(statsData.waistStats.maxDate) : '-'}
-                    </Text>
-                  </View>
-                  <View className="bg-[#3C8D6E]/10 rounded-xl p-3">
-                    <Text className="text-xs text-[#6B7280] mb-1 block">最小值</Text>
-                    <Text className="text-lg font-bold text-[#3C8D6E]">
-                      {statsData?.waistStats.min.toFixed(1) || '-'} cm
-                    </Text>
-                    <Text className="text-xs text-[#6B7280] mt-1">
-                      {statsData?.waistStats.minDate ? formatDate(statsData.waistStats.minDate) : '-'}
-                    </Text>
-                  </View>
-                </View>
-              </CardContent>
-            </Card>
           </View>
         )}
       </ScrollView>
