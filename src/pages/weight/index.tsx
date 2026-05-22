@@ -386,7 +386,7 @@ export default function WeightPage() {
                     <View className="h-2 bg-[#F7F4ED] rounded-full overflow-hidden">
                       <View className="h-full bg-[#6366F1] rounded-full" style={{ width: '25%' }} />
                     </View>
-                    <Text className="text-xs text-[#6B7280] mt-1">推荐食物：坚果、橄榄油、牛油果</Text>
+                    <Text className="text-xs text-[#6B7280] mt-1">推荐食物：坚果、橄榄油、菜籽油、亚麻籽油</Text>
                   </View>
 
                   {/* 膳食纤维 */}
