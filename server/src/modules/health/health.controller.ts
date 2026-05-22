@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get, Post, Body, Query } from '@nestjs/common'
 import { HealthService } from './health.service'
 
 @Controller('health')
@@ -46,6 +46,28 @@ export class HealthController {
   async getStats() {
     console.log('[HealthController] GET /api/health/stats')
     const data = await this.healthService.getHealthStats()
+    console.log('[HealthController] 返回数据:', data)
+    return {
+      code: 200,
+      msg: 'success',
+      data
+    }
+  }
+
+  /**
+   * 计算体重管理方案
+   * @param body.weeklyGoal 每周减重目标（0.5 或 1 kg）
+   * @param body.activityLevel 活动水平（sedentary/light/moderate/active/veryActive）
+   */
+  @Post('weight-plan')
+  async calculateWeightPlan(
+    @Body() body: { weeklyGoal: number; activityLevel: string }
+  ) {
+    console.log('[HealthController] POST /api/health/weight-plan', body)
+    const data = await this.healthService.calculateWeightPlan(
+      body.weeklyGoal,
+      body.activityLevel
+    )
     console.log('[HealthController] 返回数据:', data)
     return {
       code: 200,

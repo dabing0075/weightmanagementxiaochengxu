@@ -2,6 +2,7 @@ export default defineAppConfig({
   pages: [
     'pages/index/index',
     'pages/checkin/index',
+    'pages/weight/index',
     'pages/data/index',
     'pages/profile/index',
   ],
@@ -29,6 +30,12 @@ export default defineAppConfig({
         text: '打卡',
         iconPath: './assets/tabbar/circle-plus.png',
         selectedIconPath: './assets/tabbar/circle-plus-active.png',
+      },
+      {
+        pagePath: 'pages/weight/index',
+        text: '减重',
+        iconPath: './assets/tabbar/target.png',
+        selectedIconPath: './assets/tabbar/target-active.png',
       },
       {
         pagePath: 'pages/data/index',

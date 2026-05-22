@@ -436,4 +436,126 @@ export class HealthService {
       gender: gender
     }
   }
+
+  /**
+   * 计算体重管理方案
+   * @param weeklyGoal 每周减重目标（kg）
+   * @param activityLevel 活动水平
+   */
+  async calculateWeightPlan(weeklyGoal: number, activityLevel: string) {
+    const client = getSupabaseClient()
+    
+    // 获取用户信息
+    const { data: users, error: userError } = await client
+      .from('users')
+      .select('*')
+      .limit(1)
+    
+    if (userError) throw new Error(`获取用户信息失败: ${userError.message}`)
+    
+    const user = users?.[0]
+    if (!user) {
+      throw new Error('请先完善个人信息')
+    }
+
+    // 获取最新体重记录
+    const { data: records, error: recordError } = await client
+      .from('weight_records')
+      .select('weight')
+      .order('record_date', { ascending: false })
+      .limit(1)
+    
+    if (recordError) throw new Error(`获取记录失败: ${recordError.message}`)
+    
+    const currentWeight = records?.[0]?.weight || user.current_weight || 70
+    const targetWeight = user.target_weight || currentWeight
+    const height = user.height || 170
+    const gender = user.gender || 'male'
+    const age = this.calculateAge(user.birth_date)
+
+    // 计算 BMI
+    const bmi = parseFloat((currentWeight / Math.pow(height / 100, 2)).toFixed(1))
+
+    // 计算体脂率
+    const bodyFatRate = this.calculateBodyFat(currentWeight, height, gender, age)
+
+    // 计算基础代谢率 (BMR) - Mifflin-StJeor 公式
+    let bmr: number
+    if (gender === 'male') {
+      bmr = 10 * currentWeight + 6.25 * height - 5 * age + 5
+    } else {
+      bmr = 10 * currentWeight + 6.25 * height - 5 * age - 161
+    }
+    bmr = Math.round(bmr)
+
+    // 活动系数
+    const activityFactors: Record<string, number> = {
+      'sedentary': 1.2,      // 久坐
+      'light': 1.375,        // 轻度活动
+      'moderate': 1.55,      // 中度活动
+      'active': 1.725,       // 高度活动
+      'veryActive': 1.9      // 极高活动
+    }
+    const activityFactor = activityFactors[activityLevel] || 1.2
+
+    // 计算总热量消耗 (TDEE)
+    const tdee = Math.round(bmr * activityFactor)
+
+    // 计算每日热量缺口
+    // 1kg 脂肪 ≈ 7700 大卡
+    // 每周减重 0.5kg 需要每日缺口约 550 大卡 (3850/7)
+    // 每周减重 1kg 需要每日缺口约 1100 大卡 (7700/7)
+    // 为安全起见，限制最大缺口为 500 大卡/天
+    let dailyDeficit: number
+    if (weeklyGoal === 0.5) {
+      dailyDeficit = 3850 / 7 // 约 550，取整为 550
+    } else {
+      dailyDeficit = 7700 / 7 // 约 1100，限制为 500
+    }
+    dailyDeficit = Math.min(dailyDeficit, 500) // 安全限制
+
+    // 每日热量摄入额度
+    let dailyCalories = Math.round(tdee - dailyDeficit)
+    // 最低热量限制
+    dailyCalories = Math.max(dailyCalories, 1200)
+
+    // 计算达成目标所需周数
+    const weightToLose = currentWeight - targetWeight
+    const weeksToGoal = weightToLose > 0 ? Math.ceil(weightToLose / weeklyGoal) : 0
+
+    // 计算营养配比
+    // 蛋白质: 1.6-2.2g/kg，取 2g/kg，30% 热量
+    const proteinGrams = Math.round(currentWeight * 2)
+    const proteinCalories = proteinGrams * 4
+
+    // 碳水: 45% 热量
+    const carbsCalories = Math.round(dailyCalories * 0.45)
+    const carbsGrams = Math.round(carbsCalories / 4)
+
+    // 脂肪: 25% 热量
+    const fatCalories = Math.round(dailyCalories * 0.25)
+    const fatGrams = Math.round(fatCalories / 9)
+
+    // 膳食纤维: 25-30g
+    const fiber = 28
+
+    // 水分摄入: 体重 × 30ml
+    const water = Math.round(currentWeight * 30)
+
+    return {
+      bmi,
+      bodyFatRate,
+      bmr,
+      tdee,
+      dailyCalories,
+      weeksToGoal,
+      protein: proteinGrams,
+      carbs: carbsGrams,
+      fat: fatGrams,
+      fiber,
+      water,
+      weeklyGoal,
+      activityLevel
+    }
+  }
 }
