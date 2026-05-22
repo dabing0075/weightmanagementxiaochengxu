@@ -91,38 +91,33 @@ export function HealthRangeBar({
   return (
     <View className="mt-4">
       {/* 线段图 */}
-      <View className="relative h-8 bg-gray-100 rounded-lg overflow-hidden">
+      <View className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ height: '32px', marginTop: '28px' }}>
         {/* 区间色块 */}
         {renderRanges()}
         
-        {/* 当前值标记 - 钟表式指针 */}
+        {/* 当前值标记 - 钟表式指针（箭头向上） */}
         <View
           className="absolute flex flex-col items-center z-10"
           style={{
             left: `${Math.min(Math.max(currentPosition, 2), 98)}%`,
-            top: '-24px',
+            bottom: '100%',
             transform: 'translateX(-50%)'
           }}
         >
+          {/* 箭头向上 */}
+          <View
+            className="w-0 h-0"
+            style={{
+              borderLeft: '4px solid transparent',
+              borderRight: '4px solid transparent',
+              borderBottom: '6px solid #1f2937'
+            }}
+          />
           {/* 数值标签 */}
           <View className="px-2 py-1 bg-gray-800 rounded">
             <Text className="text-xs text-white font-medium">
               {currentValue.toFixed(1)}{unit}
             </Text>
-          </View>
-          {/* 细长指针 */}
-          <View className="flex flex-col items-center">
-            {/* 指针杆 */}
-            <View className="w-1 h-5 bg-gray-800" />
-            {/* 箭头 */}
-            <View
-              className="w-0 h-0"
-              style={{
-                borderLeft: '4px solid transparent',
-                borderRight: '4px solid transparent',
-                borderTop: '6px solid #1f2937'
-              }}
-            />
           </View>
         </View>
       </View>
@@ -151,8 +146,8 @@ export function HealthRangeBar({
         })()}
       </View>
       
-      {/* 区间标签 - 一行显示 */}
-      <View className="relative h-6 mt-1">
+      {/* 区间标签 - 一行显示，避免重叠 */}
+      <View className="relative h-6 mt-2">
         {(() => {
           const labels: JSX.Element[] = []
           const rangeKeys = ['underweight', 'low', 'normal', 'high', 'overweight', 'preObese', 'obese'] as const
@@ -163,13 +158,20 @@ export function HealthRangeBar({
               const colors = colorMap[range.label] || { bg: 'bg-gray-400', text: 'text-gray-500' }
               const start = range.min ?? minVal
               const end = range.max ?? maxVal
-              const midPoint = ((start + end) / 2 - minVal) / totalRange * 100
+              let midPoint = ((start + end) / 2 - minVal) / totalRange * 100
+              
+              // 针对特定标签调整位置，避免重叠
+              if (range.label === '中心型肥胖') {
+                midPoint = Math.min(midPoint + 8, 95)  // 向右移动
+              } else if (range.label === '中心型肥胖前期') {
+                midPoint = Math.max(midPoint - 3, 15)  // 稍微向左
+              }
               
               labels.push(
                 <View
                   key={`label-${key}`}
                   className="absolute transform -translate-x-1/2 whitespace-nowrap"
-                  style={{ left: `${Math.min(Math.max(midPoint, 10), 90)}%` }}
+                  style={{ left: `${midPoint}%` }}
                 >
                   <Text className={`text-xs ${colors.text} font-medium`}>
                     {range.label}
