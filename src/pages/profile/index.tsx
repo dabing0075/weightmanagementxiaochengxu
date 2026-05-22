@@ -186,11 +186,11 @@ export default function ProfilePage() {
                 {userInfo?.nickname?.[0] || '初'}
               </Text>
             </View>
-            <View className="flex-1 min-w-0">
-              <Text className="text-lg font-semibold text-[#1E2933] truncate">
+            <View className="flex-1 min-w-0 flex flex-col">
+              <Text className="block text-lg font-semibold text-[#1E2933] truncate">
                 {userInfo?.nickname || '未设置昵称'}
               </Text>
-              <Text className="text-sm text-[#6B7280] mt-1">
+              <Text className="block text-sm text-[#6B7280] mt-1">
                 坚持打卡，健康生活
               </Text>
             </View>
