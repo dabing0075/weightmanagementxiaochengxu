@@ -72,6 +72,41 @@ export default function HomePage() {
     loadData()
   }, [])
 
+  // BMI健康等级颜色（与数据页一致）
+  const getBmiColor = (level: string) => {
+    switch (level) {
+      case '体重过低':
+      case '偏瘦':
+        return '#3B82F6'
+      case '正常':
+        return '#3C8D6E'
+      case '超重':
+        return '#F59E0B'
+      case '肥胖':
+        return '#EF4444'
+      default:
+        return '#6B7280'
+    }
+  }
+
+  // 体脂率/腰围健康等级颜色（与数据页一致）
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case '正常':
+        return '#3C8D6E'
+      case '偏高':
+      case '中心型肥胖前期':
+        return '#F59E0B'
+      case '肥胖':
+      case '中心型肥胖':
+        return '#EF4444'
+      case '偏低':
+        return '#3B82F6'
+      default:
+        return '#6B7280'
+    }
+  }
+
   const loadData = async () => {
     try {
       // 获取用户信息
@@ -249,8 +284,16 @@ export default function HomePage() {
                   <Text className="text-sm font-normal text-[#6B7280] ml-1">cm</Text>
                 </Text>
                 <View className="mt-2">
-                  <View className="inline-flex items-center px-2 py-1 rounded-full bg-[#3C8D6E]/15">
-                    <Text className="text-xs font-semibold text-[#3C8D6E]">{metrics?.waistLevel || '--'}</Text>
+                  <View 
+                    className="inline-flex items-center px-2 py-1 rounded-full"
+                    style={{ backgroundColor: getLevelColor(metrics?.waistLevel || '') + '15' }}
+                  >
+                    <Text 
+                      className="text-xs font-semibold"
+                      style={{ color: getLevelColor(metrics?.waistLevel || '') }}
+                    >
+                      {metrics?.waistLevel || '--'}
+                    </Text>
                   </View>
                 </View>
               </CardContent>
@@ -269,8 +312,16 @@ export default function HomePage() {
                   {metrics?.bmi || '--'}
                 </Text>
                 <View className="mt-2">
-                  <View className="inline-flex items-center px-2 py-1 rounded-full bg-[#3C8D6E]/15">
-                    <Text className="text-xs font-semibold text-[#3C8D6E]">{metrics?.bmiLevel || '--'}</Text>
+                  <View 
+                    className="inline-flex items-center px-2 py-1 rounded-full"
+                    style={{ backgroundColor: getBmiColor(metrics?.bmiLevel || '') + '15' }}
+                  >
+                    <Text 
+                      className="text-xs font-semibold"
+                      style={{ color: getBmiColor(metrics?.bmiLevel || '') }}
+                    >
+                      {metrics?.bmiLevel || '--'}
+                    </Text>
                   </View>
                 </View>
               </CardContent>
@@ -290,8 +341,16 @@ export default function HomePage() {
                   <Text className="text-sm font-normal text-[#6B7280] ml-1">%</Text>
                 </Text>
                 <View className="mt-2">
-                  <View className="inline-flex items-center px-2 py-1 rounded-full bg-[#F59E0B]/15">
-                    <Text className="text-xs font-semibold text-[#F59E0B]">{metrics?.bodyFatLevel || '--'}</Text>
+                  <View 
+                    className="inline-flex items-center px-2 py-1 rounded-full"
+                    style={{ backgroundColor: getLevelColor(metrics?.bodyFatLevel || '') + '15' }}
+                  >
+                    <Text 
+                      className="text-xs font-semibold"
+                      style={{ color: getLevelColor(metrics?.bodyFatLevel || '') }}
+                    >
+                      {metrics?.bodyFatLevel || '--'}
+                    </Text>
                   </View>
                 </View>
               </CardContent>
