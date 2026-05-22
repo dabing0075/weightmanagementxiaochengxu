@@ -91,7 +91,7 @@ export function HealthRangeBar({
   return (
     <View className="mt-4">
       {/* 线段图 */}
-      <View className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ height: '32px', marginTop: '28px' }}>
+      <View className="relative bg-gray-100 rounded-lg overflow-visible" style={{ height: '32px', marginTop: '50px' }}>
         {/* 区间色块 */}
         {renderRanges()}
         
@@ -104,21 +104,23 @@ export function HealthRangeBar({
             transform: 'translateX(-50%)'
           }}
         >
-          {/* 箭头向上 */}
-          <View
-            className="w-0 h-0"
-            style={{
-              borderLeft: '4px solid transparent',
-              borderRight: '4px solid transparent',
-              borderBottom: '6px solid #1f2937'
-            }}
-          />
           {/* 数值标签 */}
-          <View className="px-2 py-1 bg-gray-800 rounded">
+          <View className="px-2 py-1 bg-gray-800 rounded mb-1">
             <Text className="text-xs text-white font-medium">
               {currentValue.toFixed(1)}{unit}
             </Text>
           </View>
+          {/* 向上箭头 */}
+          <View
+            className="w-0 h-0"
+            style={{
+              borderLeft: '5px solid transparent',
+              borderRight: '5px solid transparent',
+              borderBottom: '8px solid #1f2937'
+            }}
+          />
+          {/* 指针杆 */}
+          <View className="w-1 h-3 bg-gray-800" />
         </View>
       </View>
       
