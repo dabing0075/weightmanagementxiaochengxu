@@ -35,6 +35,7 @@ interface HealthMetrics {
   bmiLevel: string
   bodyFatRate: number
   bodyFatLevel: string
+  waistLevel: string
   weightDiff: number
   todayCheckedIn: boolean
 }
@@ -248,7 +249,9 @@ export default function HomePage() {
                   <Text className="text-sm font-normal text-[#6B7280] ml-1">cm</Text>
                 </Text>
                 <View className="mt-2">
-                  <Text className="text-xs text-[#3C8D6E] font-medium">正常范围</Text>
+                  <View className="inline-flex items-center px-2 py-1 rounded-full bg-[#3C8D6E]/15">
+                    <Text className="text-xs font-semibold text-[#3C8D6E]">{metrics?.waistLevel || '--'}</Text>
+                  </View>
                 </View>
               </CardContent>
             </Card>
@@ -287,7 +290,9 @@ export default function HomePage() {
                   <Text className="text-sm font-normal text-[#6B7280] ml-1">%</Text>
                 </Text>
                 <View className="mt-2">
-                  <Text className="text-xs text-[#3C8D6E] font-medium">正常 {metrics?.bodyFatLevel || '--'}</Text>
+                  <View className="inline-flex items-center px-2 py-1 rounded-full bg-[#F59E0B]/15">
+                    <Text className="text-xs font-semibold text-[#F59E0B]">{metrics?.bodyFatLevel || '--'}</Text>
+                  </View>
                 </View>
               </CardContent>
             </Card>
