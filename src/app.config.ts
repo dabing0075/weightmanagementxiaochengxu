@@ -3,7 +3,6 @@ export default defineAppConfig({
     'pages/index/index',
     'pages/checkin/index',
     'pages/data/index',
-    'pages/stats/index',
     'pages/profile/index',
   ],
   window: {
@@ -36,12 +35,6 @@ export default defineAppConfig({
         text: '数据',
         iconPath: './assets/tabbar/trending-up.png',
         selectedIconPath: './assets/tabbar/trending-up-active.png',
-      },
-      {
-        pagePath: 'pages/stats/index',
-        text: '统计',
-        iconPath: './assets/tabbar/bar-chart.png',
-        selectedIconPath: './assets/tabbar/bar-chart-active.png',
       },
       {
         pagePath: 'pages/profile/index',
