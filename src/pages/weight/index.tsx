@@ -140,7 +140,7 @@ export default function WeightPage() {
                   <View className="w-8 h-8 rounded-full bg-[#F26B3A]/10 flex items-center justify-center">
                     <Target size={16} color="#F26B3A" />
                   </View>
-                  <Text className="text-base font-semibold text-[#1E2933]">我的目标</Text>
+                  <Text className="text-base font-semibold text-[#1E2933]">我的基本信息</Text>
                 </View>
 
                 <View className="grid grid-cols-2 gap-4">
