@@ -5,6 +5,9 @@ export default defineAppConfig({
     'pages/weight/index',
     'pages/data/index',
     'pages/profile/index',
+    'pages/edit-profile/index',
+    'pages/edit-target/index',
+    'pages/feedback/index',
   ],
   window: {
     backgroundTextStyle: 'light',

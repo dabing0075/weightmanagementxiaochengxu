@@ -32,4 +32,10 @@ export class RecordsController {
     console.log('[RecordsController] GET /api/records/stats');
     return this.recordsService.getCheckinStats();
   }
+
+  @Get('export')
+  async exportData() {
+    console.log('[RecordsController] GET /api/records/export');
+    return this.recordsService.exportAllRecords();
+  }
 }

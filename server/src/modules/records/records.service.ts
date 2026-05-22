@@ -164,4 +164,20 @@ export class RecordsService {
       }
     };
   }
+
+  async exportAllRecords() {
+    const { data, error } = await this.supabase
+      .from('weight_records')
+      .select('*')
+      .eq('user_id', this.DEFAULT_USER_ID)
+      .order('record_date', { ascending: false });
+
+    if (error) {
+      console.error('[RecordsService] 导出记录失败', error);
+      return { code: 500, msg: '导出失败', data: null };
+    }
+
+    console.log('[RecordsService] 导出记录成功', data?.length || 0, '条');
+    return { code: 200, msg: 'success', data };
+  }
 }

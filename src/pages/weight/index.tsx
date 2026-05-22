@@ -57,13 +57,18 @@ export default function WeightPage() {
 
   async function fetchProfile() {
     try {
-      const res = await Network.request({
-        url: '/api/user/info',
-        method: 'GET'
-      })
-      console.log('Profile response:', res.data)
-      if (res.data?.code === 200 && res.data?.data) {
-        const userData = res.data.data
+      const [userRes, metricsRes] = await Promise.all([
+        Network.request({ url: '/api/user/info', method: 'GET' }),
+        Network.request({ url: '/api/health/metrics', method: 'GET' })
+      ])
+      
+      console.log('User response:', userRes.data)
+      console.log('Metrics response:', metricsRes.data)
+      
+      if (userRes.data?.code === 200 && userRes.data?.data) {
+        const userData = userRes.data.data
+        const metricsData = metricsRes.data?.data
+        
         // 计算年龄
         let age = 25
         if (userData.birth_date) {
@@ -75,10 +80,11 @@ export default function WeightPage() {
             age--
           }
         }
+        
         setProfile({
           birthDate: userData.birth_date,
           gender: userData.gender || 'male',
-          currentWeight: userData.current_weight || 70,
+          currentWeight: metricsData?.currentWeight || 70,
           targetWeight: userData.target_weight || 65,
           height: userData.height || 170,
           age: age

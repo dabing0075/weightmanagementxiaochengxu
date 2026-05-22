@@ -82,7 +82,11 @@ export default function ProfilePage() {
   }
 
   function handleEditProfile() {
-    Taro.showToast({ title: '功能开发中', icon: 'none' })
+    Taro.navigateTo({ url: '/pages/edit-profile/index' })
+  }
+
+  function handleEditTarget() {
+    Taro.navigateTo({ url: '/pages/edit-target/index' })
   }
 
   function handleMenuClick(type: string) {
@@ -91,7 +95,7 @@ export default function ProfilePage() {
         Taro.switchTab({ url: '/pages/data/index' })
         break
       case 'export':
-        Taro.showToast({ title: '功能开发中', icon: 'none' })
+        handleExportData()
         break
       case 'about':
         Taro.showModal({
@@ -101,7 +105,7 @@ export default function ProfilePage() {
         })
         break
       case 'feedback':
-        Taro.showToast({ title: '功能开发中', icon: 'none' })
+        Taro.navigateTo({ url: '/pages/feedback/index' })
         break
       case 'cache':
         Taro.showModal({
@@ -116,6 +120,48 @@ export default function ProfilePage() {
         break
       default:
         break
+    }
+  }
+
+  async function handleExportData() {
+    try {
+      Taro.showLoading({ title: '导出中...' })
+      const res = await Network.request({
+        url: '/api/records/export',
+        method: 'GET'
+      })
+      Taro.hideLoading()
+      
+      if (res.data?.code === 200 && res.data?.data) {
+        const records = res.data.data
+        if (!records || records.length === 0) {
+          Taro.showToast({ title: '暂无数据可导出', icon: 'none' })
+          return
+        }
+        
+        // 格式化数据为文本
+        let exportText = '日期,体重(kg),腰围(cm),备注\n'
+        records.forEach((r: any) => {
+          exportText += `${r.record_date},${r.weight},${r.waist || ''},${r.note || ''}\n`
+        })
+        
+        // 复制到剪贴板
+        await Taro.setClipboardData({
+          data: exportText
+        })
+        
+        Taro.showModal({
+          title: '导出成功',
+          content: `已导出 ${records.length} 条记录到剪贴板，可粘贴到Excel或其他应用中。`,
+          showCancel: false
+        })
+      } else {
+        Taro.showToast({ title: '导出失败', icon: 'none' })
+      }
+    } catch (error) {
+      Taro.hideLoading()
+      console.error('Export error:', error)
+      Taro.showToast({ title: '导出失败', icon: 'none' })
     }
   }
 
@@ -248,37 +294,33 @@ export default function ProfilePage() {
         {/* 健康目标设置卡片 */}
         <View className="px-4 pt-4">
           <Card className="bg-white shadow-md">
-            <CardContent className="p-4">
-              <View className="flex items-center gap-2 mb-3">
-                <Target size={16} color="#F26B3A" />
-                <Text className="text-base font-semibold text-[#1E2933]">健康目标</Text>
+            <CardContent className="p-4" onClick={handleEditTarget}>
+              <View className="flex items-center justify-between mb-3">
+                <View className="flex items-center gap-2">
+                  <Target size={16} color="#F26B3A" />
+                  <Text className="text-base font-semibold text-[#1E2933]">健康目标</Text>
+                </View>
+                <View className="px-2 py-1 rounded-md bg-[#F0EDE6]">
+                  <Text className="text-xs text-[#F26B3A]">编辑</Text>
+                </View>
               </View>
 
               <View className="space-y-3">
                 <View className="flex items-center justify-between py-2 border-b border-[#E4DED2]">
                   <Text className="text-sm text-[#6B7280]">目标体重</Text>
-                  <View className="flex items-center gap-2">
-                    <Text className="text-sm font-medium text-[#1E2933]">
-                      {userInfo?.target_weight || '-'} kg
-                    </Text>
-                    <ChevronRight size={16} color="#6B7280" />
-                  </View>
+                  <Text className="text-sm font-medium text-[#1E2933]">
+                    {userInfo?.target_weight || '-'} kg
+                  </Text>
                 </View>
                 <View className="flex items-center justify-between py-2 border-b border-[#E4DED2]">
                   <Text className="text-sm text-[#6B7280]">目标腰围</Text>
-                  <View className="flex items-center gap-2">
-                    <Text className="text-sm font-medium text-[#1E2933]">
-                      {userInfo?.target_waist || '-'} cm
-                    </Text>
-                    <ChevronRight size={16} color="#6B7280" />
-                  </View>
+                  <Text className="text-sm font-medium text-[#1E2933]">
+                    {userInfo?.target_waist || '-'} cm
+                  </Text>
                 </View>
                 <View className="flex items-center justify-between py-2">
                   <Text className="text-sm text-[#6B7280]">提醒时间</Text>
-                  <View className="flex items-center gap-2">
-                    <Text className="text-sm font-medium text-[#1E2933]">每日 08:00</Text>
-                    <ChevronRight size={16} color="#6B7280" />
-                  </View>
+                  <Text className="text-sm font-medium text-[#1E2933]">每日 08:00</Text>
                 </View>
               </View>
             </CardContent>
