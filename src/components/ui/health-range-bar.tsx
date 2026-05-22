@@ -20,6 +20,7 @@ interface HealthRangeBarProps {
   unit?: string
   minValue?: number
   maxValue?: number
+  multiLineLabels?: boolean // 是否分行显示标签
 }
 
 export function HealthRangeBar({
@@ -27,7 +28,8 @@ export function HealthRangeBar({
   ranges,
   unit = '',
   minValue,
-  maxValue
+  maxValue,
+  multiLineLabels = false
 }: HealthRangeBarProps) {
   // 确定线段图的最小值和最大值
   const allRanges = Object.values(ranges).filter(Boolean) as Range[]
@@ -95,29 +97,36 @@ export function HealthRangeBar({
         {/* 区间色块 */}
         {renderRanges()}
         
-        {/* 当前值标记 */}
+        {/* 当前值标记 - 黑色指针 */}
         <View
-          className="absolute top-0 w-1 h-full bg-white shadow-lg z-10"
-          style={{ left: `${Math.min(Math.max(currentPosition, 0), 100)}%` }}
+          className="absolute top-0 flex flex-col items-center z-10"
+          style={{ left: `${Math.min(Math.max(currentPosition, 2), 98)}%`, transform: 'translateX(-50%)' }}
         >
-          <View className="absolute -top-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-            <View className="px-2 py-1 bg-[#1E2933] rounded-lg">
-              <Text className="text-xs text-white font-semibold">
-                {currentValue.toFixed(1)}{unit}
-              </Text>
-            </View>
-            <View className="absolute left-1/2 transform -translate-x-1/2 -bottom-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#1E2933]" />
+          {/* 数值气泡 */}
+          <View className="px-2 py-1 bg-[#1E2933] rounded-lg mb-1">
+            <Text className="text-xs text-white font-semibold">
+              {currentValue.toFixed(1)}{unit}
+            </Text>
           </View>
+          {/* 黑色三角指针 */}
+          <View 
+            className="w-0 h-0"
+            style={{
+              borderLeft: '6px solid transparent',
+              borderRight: '6px solid transparent',
+              borderTop: '8px solid #1E2933'
+            }}
+          />
         </View>
       </View>
       
       {/* 区间标签 */}
-      <View className="relative h-6 mt-2">
+      <View className={`relative mt-2 ${multiLineLabels ? 'h-12' : 'h-6'}`}>
         {(() => {
           const labels: JSX.Element[] = []
           const rangeKeys = ['underweight', 'low', 'normal', 'high', 'overweight', 'preObese', 'obese'] as const
           
-          rangeKeys.forEach((key) => {
+          rangeKeys.forEach((key, index) => {
             const range = ranges[key]
             if (range) {
               const colors = colorMap[range.label] || { bg: 'bg-gray-400', text: 'text-gray-500' }
@@ -125,10 +134,14 @@ export function HealthRangeBar({
               const end = range.max ?? maxVal
               const midPoint = ((start + end) / 2 - minVal) / totalRange * 100
               
+              // 如果是多行显示，奇数索引在上行，偶数索引在下行
+              const isSecondLine = multiLineLabels && index % 2 === 1
+              const topOffset = isSecondLine ? 'top-6' : 'top-0'
+              
               labels.push(
                 <View
                   key={`label-${key}`}
-                  className="absolute transform -translate-x-1/2 whitespace-nowrap"
+                  className={`absolute transform -translate-x-1/2 whitespace-nowrap ${topOffset}`}
                   style={{ left: `${Math.min(Math.max(midPoint, 10), 90)}%` }}
                 >
                   <Text className={`text-xs ${colors.text} font-medium`}>

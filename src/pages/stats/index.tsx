@@ -161,7 +161,7 @@ export default function StatsPage() {
                   <View className="w-8 h-8 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
                     <Activity size={16} color="#6366F1" />
                   </View>
-                  <Text className="text-base font-semibold text-[#1E2933]">BMI 变化趋势</Text>
+                  <Text className="text-base font-semibold text-[#1E2933]">BMI 健康等级</Text>
                 </View>
 
                 <View className="flex items-center justify-between mb-4">
@@ -204,7 +204,7 @@ export default function StatsPage() {
                   <View className="w-8 h-8 rounded-full bg-[#EC4899]/10 flex items-center justify-center">
                     <TrendingUp size={16} color="#EC4899" />
                   </View>
-                  <Text className="text-base font-semibold text-[#1E2933]">体脂率变化趋势</Text>
+                  <Text className="text-base font-semibold text-[#1E2933]">体脂率健康等级</Text>
                 </View>
 
                 <View className="flex items-center justify-between mb-4">
@@ -281,6 +281,7 @@ export default function StatsPage() {
                     unit="cm"
                     minValue={60}
                     maxValue={100}
+                    multiLineLabels={true}
                   />
                 </CardContent>
               </Card>
