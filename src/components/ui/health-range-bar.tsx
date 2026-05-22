@@ -20,7 +20,6 @@ interface HealthRangeBarProps {
   unit?: string
   minValue?: number
   maxValue?: number
-  multiLineLabels?: boolean // 是否分行显示标签
 }
 
 export function HealthRangeBar({
@@ -28,8 +27,7 @@ export function HealthRangeBar({
   ranges,
   unit = '',
   minValue,
-  maxValue,
-  multiLineLabels = false
+  maxValue
 }: HealthRangeBarProps) {
   // 确定线段图的最小值和最大值
   const allRanges = Object.values(ranges).filter(Boolean) as Range[]
@@ -97,66 +95,39 @@ export function HealthRangeBar({
         {/* 区间色块 */}
         {renderRanges()}
         
-        {/* 当前值标记 - 黑色指针 */}
+        {/* 当前值标记 - 钟表式指针 */}
         <View
-          className="absolute top-0 flex flex-col items-center z-10"
-          style={{ left: `${Math.min(Math.max(currentPosition, 2), 98)}%`, transform: 'translateX(-50%)' }}
+          className="absolute flex flex-col items-center z-10"
+          style={{
+            left: `${Math.min(Math.max(currentPosition, 2), 98)}%`,
+            top: '-24px',
+            transform: 'translateX(-50%)'
+          }}
         >
-          {/* 数值气泡 */}
-          <View className="px-2 py-1 bg-[#1E2933] rounded-lg mb-1">
-            <Text className="text-xs text-white font-semibold">
+          {/* 数值标签 */}
+          <View className="px-2 py-1 bg-gray-800 rounded">
+            <Text className="text-xs text-white font-medium">
               {currentValue.toFixed(1)}{unit}
             </Text>
           </View>
-          {/* 黑色三角指针 */}
-          <View 
-            className="w-0 h-0"
-            style={{
-              borderLeft: '6px solid transparent',
-              borderRight: '6px solid transparent',
-              borderTop: '8px solid #1E2933'
-            }}
-          />
+          {/* 细长指针 */}
+          <View className="flex flex-col items-center">
+            {/* 指针杆 */}
+            <View className="w-1 h-5 bg-gray-800" />
+            {/* 箭头 */}
+            <View
+              className="w-0 h-0"
+              style={{
+                borderLeft: '4px solid transparent',
+                borderRight: '4px solid transparent',
+                borderTop: '6px solid #1f2937'
+              }}
+            />
+          </View>
         </View>
       </View>
       
-      {/* 区间标签 */}
-      <View className={`relative mt-2 ${multiLineLabels ? 'h-12' : 'h-6'}`}>
-        {(() => {
-          const labels: JSX.Element[] = []
-          const rangeKeys = ['underweight', 'low', 'normal', 'high', 'overweight', 'preObese', 'obese'] as const
-          
-          rangeKeys.forEach((key, index) => {
-            const range = ranges[key]
-            if (range) {
-              const colors = colorMap[range.label] || { bg: 'bg-gray-400', text: 'text-gray-500' }
-              const start = range.min ?? minVal
-              const end = range.max ?? maxVal
-              const midPoint = ((start + end) / 2 - minVal) / totalRange * 100
-              
-              // 如果是多行显示，奇数索引在上行，偶数索引在下行
-              const isSecondLine = multiLineLabels && index % 2 === 1
-              const topOffset = isSecondLine ? 'top-6' : 'top-0'
-              
-              labels.push(
-                <View
-                  key={`label-${key}`}
-                  className={`absolute transform -translate-x-1/2 whitespace-nowrap ${topOffset}`}
-                  style={{ left: `${Math.min(Math.max(midPoint, 10), 90)}%` }}
-                >
-                  <Text className={`text-xs ${colors.text} font-medium`}>
-                    {range.label}
-                  </Text>
-                </View>
-              )
-            }
-          })
-          
-          return labels
-        })()}
-      </View>
-      
-      {/* 刻度值 */}
+      {/* 刻度值 - 紧挨线段 */}
       <View className="relative h-4 mt-1">
         {(() => {
           const ticks: JSX.Element[] = []
@@ -177,6 +148,38 @@ export function HealthRangeBar({
             )
           }
           return ticks
+        })()}
+      </View>
+      
+      {/* 区间标签 - 一行显示 */}
+      <View className="relative h-6 mt-1">
+        {(() => {
+          const labels: JSX.Element[] = []
+          const rangeKeys = ['underweight', 'low', 'normal', 'high', 'overweight', 'preObese', 'obese'] as const
+          
+          rangeKeys.forEach((key) => {
+            const range = ranges[key]
+            if (range) {
+              const colors = colorMap[range.label] || { bg: 'bg-gray-400', text: 'text-gray-500' }
+              const start = range.min ?? minVal
+              const end = range.max ?? maxVal
+              const midPoint = ((start + end) / 2 - minVal) / totalRange * 100
+              
+              labels.push(
+                <View
+                  key={`label-${key}`}
+                  className="absolute transform -translate-x-1/2 whitespace-nowrap"
+                  style={{ left: `${Math.min(Math.max(midPoint, 10), 90)}%` }}
+                >
+                  <Text className={`text-xs ${colors.text} font-medium`}>
+                    {range.label}
+                  </Text>
+                </View>
+              )
+            }
+          })
+          
+          return labels
         })()}
       </View>
     </View>

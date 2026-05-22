@@ -281,7 +281,6 @@ export default function StatsPage() {
                     unit="cm"
                     minValue={60}
                     maxValue={100}
-                    multiLineLabels={true}
                   />
                 </CardContent>
               </Card>
