@@ -95,13 +95,13 @@ export function HealthRangeBar({
         {/* 区间色块 */}
         {renderRanges()}
         
-        {/* 当前值标记 - 钟表式指针（跨越整个区间段） */}
+        {/* 当前值标记 - 钟表式指针（长度与区间段高度相当） */}
         <View
           className="absolute flex flex-col items-center z-10"
           style={{
             left: `${Math.min(Math.max(currentPosition, 2), 98)}%`,
-            top: '-20px',
-            bottom: '-20px',
+            top: '-8px',
+            height: 'calc(100% + 16px)',
             transform: 'translateX(-50%)'
           }}
         >
@@ -114,7 +114,7 @@ export function HealthRangeBar({
               borderBottom: '6px solid #1f2937'
             }}
           />
-          {/* 指针杆 - 跨越整个区间段 */}
+          {/* 指针杆 - 与区间段高度相当 */}
           <View className="flex-1 w-1 bg-gray-800" />
         </View>
       </View>
