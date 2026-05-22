@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { Scale, Ruler, Share2, TrendingDown, TrendingUp, Activity, CircleUser } from 'lucide-react-taro'
 import { Card, CardContent } from '@/components/ui/card'
 import { HealthRangeBar } from '@/components/ui/health-range-bar'
@@ -215,13 +216,104 @@ export default function DataPage() {
 
   const genderText = statsData?.gender === 'male' ? '男性' : '女性'
 
+  // 分享功能
+  async function handleShare() {
+    try {
+      const res = await Taro.showActionSheet({
+        itemList: ['生成健康报告', '复制数据到剪贴板', '分享给好友']
+      })
+      
+      switch (res.tapIndex) {
+        case 0: // 生成健康报告
+          await generateHealthReport()
+          break
+        case 1: // 复制数据
+          await copyDataToClipboard()
+          break
+        case 2: // 分享给好友
+          await shareToFriends()
+          break
+      }
+    } catch {
+      // 用户取消
+    }
+  }
+
+  async function generateHealthReport() {
+    if (!statsData) {
+      Taro.showToast({ title: '暂无数据', icon: 'none' })
+      return
+    }
+    
+    const report = `
+📊 健康数据报告
+生成时间：${new Date().toLocaleDateString()}
+
+【基本信息】
+性别：${genderText}
+
+【体重统计】
+平均体重：${statsData.weightStats.avg.toFixed(1)} kg
+最高体重：${statsData.weightStats.max.toFixed(1)} kg (${statsData.weightStats.maxDate})
+最低体重：${statsData.weightStats.min.toFixed(1)} kg (${statsData.weightStats.minDate})
+波动范围：${(statsData.weightStats.max - statsData.weightStats.min).toFixed(1)} kg
+
+【腰围统计】
+平均腰围：${statsData.waistStats.avg.toFixed(1)} cm
+最大腰围：${statsData.waistStats.max.toFixed(1)} cm (${statsData.waistStats.maxDate})
+最小腰围：${statsData.waistStats.min.toFixed(1)} cm (${statsData.waistStats.minDate})
+
+【健康等级】
+BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
+体脂率：${statsData.bodyFatLevel.current.toFixed(1)}% (${statsData.bodyFatLevel.status})
+腰围：${statsData.waistLevel.current.toFixed(1)} cm (${statsData.waistLevel.level})
+
+— 来自体重管理小程序
+    `.trim()
+    
+    await Taro.setClipboardData({ data: report })
+    Taro.showToast({ title: '报告已复制', icon: 'success' })
+  }
+
+  async function copyDataToClipboard() {
+    if (!trendData) {
+      Taro.showToast({ title: '暂无数据', icon: 'none' })
+      return
+    }
+    
+    const weightData = trendData.weightTrend.map(d => 
+      `${d.date},${d.weight}`
+    ).join('\n')
+    
+    const data = `日期,体重(kg)\n${weightData}`
+    
+    await Taro.setClipboardData({ data })
+    Taro.showToast({ title: '数据已复制', icon: 'success' })
+  }
+
+  async function shareToFriends() {
+    // 小程序环境使用分享功能
+    if (Taro.getEnv() === Taro.ENV_TYPE.WEAPP) {
+      // 需要在页面配置中启用分享
+      Taro.showToast({ title: '请点击右上角分享', icon: 'none' })
+    } else {
+      // H5环境复制分享链接
+      const shareUrl = window.location.href
+      await Taro.setClipboardData({ data: shareUrl })
+      Taro.showToast({ title: '链接已复制', icon: 'success' })
+    }
+  }
+
   return (
     <View className="flex flex-col min-h-screen bg-[#F7F4ED]">
       {/* Header */}
       <View className="sticky top-0 z-40 h-14 flex items-center justify-between px-4 bg-[#F7F4ED]">
         <View className="w-10 h-10" />
         <Text className="text-base font-semibold text-[#1E2933]">数据分析</Text>
-        <View className="w-10 h-10 flex items-center justify-center rounded-full">
+        <View 
+          className="w-10 h-10 flex items-center justify-center rounded-full"
+          onClick={handleShare}
+        >
           <Share2 size={20} color="#6B7280" />
         </View>
       </View>
