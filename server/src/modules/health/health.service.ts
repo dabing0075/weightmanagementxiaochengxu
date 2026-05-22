@@ -83,6 +83,9 @@ export class HealthService {
       this.calculateAge(user.birth_date)
     )
     const bodyFatLevel = this.getBodyFatLevel(bodyFatRate, user.gender)
+    
+    // 计算腰围健康等级
+    const waistLevel = this.getWaistLevel(latestRecord.waist, user.gender)
 
     // 计算距离目标的差值
     const weightDiff = user.target_weight 
@@ -96,8 +99,10 @@ export class HealthService {
       bmiLevel,
       bodyFatRate,
       bodyFatLevel,
+      waistLevel,
       weightDiff,
-      todayCheckedIn
+      todayCheckedIn,
+      gender: user.gender
     }
   }
 
@@ -206,13 +211,30 @@ export class HealthService {
   }
 
   /**
-   * 获取 BMI 等级
+   * 获取 BMI 等级（根据文档标准）
    */
   private getBmiLevel(bmi: number): string {
-    if (bmi < 18.5) return '偏瘦'
-    if (bmi < 24) return '健康'
+    if (bmi < 18.5) return '体重过低'
+    if (bmi < 24) return '正常'
     if (bmi < 28) return '超重'
     return '肥胖'
+  }
+
+  /**
+   * 获取腰围健康等级（根据文档标准）
+   */
+  private getWaistLevel(waist: number, gender: string): string {
+    if (!waist) return '--'
+    
+    if (gender === 'male') {
+      if (waist < 85) return '正常'
+      if (waist < 90) return '中心型肥胖前期'
+      return '中心型肥胖'
+    } else {
+      if (waist < 80) return '正常'
+      if (waist < 85) return '中心型肥胖前期'
+      return '中心型肥胖'
+    }
   }
 
   /**
@@ -232,17 +254,19 @@ export class HealthService {
   }
 
   /**
-   * 获取体脂率等级
+   * 获取体脂率等级（根据文档标准）
    */
   private getBodyFatLevel(bodyFat: number, gender: string): string {
     if (gender === 'male') {
-      if (bodyFat < 10) return '5-15%'
-      if (bodyFat < 20) return '10-20%'
-      return '15-25%'
+      if (bodyFat < 10) return '偏低'
+      if (bodyFat <= 20) return '正常'
+      if (bodyFat <= 25) return '偏高'
+      return '肥胖'
     } else {
-      if (bodyFat < 18) return '15-25%'
-      if (bodyFat < 28) return '20-30%'
-      return '25-35%'
+      if (bodyFat < 15) return '偏低'
+      if (bodyFat <= 25) return '正常'
+      if (bodyFat <= 30) return '偏高'
+      return '肥胖'
     }
   }
 
@@ -332,7 +356,48 @@ export class HealthService {
         user.gender,
         this.calculateAge(user.birth_date)
       )
-      bodyFatStatus = currentBodyFat < (user.gender === 'male' ? 20 : 28) ? '健康' : '偏高'
+      bodyFatStatus = this.getBodyFatLevel(currentBodyFat, user.gender)
+    }
+
+    // 计算腰围健康等级
+    const currentWaist = records[0]?.waist || 0
+    const waistLevel = this.getWaistLevel(currentWaist, user?.gender || 'male')
+
+    // 根据性别获取健康区间
+    const gender = user?.gender || 'male'
+    const healthRanges = {
+      bmi: {
+        underweight: { max: 18.5, label: '体重过低' },
+        normal: { min: 18.5, max: 23.9, label: '正常' },
+        overweight: { min: 24, max: 27.9, label: '超重' },
+        obese: { min: 28, label: '肥胖' }
+      },
+      bodyFat: {
+        male: {
+          low: { max: 10, label: '偏低' },
+          normal: { min: 10, max: 20, label: '正常' },
+          high: { min: 20, max: 25, label: '偏高' },
+          obese: { min: 25, label: '肥胖' }
+        },
+        female: {
+          low: { max: 15, label: '偏低' },
+          normal: { min: 15, max: 25, label: '正常' },
+          high: { min: 25, max: 30, label: '偏高' },
+          obese: { min: 30, label: '肥胖' }
+        }
+      },
+      waist: {
+        male: {
+          normal: { max: 85, label: '正常' },
+          preObese: { min: 85, max: 90, label: '中心型肥胖前期' },
+          obese: { min: 90, label: '中心型肥胖' }
+        },
+        female: {
+          normal: { max: 80, label: '正常' },
+          preObese: { min: 80, max: 85, label: '中心型肥胖前期' },
+          obese: { min: 85, label: '中心型肥胖' }
+        }
+      }
     }
 
     return {
@@ -350,21 +415,25 @@ export class HealthService {
         maxDate: maxWaistRecord?.record_date || '',
         min: parseFloat(minWaist.toFixed(1)),
         minDate: minWaistRecord?.record_date || '',
-        stdDev: parseFloat(waistStdDev.toFixed(1))
+        stdDev: parseFloat(waistStdDev.toFixed(1)),
+        level: waistLevel
       },
       bmiLevel: {
         current: currentBmi,
         level: bmiLevel,
-        distribution: { underweight: 0, normal: 0, overweight: 0, obese: 0 }
+        ranges: healthRanges.bmi
       },
       bodyFatLevel: {
         current: currentBodyFat,
         status: bodyFatStatus,
-        healthyRange: {
-          min: user?.gender === 'male' ? 10 : 18,
-          max: user?.gender === 'male' ? 20 : 28
-        }
-      }
+        ranges: healthRanges.bodyFat[gender]
+      },
+      waistLevel: {
+        current: currentWaist,
+        level: waistLevel,
+        ranges: healthRanges.waist[gender]
+      },
+      gender: gender
     }
   }
 }
