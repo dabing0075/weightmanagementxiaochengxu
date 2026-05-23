@@ -356,7 +356,11 @@
         document.getElementById('statUsers').textContent = data.totalUsers;
         document.getElementById('statToday').textContent = data.todayCheckins;
         document.getElementById('statRecords').textContent = data.totalRecords;
-        document.getElementById('statWeightLost').textContent = data.totalWeightLost;
+        // 显示累计减重，正值绿色，负值或零橙色
+        const totalWeightLoss = data.totalWeightLoss || 0;
+        const statElement = document.getElementById('statWeightLost');
+        statElement.textContent = totalWeightLoss >= 0 ? `+${totalWeightLoss.toFixed(1)}` : totalWeightLoss.toFixed(1);
+        statElement.className = totalWeightLoss >= 0 ? 'text-3xl font-bold text-green-500 mt-1' : 'text-3xl font-bold text-orange-500 mt-1';
       } catch (err) {
         console.error('加载统计数据失败:', err);
       }
@@ -384,6 +388,9 @@
           const isGoalAchieved = item.isGoalAchieved;
           const goalText = isGoalAchieved ? '已达标' : '未达标';
           const goalClass = isGoalAchieved ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
+          // 累计减重：正值绿色，负值或零橙色
+          const weightLossText = totalWeightLoss > 0 ? `+${totalWeightLoss.toFixed(1)}kg` : `${totalWeightLoss.toFixed(1)}kg`;
+          const weightLossClass = totalWeightLoss > 0 ? 'text-green-500' : 'text-orange-500';
           const html = `
             <div class="flex items-center justify-between py-3 ${index < data.length - 1 ? 'border-b border-gray-100' : ''}">
               <div class="flex items-center gap-3">
@@ -399,7 +406,7 @@
               <div class="flex items-center gap-4">
                 <div class="text-right">
                   <p class="text-gray-400 text-xs mb-1">累计减重</p>
-                  <span class="text-green-500 font-bold text-lg">-${totalWeightLoss.toFixed(1)}kg</span>
+                  <span class="${weightLossClass} font-bold text-lg">${weightLossText}</span>
                   <p class="text-gray-400 text-sm">当前 ${item.currentWeight}kg / 目标 ${item.targetWeight}kg</p>
                 </div>
                 <span class="px-2 py-1 rounded-full text-xs font-medium ${goalClass}">${goalText}</span>
@@ -440,6 +447,9 @@
           const isGoalAchieved = item.isGoalAchieved;
           const goalText = isGoalAchieved ? '已达标' : '未达标';
           const goalClass = isGoalAchieved ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
+          // 累计减重：正值绿色，负值或零橙色
+          const weightLossText = totalWeightLoss > 0 ? `+${totalWeightLoss.toFixed(1)} kg` : `${totalWeightLoss.toFixed(1)} kg`;
+          const weightLossClass = totalWeightLoss > 0 ? 'text-green-500' : 'text-orange-500';
           const html = `
             <tr class="hover:bg-gray-50">
               <td class="px-4 py-4">
@@ -458,7 +468,7 @@
               <td class="px-4 py-4">${item.initialWeight ? item.initialWeight + ' kg' : '-'}</td>
               <td class="px-4 py-4">${item.currentWeight ? item.currentWeight + ' kg' : '-'}</td>
               <td class="px-4 py-4">${item.targetWeight ? item.targetWeight + ' kg' : '-'}</td>
-              <td class="px-4 py-4 font-semibold text-green-500">${totalWeightLoss.toFixed(1)} kg</td>
+              <td class="px-4 py-4 font-semibold ${weightLossClass}">${weightLossText}</td>
               <td class="px-4 py-4">
                 <span class="px-3 py-1 rounded-full text-sm font-medium ${goalClass}">${goalText}</span>
               </td>
@@ -494,6 +504,10 @@
           const weightToGoal = user.weightToGoal || 0;
           const weightLostClass = weightToGoal <= 0 ? 'text-green-500' : 'text-orange-500';
           const weightLostText = weightToGoal <= 0 ? `已达标` : `还需减${weightToGoal.toFixed(1)}`;
+          // 累计减重：正值绿色，负值或零橙色
+          const totalWeightLoss = user.totalWeightLoss || 0;
+          const weightLossText = totalWeightLoss > 0 ? `+${totalWeightLoss.toFixed(1)} kg` : `${totalWeightLoss.toFixed(1)} kg`;
+          const weightLossClass = totalWeightLoss > 0 ? 'text-green-500' : 'text-orange-500';
 
           const html = `
             <tr class="hover:bg-gray-50">
@@ -510,7 +524,7 @@
               <td class="px-6 py-4">${user.height || '-'} cm</td>
               <td class="px-6 py-4">${user.initialWeight ? user.initialWeight + ' kg' : '-'}</td>
               <td class="px-6 py-4">${user.currentWeight ? user.currentWeight + ' kg' : '-'}</td>
-              <td class="px-6 py-4 font-semibold ${user.totalWeightLost > 0 ? 'text-green-500' : 'text-gray-500'}">${user.totalWeightLost ? user.totalWeightLost.toFixed(1) + ' kg' : '-'}</td>
+              <td class="px-6 py-4 font-semibold ${weightLossClass}">${weightLossText}</td>
               <td class="px-6 py-4">${user.targetWeight ? user.targetWeight + ' kg' : '-'}</td>
               <td class="px-6 py-4 ${user.weightToGoal > 0 ? 'text-orange-600' : 'text-green-600'}">${user.weightToGoal !== null && user.weightToGoal !== undefined ? user.weightToGoal.toFixed(1) + ' kg' : '-'}</td>
               <td class="px-6 py-4 text-gray-500 text-sm">${user.lastCheckinDate || '-'}</td>
@@ -600,9 +614,9 @@
               <p class="text-gray-500 text-sm">当前体重</p>
               <p class="font-bold text-lg text-blue-600">${data.summary.currentWeight || '-'} kg</p>
             </div>
-            <div class="bg-primary/10 p-4 rounded-lg text-center">
+            <div class="${(data.summary.weightLost || 0) > 0 ? 'bg-green-50' : 'bg-orange-50'} p-4 rounded-lg text-center">
               <p class="text-gray-500 text-sm">累计减重</p>
-              <p class="font-bold text-lg text-primary">${data.summary.weightLost} kg</p>
+              <p class="font-bold text-lg ${(data.summary.weightLost || 0) > 0 ? 'text-green-600' : 'text-orange-600'}">${(data.summary.weightLost || 0) > 0 ? '+' : ''}${data.summary.weightLost} kg</p>
             </div>
             <div class="bg-purple-50 p-4 rounded-lg text-center">
               <p class="text-gray-500 text-sm">打卡天数</p>

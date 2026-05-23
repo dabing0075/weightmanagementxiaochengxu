@@ -218,15 +218,20 @@ export class AdminService {
     // 从用户表获取减重数据
     const { data: users } = await client
       .from('users')
-      .select('current_weight, target_weight');
+      .select('current_weight, target_weight, initial_weight');
 
     let totalWeightToGoal = 0;
+    let totalWeightLoss = 0;
     let userCountWithGoal = 0;
 
     for (const user of users || []) {
       if (user.current_weight && user.target_weight) {
         totalWeightToGoal += user.target_weight - user.current_weight;
         userCountWithGoal++;
+      }
+      // 计算累计减重：初始体重 - 当前体重
+      if (user.initial_weight && user.current_weight) {
+        totalWeightLoss += user.initial_weight - user.current_weight;
       }
     }
 
@@ -238,6 +243,7 @@ export class AdminService {
         ? Math.round((totalWeightToGoal / userCountWithGoal) * 10) / 10
         : 0,
       totalWeightToGoal: Math.round(totalWeightToGoal * 10) / 10,
+      totalWeightLoss: Math.round(totalWeightLoss * 10) / 10,
     };
   }
 
