@@ -174,8 +174,8 @@ export function HealthRangeBar({
                 const obeseStart = start
                 const obeseEnd = maxVal
                 midPoint = ((obeseStart + obeseEnd) / 2 - minVal) / totalRange * 100
-                // 向右偏移1%，保持在红色区段中间区域
-                midPoint = midPoint + 1
+                // 向右偏移2%，保持在红色区段中间区域
+                midPoint = midPoint + 2
               } else if (range.label === '中心型肥胖前期') {
                 // 橙色区段，在中间位置
                 midPoint = ((start + end) / 2 - minVal) / totalRange * 100
