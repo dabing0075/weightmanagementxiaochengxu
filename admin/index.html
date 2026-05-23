@@ -175,6 +175,7 @@
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前体重</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">累计减重</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">目标体重</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">距目标差值</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">最后打卡</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
                 </tr>
@@ -473,6 +474,7 @@
               <td class="px-6 py-4">${user.currentWeight ? user.currentWeight + ' kg' : '-'}</td>
               <td class="px-6 py-4 font-semibold ${user.totalWeightLost > 0 ? 'text-green-500' : 'text-gray-500'}">${user.totalWeightLost ? user.totalWeightLost.toFixed(1) + ' kg' : '-'}</td>
               <td class="px-6 py-4">${user.targetWeight ? user.targetWeight + ' kg' : '-'}</td>
+              <td class="px-6 py-4 ${user.weightToGoal > 0 ? 'text-orange-600' : 'text-green-600'}">${user.weightToGoal !== null && user.weightToGoal !== undefined ? user.weightToGoal.toFixed(1) + ' kg' : '-'}</td>
               <td class="px-6 py-4 text-gray-500 text-sm">${user.lastCheckinDate || '-'}</td>
               <td class="px-6 py-4">
                 <button onclick="viewCustomerDetail('${user.id}')" class="text-primary hover:underline">查看详情</button>
