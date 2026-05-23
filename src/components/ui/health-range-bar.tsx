@@ -175,13 +175,13 @@ export function HealthRangeBar({
                 const obeseStart = start
                 const obeseEnd = maxVal  // 使用线段图最大值
                 midPoint = ((obeseStart + obeseEnd) / 2 - minVal) / totalRange * 100
-                // 确保不超出右边界
-                midPoint = Math.min(midPoint, 92)
+                // 稍微向右偏移，确保与"中心型肥胖前期"之间有空隙
+                midPoint = Math.min(midPoint + 3, 95)
               } else if (range.label === '中心型肥胖前期') {
                 // 橙色区段，确保在中间位置
                 midPoint = ((start + end) / 2 - minVal) / totalRange * 100
-                // 稍微向左偏移避免与"中心型肥胖"重叠
-                midPoint = Math.max(midPoint - 2, 15)
+                // 向左偏移更多，确保与"中心型肥胖"之间有空隙
+                midPoint = Math.max(midPoint - 5, 15)
               }
               
               labels.push(
