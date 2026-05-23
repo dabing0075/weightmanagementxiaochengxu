@@ -60,13 +60,21 @@ export class RecordsService {
   }
 
   async checkIn(data: { date: string; weight: number; waist: number; note?: string }) {
-    // 检查当天是否已打卡
+    // 检查当天是否已打卡，同时检查是否是首次打卡
     const { data: existing, error: checkError } = await this.supabase
       .from('weight_records')
       .select('id')
       .eq('user_id', this.DEFAULT_USER_ID)
       .eq('record_date', data.date)
       .single();
+
+    // 检查是否是首次打卡（在插入新记录之前检查）
+    const { data: allRecords } = await this.supabase
+      .from('weight_records')
+      .select('id')
+      .eq('user_id', this.DEFAULT_USER_ID)
+      .limit(1);
+    const isFirstCheckin = !allRecords || allRecords.length === 0;
 
     if (checkError && checkError.code !== 'PGRST116') {
       console.error('[RecordsService] 检查记录失败', checkError);
@@ -92,8 +100,8 @@ export class RecordsService {
         return { code: 500, msg: '更新记录失败', data: null };
       }
 
-      // 更新用户健康指标
-      await this.updateUserHealthMetrics(data.weight, data.waist, data.date);
+      // 更新用户健康指标（不是首次打卡）
+      await this.updateUserHealthMetrics(data.weight, data.waist, data.date, false);
 
       console.log('[RecordsService] 更新记录成功', updated);
       return { code: 200, msg: '记录已更新', data: updated };
@@ -117,8 +125,8 @@ export class RecordsService {
       return { code: 500, msg: '创建记录失败', data: null };
     }
 
-    // 更新用户健康指标
-    await this.updateUserHealthMetrics(data.weight, data.waist, data.date);
+    // 更新用户健康指标（首次打卡时设置初始体重）
+    await this.updateUserHealthMetrics(data.weight, data.waist, data.date, isFirstCheckin);
 
     console.log('[RecordsService] 创建记录成功', newRecord);
     return { code: 200, msg: '打卡成功', data: newRecord };
@@ -127,7 +135,7 @@ export class RecordsService {
   /**
    * 更新用户健康指标
    */
-  private async updateUserHealthMetrics(weight: number, waist: number, date: string) {
+  private async updateUserHealthMetrics(weight: number, waist: number, date: string, isFirstCheckin: boolean = false) {
     try {
       // 获取用户信息
       const { data: user, error: userError } = await this.supabase
@@ -158,19 +166,27 @@ export class RecordsService {
       const waistLevel = this.getWaistLevel(waist, gender);
 
       // 更新用户表
+      const updateData: Record<string, unknown> = {
+        current_weight: weight,
+        current_waist: waist,
+        bmi: bmi,
+        bmi_level: bmiLevel,
+        body_fat_rate: bodyFat,
+        body_fat_level: bodyFatLevel,
+        waist_level: waistLevel,
+        last_checkin_date: date,
+        updated_at: new Date().toISOString(),
+      };
+
+      // 如果是首次打卡，设置初始体重
+      if (isFirstCheckin) {
+        updateData.initial_weight = weight;
+        console.log('[RecordsService] 首次打卡，设置初始体重:', weight);
+      }
+
       const { error: updateError } = await this.supabase
         .from('users')
-        .update({
-          current_weight: weight,
-          current_waist: waist,
-          bmi: bmi,
-          bmi_level: bmiLevel,
-          body_fat_rate: bodyFat,
-          body_fat_level: bodyFatLevel,
-          waist_level: waistLevel,
-          last_checkin_date: date,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', this.DEFAULT_USER_ID);
 
       if (updateError) {

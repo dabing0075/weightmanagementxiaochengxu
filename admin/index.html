@@ -151,6 +151,7 @@
             <h2 class="text-2xl font-bold text-gray-800">客户管理</h2>
             <div class="flex items-center gap-4">
               <select id="sortField" onchange="loadCustomers()" class="px-4 py-2 border border-gray-300 rounded-lg">
+                <option value="totalWeightLost">按累计减重</option>
                 <option value="created_at">按注册时间</option>
                 <option value="weightToGoal">按目标进度</option>
                 <option value="currentWeight">按当前体重</option>
@@ -169,9 +170,9 @@
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">用户</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">性别</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">身高</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">初始体重</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前体重</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前腰围</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">目标进度</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">累计减重</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">目标体重</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">最后打卡</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
@@ -466,9 +467,9 @@
               </td>
               <td class="px-6 py-4">${gender}</td>
               <td class="px-6 py-4">${user.height || '-'} cm</td>
+              <td class="px-6 py-4">${user.initialWeight ? user.initialWeight + ' kg' : '-'}</td>
               <td class="px-6 py-4">${user.currentWeight ? user.currentWeight + ' kg' : '-'}</td>
-              <td class="px-6 py-4">${user.currentWaist ? user.currentWaist + ' cm' : '-'}</td>
-              <td class="px-6 py-4 font-semibold ${weightLostClass}">${weightLostText}</td>
+              <td class="px-6 py-4 font-semibold ${user.totalWeightLost > 0 ? 'text-green-500' : 'text-gray-500'}">${user.totalWeightLost ? user.totalWeightLost.toFixed(1) + ' kg' : '-'}</td>
               <td class="px-6 py-4">${user.targetWeight ? user.targetWeight + ' kg' : '-'}</td>
               <td class="px-6 py-4 text-gray-500 text-sm">${user.lastCheckinDate || '-'}</td>
               <td class="px-6 py-4">
@@ -537,20 +538,28 @@
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-gray-500 text-sm">目标体重</p>
-              <p class="font-semibold">${data.user.target_weight || '-'} kg</p>
+              <p class="font-semibold">${data.user.targetWeight || '-'} kg</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-gray-500 text-sm">目标腰围</p>
+              <p class="font-semibold">${data.user.targetWaist || '-'} cm</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-gray-500 text-sm">BMI</p>
+              <p class="font-semibold">${data.user.bmi || '-'} (${data.user.bmiLevel || '-'})</p>
             </div>
           </div>
           <div class="grid grid-cols-4 gap-4 mb-6">
             <div class="bg-green-50 p-4 rounded-lg text-center">
               <p class="text-gray-500 text-sm">初始体重</p>
-              <p class="font-bold text-lg text-green-600">${data.summary.startWeight} kg</p>
+              <p class="font-bold text-lg text-green-600">${data.summary.startWeight || '-'} kg</p>
             </div>
             <div class="bg-blue-50 p-4 rounded-lg text-center">
               <p class="text-gray-500 text-sm">当前体重</p>
-              <p class="font-bold text-lg text-blue-600">${data.summary.currentWeight} kg</p>
+              <p class="font-bold text-lg text-blue-600">${data.summary.currentWeight || '-'} kg</p>
             </div>
             <div class="bg-primary/10 p-4 rounded-lg text-center">
-              <p class="text-gray-500 text-sm">已减重</p>
+              <p class="text-gray-500 text-sm">累计减重</p>
               <p class="font-bold text-lg text-primary">${data.summary.weightLost} kg</p>
             </div>
             <div class="bg-purple-50 p-4 rounded-lg text-center">

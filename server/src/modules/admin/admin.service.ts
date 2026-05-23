@@ -32,41 +32,32 @@ export class AdminService {
   async getCustomers(
     page: number = 1,
     pageSize: number = 10,
-    sortBy: string = 'created_at',
+    sortBy: string = 'totalWeightLost',
     sortOrder: 'asc' | 'desc' = 'desc',
   ) {
     const client = getSupabaseClient();
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
 
-    // 映射排序字段到数据库字段
-    const sortFieldMap: Record<string, string> = {
-      'created_at': 'created_at',
-      'weightToGoal': 'current_weight', // 用当前体重排序
-      'currentWeight': 'current_weight',
-      'currentWaist': 'current_waist',
-    };
-    const dbSortField = sortFieldMap[sortBy] || 'created_at';
-
-    // 获取用户基本信息
-    const { data: users, error, count } = await client
+    // 获取所有用户数据（用于计算累计减重）
+    const { data: allUsers, error, count } = await client
       .from('users')
-      .select('*', { count: 'exact' })
-      .order(dbSortField, { ascending: sortOrder === 'asc' })
-      .range(from, to);
+      .select('*', { count: 'exact' });
 
     if (error) {
       console.error('获取客户列表失败:', error);
       return { data: [], total: 0, page, pageSize };
     }
 
-    // 用户表已经包含了最新数据，直接返回
-    const enrichedUsers = (users || []).map((user) => {
-      // 从用户表获取当前体重和腰围
+    // 处理用户数据并计算累计减重
+    let enrichedUsers = (allUsers || []).map((user) => {
       const currentWeight = user.current_weight || 0;
       const currentWaist = user.current_waist || 0;
+      const initialWeight = user.initial_weight || currentWeight;
 
-      // 计算减重量（目标体重 - 当前体重）
+      // 计算累计减重（初始体重 - 当前体重）
+      const totalWeightLoss = initialWeight > 0 && currentWeight > 0 
+        ? Math.round((initialWeight - currentWeight) * 10) / 10 
+        : 0;
+
       const targetWeight = user.target_weight || 0;
       const weightToGoal = targetWeight > 0 && currentWeight > 0 
         ? Math.round((targetWeight - currentWeight) * 10) / 10 
@@ -77,6 +68,7 @@ export class AdminService {
         nickname: user.nickname || '未设置',
         gender: user.gender || '未设置',
         height: user.height || 0,
+        initialWeight: initialWeight,
         currentWeight: currentWeight,
         currentWaist: currentWaist,
         targetWeight: targetWeight,
@@ -86,15 +78,52 @@ export class AdminService {
         bodyFatRate: user.body_fat_rate || 0,
         bodyFatLevel: user.body_fat_level || '',
         waistLevel: user.waist_level || '',
+        totalWeightLoss: totalWeightLoss,
         weightToGoal: weightToGoal,
         lastCheckinDate: user.last_checkin_date || '',
         createdAt: user.created_at || '',
       };
     });
 
+    // 在内存中排序
+    enrichedUsers.sort((a, b) => {
+      let valueA: number, valueB: number;
+      
+      switch (sortBy) {
+        case 'totalWeightLost':
+          valueA = a.totalWeightLoss;
+          valueB = b.totalWeightLoss;
+          break;
+        case 'weightToGoal':
+          valueA = Math.abs(a.weightToGoal);
+          valueB = Math.abs(b.weightToGoal);
+          break;
+        case 'currentWeight':
+          valueA = a.currentWeight;
+          valueB = b.currentWeight;
+          break;
+        case 'currentWaist':
+          valueA = a.currentWaist;
+          valueB = b.currentWaist;
+          break;
+        case 'created_at':
+        default:
+          valueA = new Date(a.createdAt).getTime();
+          valueB = new Date(b.createdAt).getTime();
+          break;
+      }
+      
+      return sortOrder === 'asc' ? valueA - valueB : valueB - valueA;
+    });
+
+    // 分页
+    const total = enrichedUsers.length;
+    const from = (page - 1) * pageSize;
+    const paginatedUsers = enrichedUsers.slice(from, from + pageSize);
+
     return {
-      data: enrichedUsers,
-      total: count || 0,
+      data: paginatedUsers,
+      total: total,
       page,
       pageSize,
     };
@@ -125,6 +154,14 @@ export class AdminService {
     // 使用用户表中的当前数据
     const currentWeight = user.current_weight || 0;
     const targetWeight = user.target_weight || 0;
+    
+    // 获取初始体重（从打卡记录的第一条）
+    const initialWeight = user.initial_weight || (records && records.length > 0 ? records[0].weight : currentWeight);
+    
+    // 计算累计减重
+    const weightLost = initialWeight && currentWeight 
+      ? Math.round((initialWeight - currentWeight) * 10) / 10 
+      : 0;
 
     return {
       user: {
@@ -136,6 +173,7 @@ export class AdminService {
         currentWaist: user.current_waist || 0,
         targetWeight: targetWeight,
         targetWaist: user.target_waist || 0,
+        initialWeight: initialWeight,
         bmi: user.bmi || 0,
         bmiLevel: user.bmi_level || '',
         bodyFatRate: user.body_fat_rate || 0,
@@ -144,10 +182,12 @@ export class AdminService {
       },
       records: records || [],
       summary: {
+        startWeight: initialWeight,
         currentWeight: currentWeight,
         targetWeight: targetWeight,
+        weightLost: weightLost,
         weightToGoal: targetWeight > 0 && currentWeight > 0
-          ? Math.round((targetWeight - currentWeight) * 10) / 10
+          ? Math.round((currentWeight - targetWeight) * 10) / 10
           : 0,
         totalDays: records?.length || 0,
       },
@@ -208,18 +248,18 @@ export class AdminService {
     // 直接从用户表获取数据
     const { data: users } = await client
       .from('users')
-      .select('id, nickname, avatar_url, current_weight, target_weight, bmi, body_fat_rate, last_checkin_date')
-      .not('current_weight', 'is', null)
-      .not('target_weight', 'is', null);
+      .select('id, nickname, avatar_url, initial_weight, current_weight, target_weight, bmi, body_fat_rate, last_checkin_date')
+      .not('current_weight', 'is', null);
 
-    // 计算距离目标的重量
+    // 计算累计减重并排序
     const rankings: Array<{
       userId: string;
       nickname: string;
       avatarUrl: string | null;
+      initialWeight: number;
       currentWeight: number;
       targetWeight: number;
-      weightToGoal: number;
+      totalWeightLoss: number;
       bmi: number;
       bodyFatRate: number;
       lastCheckinDate: string;
@@ -227,16 +267,23 @@ export class AdminService {
 
     for (const user of users || []) {
       const currentWeight = user.current_weight || 0;
+      const initialWeight = user.initial_weight || currentWeight;
       const targetWeight = user.target_weight || 0;
       
-      if (currentWeight > 0 && targetWeight > 0) {
+      // 累计减重 = 初始体重 - 当前体重
+      const totalWeightLoss = initialWeight > 0 && currentWeight > 0
+        ? Math.round((initialWeight - currentWeight) * 10) / 10
+        : 0;
+      
+      if (currentWeight > 0) {
         rankings.push({
           userId: user.id,
           nickname: user.nickname || '未设置',
           avatarUrl: user.avatar_url,
+          initialWeight: initialWeight,
           currentWeight: currentWeight,
           targetWeight: targetWeight,
-          weightToGoal: Math.round((targetWeight - currentWeight) * 10) / 10,
+          totalWeightLoss: totalWeightLoss,
           bmi: user.bmi || 0,
           bodyFatRate: user.body_fat_rate || 0,
           lastCheckinDate: user.last_checkin_date || '',
@@ -244,8 +291,8 @@ export class AdminService {
       }
     }
 
-    // 按距离目标的重量排序（接近目标的排前面）
-    rankings.sort((a, b) => a.weightToGoal - b.weightToGoal);
+    // 按累计减重从大到小排序（减重越多排越前面）
+    rankings.sort((a, b) => b.totalWeightLoss - a.totalWeightLoss);
 
     return rankings.slice(0, limit);
   }
