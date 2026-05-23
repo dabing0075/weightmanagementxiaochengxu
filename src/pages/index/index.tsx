@@ -1,5 +1,5 @@
 import { View, Text } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { useEffect, useState } from 'react'
 import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
@@ -100,7 +100,21 @@ export default function HomePage() {
   useEffect(() => {
     loadData()
     loadUnreadCount()
+    
+    // 定时轮询未读消息数量（每30秒检查一次）
+    const pollInterval = setInterval(() => {
+      loadUnreadCount()
+    }, 30000)
+    
+    return () => {
+      clearInterval(pollInterval)
+    }
   }, [])
+
+  // 页面显示时刷新未读数量（从其他页面返回或从后台切换回来）
+  useDidShow(() => {
+    loadUnreadCount()
+  })
 
   // BMI健康等级颜色（与数据页一致）
   const getBmiColor = (level: string) => {
@@ -295,6 +309,15 @@ export default function HomePage() {
   const handleCloseDetail = () => {
     setShowNotificationDetail(false)
     setSelectedNotification(null)
+    // 关闭详情后刷新未读数量
+    loadUnreadCount()
+  }
+
+  // 关闭通知列表弹窗
+  const handleCloseNotificationDialog = () => {
+    setShowNotificationDialog(false)
+    // 关闭列表后刷新未读数量
+    loadUnreadCount()
   }
 
   // 截断内容显示（只显示第一行，最多20个字符）
@@ -745,7 +768,7 @@ export default function HomePage() {
             <Button 
               variant="outline" 
               className="w-full"
-              onClick={() => setShowNotificationDialog(false)}
+              onClick={handleCloseNotificationDialog}
             >
               <Text className="text-sm">关闭</Text>
             </Button>
