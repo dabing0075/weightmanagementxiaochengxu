@@ -170,7 +170,7 @@ export function HealthRangeBar({
               
               // 针对特定标签调整位置，避免重叠
               if (range.label === '中心型肥胖') {
-                midPoint = Math.min(midPoint + 8, 95)  // 向右移动
+                midPoint = Math.max(midPoint - 12, 5)  // 向左移动，避免与右侧重叠
               } else if (range.label === '中心型肥胖前期') {
                 midPoint = Math.max(midPoint - 3, 15)  // 稍微向左
               }
