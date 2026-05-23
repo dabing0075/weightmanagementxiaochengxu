@@ -5,7 +5,7 @@ import { getSupabaseClient } from '../../storage/database/supabase-client'
 export class HealthService {
   /**
    * 获取健康指标
-   * 优先从用户表获取已计算的健康指标，如果没有则实时计算
+   * 始终从最新的打卡记录计算BMI和体脂率，确保数据一致性
    */
   async getHealthMetrics() {
     const client = getSupabaseClient()
@@ -46,26 +46,7 @@ export class HealthService {
     
     const todayCheckedIn = todayRecords && todayRecords.length > 0
 
-    // 如果用户表已有健康指标数据，直接返回
-    if (user.current_weight && user.bmi) {
-      const weightDiff = user.target_weight 
-        ? user.current_weight - user.target_weight 
-        : 0
-
-      return {
-        currentWeight: user.current_weight,
-        currentWaist: user.current_waist,
-        bmi: user.bmi,
-        bmiLevel: user.bmi_level || '--',
-        bodyFatRate: user.body_fat_rate,
-        bodyFatLevel: user.body_fat_level || '--',
-        waistLevel: user.waist_level || '--',
-        weightDiff,
-        todayCheckedIn
-      }
-    }
-
-    // 如果用户表没有健康指标，从最新打卡记录计算
+    // 从最新打卡记录计算健康指标，确保与 getHealthStats 数据一致
     const { data: records, error: recordError } = await client
       .from('weight_records')
       .select('*')
@@ -91,12 +72,13 @@ export class HealthService {
       }
     }
 
-    // 计算 BMI
-    const bmi = user.height ? (latestRecord.weight / Math.pow(user.height / 100, 2)).toFixed(1) : null
-    const bmiNum = bmi ? parseFloat(bmi) : 0
-    const bmiLevel = this.getBmiLevel(bmiNum)
+    // 计算 BMI（与 getHealthStats 使用相同的计算方式）
+    const currentBmi = user.height 
+      ? parseFloat((latestRecord.weight / Math.pow(user.height / 100, 2)).toFixed(1)) 
+      : 0
+    const bmiLevel = this.getBmiLevel(currentBmi)
 
-    // 计算体脂率（使用简化的公式）
+    // 计算体脂率（与 getHealthStats 使用相同的计算方式）
     const bodyFatRate = this.calculateBodyFat(
       latestRecord.weight,
       user.height,
@@ -116,7 +98,7 @@ export class HealthService {
     return {
       currentWeight: latestRecord.weight,
       currentWaist: latestRecord.waist,
-      bmi: bmiNum,
+      bmi: currentBmi,
       bmiLevel,
       bodyFatRate,
       bodyFatLevel,
