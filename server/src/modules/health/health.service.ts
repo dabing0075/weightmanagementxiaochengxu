@@ -461,8 +461,15 @@ export class HealthService {
       throw new Error('请先完善个人信息')
     }
 
-    // 使用用户表中的当前体重（打卡时会同步更新）
-    const currentWeight = user.current_weight || 70
+    // 从 weight_records 获取最新体重记录
+    const { data: latestRecord } = await client
+      .from('weight_records')
+      .select('weight')
+      .order('record_date', { ascending: false })
+      .limit(1)
+    
+    // 使用最新打卡记录的体重，如果没有则使用用户表中的当前体重
+    const currentWeight = latestRecord?.[0]?.weight || user.current_weight || 70
     const targetWeight = user.target_weight || currentWeight
     const height = user.height || 170
     const gender = user.gender || 'male'
