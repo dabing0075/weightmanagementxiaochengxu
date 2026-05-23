@@ -60,7 +60,7 @@ export class AdminService {
 
       const targetWeight = user.target_weight || 0;
       const weightToGoal = targetWeight > 0 && currentWeight > 0 
-        ? Math.round((targetWeight - currentWeight) * 10) / 10 
+        ? Math.round((currentWeight - targetWeight) * 10) / 10 
         : 0;
 
       return {
