@@ -39,11 +39,20 @@ export class AdminService {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
+    // 映射排序字段到数据库字段
+    const sortFieldMap: Record<string, string> = {
+      'created_at': 'created_at',
+      'weightToGoal': 'current_weight', // 用当前体重排序
+      'currentWeight': 'current_weight',
+      'currentWaist': 'current_waist',
+    };
+    const dbSortField = sortFieldMap[sortBy] || 'created_at';
+
     // 获取用户基本信息
     const { data: users, error, count } = await client
       .from('users')
       .select('*', { count: 'exact' })
-      .order(sortBy, { ascending: sortOrder === 'asc' })
+      .order(dbSortField, { ascending: sortOrder === 'asc' })
       .range(from, to);
 
     if (error) {
@@ -51,46 +60,37 @@ export class AdminService {
       return { data: [], total: 0, page, pageSize };
     }
 
-    // 获取每个用户的最新打卡记录
-    const enrichedUsers = await Promise.all(
-      (users || []).map(async (user) => {
-        // 获取最新打卡记录
-        const { data: latestRecord } = await client
-          .from('records')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: false })
-          .limit(1)
-          .single();
+    // 用户表已经包含了最新数据，直接返回
+    const enrichedUsers = (users || []).map((user) => {
+      // 从用户表获取当前体重和腰围
+      const currentWeight = user.current_weight || 0;
+      const currentWaist = user.current_waist || 0;
 
-        // 获取第一条打卡记录（初始体重）
-        const { data: firstRecord } = await client
-          .from('records')
-          .select('weight, date')
-          .eq('user_id', user.id)
-          .order('date', { ascending: true })
-          .limit(1)
-          .single();
+      // 计算减重量（目标体重 - 当前体重）
+      const targetWeight = user.target_weight || 0;
+      const weightToGoal = targetWeight > 0 && currentWeight > 0 
+        ? Math.round((targetWeight - currentWeight) * 10) / 10 
+        : 0;
 
-        // 计算减重量
-        let weightLost = 0;
-        let startWeight = firstRecord?.weight || 0;
-        let currentWeight = latestRecord?.weight || 0;
-
-        if (startWeight && currentWeight) {
-          weightLost = startWeight - currentWeight;
-        }
-
-        return {
-          ...user,
-          currentWeight,
-          startWeight,
-          weightLost: Math.round(weightLost * 10) / 10,
-          latestRecordDate: latestRecord?.date,
-          totalRecords: latestRecord ? 1 : 0,
-        };
-      }),
-    );
+      return {
+        id: user.id,
+        nickname: user.nickname || '未设置',
+        gender: user.gender || '未设置',
+        height: user.height || 0,
+        currentWeight: currentWeight,
+        currentWaist: currentWaist,
+        targetWeight: targetWeight,
+        targetWaist: user.target_waist || 0,
+        bmi: user.bmi || 0,
+        bmiLevel: user.bmi_level || '',
+        bodyFatRate: user.body_fat_rate || 0,
+        bodyFatLevel: user.body_fat_level || '',
+        waistLevel: user.waist_level || '',
+        weightToGoal: weightToGoal,
+        lastCheckinDate: user.last_checkin_date || '',
+        createdAt: user.created_at || '',
+      };
+    });
 
     return {
       data: enrichedUsers,
@@ -115,29 +115,41 @@ export class AdminService {
       return null;
     }
 
-    // 获取所有打卡记录
+    // 获取所有打卡记录（从 weight_records 表）
     const { data: records } = await client
-      .from('records')
+      .from('weight_records')
       .select('*')
       .eq('user_id', userId)
       .order('date', { ascending: true });
 
-    // 获取第一条和最后一条记录
-    const firstRecord = records?.[0];
-    const latestRecord = records?.[records.length - 1];
+    // 使用用户表中的当前数据
+    const currentWeight = user.current_weight || 0;
+    const targetWeight = user.target_weight || 0;
 
     return {
-      user,
+      user: {
+        id: user.id,
+        nickname: user.nickname || '未设置',
+        gender: user.gender || '未设置',
+        height: user.height || 0,
+        currentWeight: currentWeight,
+        currentWaist: user.current_waist || 0,
+        targetWeight: targetWeight,
+        targetWaist: user.target_waist || 0,
+        bmi: user.bmi || 0,
+        bmiLevel: user.bmi_level || '',
+        bodyFatRate: user.body_fat_rate || 0,
+        bodyFatLevel: user.body_fat_level || '',
+        waistLevel: user.waist_level || '',
+      },
       records: records || [],
       summary: {
-        startWeight: firstRecord?.weight || 0,
-        currentWeight: latestRecord?.weight || 0,
-        weightLost: firstRecord && latestRecord
-          ? Math.round((firstRecord.weight - latestRecord.weight) * 10) / 10
+        currentWeight: currentWeight,
+        targetWeight: targetWeight,
+        weightToGoal: targetWeight > 0 && currentWeight > 0
+          ? Math.round((targetWeight - currentWeight) * 10) / 10
           : 0,
         totalDays: records?.length || 0,
-        startDate: firstRecord?.date,
-        latestDate: latestRecord?.date,
       },
     };
   }
@@ -151,38 +163,30 @@ export class AdminService {
       .from('users')
       .select('*', { count: 'exact', head: true });
 
-    // 获取今日打卡人数
+    // 获取今日打卡人数（从 weight_records 表）
     const today = new Date().toISOString().split('T')[0];
     const { count: todayCheckins } = await client
-      .from('records')
+      .from('weight_records')
       .select('*', { count: 'exact', head: true })
       .eq('date', today);
 
     // 获取总打卡次数
     const { count: totalRecords } = await client
-      .from('records')
+      .from('weight_records')
       .select('*', { count: 'exact', head: true });
 
-    // 获取所有用户计算平均减重
+    // 从用户表获取减重数据
     const { data: users } = await client
       .from('users')
-      .select('id');
+      .select('current_weight, target_weight');
 
-    let totalWeightLost = 0;
-    let userCountWithRecords = 0;
+    let totalWeightToGoal = 0;
+    let userCountWithGoal = 0;
 
     for (const user of users || []) {
-      const { data: records } = await client
-        .from('records')
-        .select('weight')
-        .eq('user_id', user.id)
-        .order('date', { ascending: true });
-
-      if (records && records.length >= 2) {
-        const firstWeight = records[0].weight;
-        const lastWeight = records[records.length - 1].weight;
-        totalWeightLost += firstWeight - lastWeight;
-        userCountWithRecords++;
+      if (user.current_weight && user.target_weight) {
+        totalWeightToGoal += user.target_weight - user.current_weight;
+        userCountWithGoal++;
       }
     }
 
@@ -190,10 +194,10 @@ export class AdminService {
       totalUsers: totalUsers || 0,
       todayCheckins: todayCheckins || 0,
       totalRecords: totalRecords || 0,
-      averageWeightLost: userCountWithRecords > 0
-        ? Math.round((totalWeightLost / userCountWithRecords) * 10) / 10
+      averageWeightToGoal: userCountWithGoal > 0
+        ? Math.round((totalWeightToGoal / userCountWithGoal) * 10) / 10
         : 0,
-      totalWeightLost: Math.round(totalWeightLost * 10) / 10,
+      totalWeightToGoal: Math.round(totalWeightToGoal * 10) / 10,
     };
   }
 
@@ -201,48 +205,47 @@ export class AdminService {
   async getWeightLossRanking(limit: number = 10) {
     const client = getSupabaseClient();
     
+    // 直接从用户表获取数据
     const { data: users } = await client
       .from('users')
-      .select('id, nickname, avatar_url');
+      .select('id, nickname, avatar_url, current_weight, target_weight, bmi, body_fat_rate, last_checkin_date')
+      .not('current_weight', 'is', null)
+      .not('target_weight', 'is', null);
 
+    // 计算距离目标的重量
     const rankings: Array<{
       userId: string;
       nickname: string;
       avatarUrl: string | null;
-      startWeight: number;
       currentWeight: number;
-      weightLost: number;
-      startDate: string;
-      latestDate: string;
+      targetWeight: number;
+      weightToGoal: number;
+      bmi: number;
+      bodyFatRate: number;
+      lastCheckinDate: string;
     }> = [];
 
     for (const user of users || []) {
-      const { data: records } = await client
-        .from('records')
-        .select('weight, date')
-        .eq('user_id', user.id)
-        .order('date', { ascending: true });
-
-      if (records && records.length >= 2) {
-        const firstWeight = records[0].weight;
-        const lastWeight = records[records.length - 1].weight;
-        const weightLost = firstWeight - lastWeight;
-
+      const currentWeight = user.current_weight || 0;
+      const targetWeight = user.target_weight || 0;
+      
+      if (currentWeight > 0 && targetWeight > 0) {
         rankings.push({
           userId: user.id,
-          nickname: user.nickname || '未设置昵称',
+          nickname: user.nickname || '未设置',
           avatarUrl: user.avatar_url,
-          startWeight: firstWeight,
-          currentWeight: lastWeight,
-          weightLost: Math.round(weightLost * 10) / 10,
-          startDate: records[0].date,
-          latestDate: records[records.length - 1].date,
+          currentWeight: currentWeight,
+          targetWeight: targetWeight,
+          weightToGoal: Math.round((targetWeight - currentWeight) * 10) / 10,
+          bmi: user.bmi || 0,
+          bodyFatRate: user.body_fat_rate || 0,
+          lastCheckinDate: user.last_checkin_date || '',
         });
       }
     }
 
-    // 按减重量排序
-    rankings.sort((a, b) => b.weightLost - a.weightLost);
+    // 按距离目标的重量排序（接近目标的排前面）
+    rankings.sort((a, b) => a.weightToGoal - b.weightToGoal);
 
     return rankings.slice(0, limit);
   }

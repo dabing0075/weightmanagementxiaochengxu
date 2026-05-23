@@ -152,8 +152,9 @@
             <div class="flex items-center gap-4">
               <select id="sortField" onchange="loadCustomers()" class="px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="created_at">按注册时间</option>
-                <option value="weightLost">按减重量</option>
+                <option value="weightToGoal">按目标进度</option>
                 <option value="currentWeight">按当前体重</option>
+                <option value="currentWaist">按当前腰围</option>
               </select>
               <select id="sortOrder" onchange="loadCustomers()" class="px-4 py-2 border border-gray-300 rounded-lg">
                 <option value="desc">降序</option>
@@ -167,9 +168,10 @@
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">用户</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">性别</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">初始体重</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">身高</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前体重</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">已减重</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前腰围</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">目标进度</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">目标体重</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">最后打卡</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
@@ -374,6 +376,9 @@
 
         data.forEach((item, index) => {
           const medal = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}`;
+          const weightToGoal = item.weightToGoal || 0;
+          const progressText = weightToGoal <= 0 ? `已达标` : `距目标${weightToGoal.toFixed(1)}kg`;
+          const progressClass = weightToGoal <= 0 ? 'text-green-500' : 'text-primary';
           const html = `
             <div class="flex items-center justify-between py-3 ${index < data.length - 1 ? 'border-b border-gray-100' : ''}">
               <div class="flex items-center gap-3">
@@ -384,8 +389,8 @@
                 <span class="font-medium">${item.nickname}</span>
               </div>
               <div class="text-right">
-                <span class="text-primary font-bold text-lg">-${item.weightLost} kg</span>
-                <p class="text-gray-400 text-sm">${item.startWeight}kg → ${item.currentWeight}kg</p>
+                <span class="${progressClass} font-bold text-lg">${progressText}</span>
+                <p class="text-gray-400 text-sm">当前 ${item.currentWeight}kg / 目标 ${item.targetWeight}kg</p>
               </div>
             </div>
           `;
@@ -397,6 +402,9 @@
         rankingList.innerHTML = '';
         data.forEach((item, index) => {
           const medal = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}`;
+          const weightToGoal = item.weightToGoal || 0;
+          const progressText = weightToGoal <= 0 ? `已达标` : `距目标${weightToGoal.toFixed(1)}kg`;
+          const progressClass = weightToGoal <= 0 ? 'text-green-500' : 'text-primary';
           const html = `
             <div class="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between">
               <div class="flex items-center gap-4">
@@ -406,12 +414,12 @@
                 </div>
                 <div>
                   <p class="font-semibold">${item.nickname}</p>
-                  <p class="text-gray-500 text-sm">开始日期: ${item.startDate}</p>
+                  <p class="text-gray-500 text-sm">当前: ${item.currentWeight}kg</p>
                 </div>
               </div>
               <div class="text-right">
-                <p class="text-primary font-bold text-xl">-${item.weightLost} kg</p>
-                <p class="text-gray-500">${item.startWeight}kg → ${item.currentWeight}kg</p>
+                <p class="${progressClass} font-bold text-xl">${progressText}</p>
+                <p class="text-gray-500">目标 ${item.targetWeight}kg</p>
               </div>
             </div>
           `;
@@ -441,8 +449,10 @@
 
         data.data.forEach(user => {
           const gender = user.gender === 'male' ? '男' : user.gender === 'female' ? '女' : '未知';
-          const weightLostClass = user.weightLost > 0 ? 'text-green-500' : user.weightLost < 0 ? 'text-red-500' : 'text-gray-500';
-          const weightLostText = user.weightLost > 0 ? `-${user.weightLost}` : user.weightLost < 0 ? `+${Math.abs(user.weightLost)}` : '0';
+          // weightToGoal: 正数表示还需减重，负数表示已超过目标（即减重成功）
+          const weightToGoal = user.weightToGoal || 0;
+          const weightLostClass = weightToGoal <= 0 ? 'text-green-500' : 'text-orange-500';
+          const weightLostText = weightToGoal <= 0 ? `已达标` : `还需减${weightToGoal.toFixed(1)}`;
 
           const html = `
             <tr class="hover:bg-gray-50">
@@ -455,11 +465,12 @@
                 </div>
               </td>
               <td class="px-6 py-4">${gender}</td>
-              <td class="px-6 py-4">${user.startWeight || '-'} kg</td>
-              <td class="px-6 py-4">${user.currentWeight || '-'} kg</td>
-              <td class="px-6 py-4 font-semibold ${weightLostClass}">${weightLostText} kg</td>
-              <td class="px-6 py-4">${user.target_weight || '-'} kg</td>
-              <td class="px-6 py-4 text-gray-500 text-sm">${user.latestRecordDate || '-'}</td>
+              <td class="px-6 py-4">${user.height || '-'} cm</td>
+              <td class="px-6 py-4">${user.currentWeight ? user.currentWeight + ' kg' : '-'}</td>
+              <td class="px-6 py-4">${user.currentWaist ? user.currentWaist + ' cm' : '-'}</td>
+              <td class="px-6 py-4 font-semibold ${weightLostClass}">${weightLostText}</td>
+              <td class="px-6 py-4">${user.targetWeight ? user.targetWeight + ' kg' : '-'}</td>
+              <td class="px-6 py-4 text-gray-500 text-sm">${user.lastCheckinDate || '-'}</td>
               <td class="px-6 py-4">
                 <button onclick="viewCustomerDetail('${user.id}')" class="text-primary hover:underline">查看详情</button>
               </td>

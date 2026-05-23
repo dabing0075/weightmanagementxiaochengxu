@@ -2,6 +2,63 @@ import { Injectable } from '@nestjs/common'
 import { getSupabaseClient } from '../../storage/database/supabase-client'
 import { UpdateUserDto } from './dto/update-user.dto'
 
+// 计算健康指标的辅助函数
+function calculateHealthMetrics(weight: number, waist: number, height: number, gender: string, age: number) {
+  // BMI = 体重 / 身高^2
+  const bmi = weight && height ? Math.round((weight / Math.pow(height / 100, 2)) * 10) / 10 : 0
+  
+  // 体脂率计算（根据性别）
+  let bodyFatRate = 0
+  if (weight && height && waist && gender) {
+    if (gender === 'male') {
+      // 男性体脂率 = (1.2 × BMI) + (0.23 × 年龄) - 16.2
+      bodyFatRate = Math.round((1.2 * bmi + 0.23 * age - 16.2) * 10) / 10
+    } else {
+      // 女性体脂率 = (1.2 × BMI) + (0.23 × 年龄) - 5.4
+      bodyFatRate = Math.round((1.2 * bmi + 0.23 * age - 5.4) * 10) / 10
+    }
+  }
+  
+  // 健康等级判定
+  let bmiLevel = ''
+  if (bmi > 0) {
+    if (bmi < 18.5) bmiLevel = '体重过低'
+    else if (bmi < 24) bmiLevel = '正常'
+    else if (bmi < 28) bmiLevel = '超重'
+    else bmiLevel = '肥胖'
+  }
+  
+  let bodyFatLevel = ''
+  if (bodyFatRate > 0) {
+    if (gender === 'male') {
+      if (bodyFatRate < 10) bodyFatLevel = '偏低'
+      else if (bodyFatRate < 20) bodyFatLevel = '正常'
+      else if (bodyFatRate < 25) bodyFatLevel = '偏高'
+      else bodyFatLevel = '肥胖'
+    } else {
+      if (bodyFatRate < 18) bodyFatLevel = '偏低'
+      else if (bodyFatRate < 28) bodyFatLevel = '正常'
+      else if (bodyFatRate < 33) bodyFatLevel = '偏高'
+      else bodyFatLevel = '肥胖'
+    }
+  }
+  
+  let waistLevel = ''
+  if (waist > 0) {
+    if (gender === 'male') {
+      if (waist < 85) waistLevel = '正常'
+      else if (waist < 90) waistLevel = '中心型肥胖前期'
+      else waistLevel = '中心型肥胖'
+    } else {
+      if (waist < 80) waistLevel = '正常'
+      else if (waist < 85) waistLevel = '中心型肥胖前期'
+      else waistLevel = '中心型肥胖'
+    }
+  }
+  
+  return { bmi, bmiLevel, bodyFatRate, bodyFatLevel, waistLevel }
+}
+
 @Injectable()
 export class UserService {
   /**
@@ -29,7 +86,7 @@ export class UserService {
     // 先查询是否有用户
     const { data: existingUsers, error: queryError } = await client
       .from('users')
-      .select('id')
+      .select('id, current_weight, current_waist, height, gender, birth_date')
       .limit(1)
     
     if (queryError) throw new Error(`查询用户失败: ${queryError.message}`)
@@ -53,10 +110,46 @@ export class UserService {
     } else {
       // 更新现有用户
       const userId = existingUsers[0].id
+      const currentUser = existingUsers[0]
+      
+      // 合并更新后的数据
+      const updatedGender = updateUserDto.gender || currentUser.gender
+      const updatedHeight = updateUserDto.height || currentUser.height
+      const updatedBirthDate = updateUserDto.birth_date || currentUser.birth_date
+      const currentWeight = currentUser.current_weight
+      const currentWaist = currentUser.current_waist
+      
+      // 计算年龄
+      let age = 30
+      if (updatedBirthDate) {
+        const birthDate = new Date(updatedBirthDate)
+        age = new Date().getFullYear() - birthDate.getFullYear()
+      }
+      
+      // 如果有体重和腰围数据，重新计算健康指标
+      let healthMetrics = {}
+      if (currentWeight && currentWaist && updatedHeight) {
+        const metrics = calculateHealthMetrics(
+          currentWeight,
+          currentWaist,
+          updatedHeight,
+          updatedGender,
+          age
+        )
+        healthMetrics = {
+          bmi: metrics.bmi,
+          bmi_level: metrics.bmiLevel,
+          body_fat_rate: metrics.bodyFatRate,
+          body_fat_level: metrics.bodyFatLevel,
+          waist_level: metrics.waistLevel
+        }
+      }
+      
       const { data, error } = await client
         .from('users')
         .update({
           ...updateUserDto,
+          ...healthMetrics,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId)
