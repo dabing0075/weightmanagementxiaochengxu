@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { getSupabaseClient } from '../../storage/database/supabase-client';
-import { globalNotifications, userNotifications, getNextNotificationId } from '../notifications/notifications.service';
 
-// 内存存储通知（临时方案，生产环境应使用数据库）
+// 通知接口
 export interface Notification {
   id: string;
   title: string;
@@ -10,16 +9,6 @@ export interface Notification {
   type: string;
   created_at: string;
   targetUsers?: string[];
-}
-
-export interface UserNotification {
-  id: string;
-  user_id: string;
-  title: string;
-  content: string;
-  type: string;
-  is_read: boolean;
-  created_at: string;
 }
 
 @Injectable()
@@ -258,71 +247,113 @@ export class AdminService {
     return rankings.slice(0, limit);
   }
 
-  // 创建通知（使用内存存储）
+  // 创建通知（使用数据库存储）
   async createNotification(
     title: string,
     content: string,
     type: string = 'system',
     targetUsers?: string[],
   ) {
-    const now = new Date().toISOString();
+    const client = getSupabaseClient();
     
-    // 如果指定了目标用户，为每个用户创建通知
-    if (targetUsers && targetUsers.length > 0) {
-      targetUsers.forEach((userId) => {
-        userNotifications.push({
-          id: `notif-${getNextNotificationId()}`,
-          user_id: userId,
-          title,
-          content,
-          type,
-          is_read: false,
-          created_at: now,
-        });
-      });
-    } else {
-      // 全局通知
-      globalNotifications.push({
-        id: `global-${getNextNotificationId()}`,
+    // 插入全局通知到数据库
+    const { data, error } = await client
+      .from('global_notifications')
+      .insert({
         title,
         content,
         type,
-        created_at: now,
-      });
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('创建通知失败:', error);
+      return { success: false, message: '创建通知失败' };
+    }
+
+    // 如果指定了目标用户，为每个用户创建关联记录
+    if (targetUsers && targetUsers.length > 0 && data) {
+      const userNotificationData = targetUsers.map(userId => ({
+        user_id: userId,
+        notification_id: data.id,
+        is_read: false,
+      }));
+      
+      const { error: userError } = await client
+        .from('user_notifications')
+        .insert(userNotificationData);
+      
+      if (userError) {
+        console.error('创建用户通知关联失败:', userError);
+      }
     }
 
     console.log('通知创建成功:', { title, content, type, targetUsers });
-    return { success: true, message: '通知创建成功' };
+    return { success: true, message: '通知创建成功', data };
   }
 
-  // 获取通知列表（使用内存存储）
+  // 获取通知列表（使用数据库存储）
   async getNotifications(page: number = 1, pageSize: number = 20) {
+    const client = getSupabaseClient();
     const from = (page - 1) * pageSize;
-    const to = from + pageSize;
+    const to = from + pageSize - 1;
     
-    // 按创建时间倒序排列
-    const sortedNotifications = [...globalNotifications].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
+    // 获取总数
+    const { count, error: countError } = await client
+      .from('global_notifications')
+      .select('*', { count: 'exact', head: true });
     
-    const paginatedData = sortedNotifications.slice(from, to);
+    if (countError) {
+      console.error('获取通知总数失败:', countError);
+    }
+
+    // 分页获取通知列表
+    const { data, error } = await client
+      .from('global_notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      console.error('获取通知列表失败:', error);
+      return {
+        data: [],
+        total: 0,
+        page,
+        pageSize,
+      };
+    }
 
     return {
-      data: paginatedData,
-      total: globalNotifications.length,
+      data: data || [],
+      total: count || 0,
       page,
       pageSize,
     };
   }
 
-  // 删除通知（使用内存存储）
+  // 删除通知（使用数据库存储）
   async deleteNotification(notificationId: string) {
-    const index = globalNotifications.findIndex(n => n.id === notificationId);
-    if (index === -1) {
-      return { success: false, message: '通知不存在' };
+    const client = getSupabaseClient();
+    
+    // 先删除关联的用户通知记录
+    await client
+      .from('user_notifications')
+      .delete()
+      .eq('notification_id', notificationId);
+    
+    // 再删除全局通知
+    const { error } = await client
+      .from('global_notifications')
+      .delete()
+      .eq('id', notificationId);
+
+    if (error) {
+      console.error('删除通知失败:', error);
+      return { success: false, message: '删除失败' };
     }
     
-    globalNotifications.splice(index, 1);
     return { success: true, message: '删除成功' };
   }
 
