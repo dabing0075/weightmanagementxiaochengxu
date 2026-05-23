@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { getSupabaseClient } from '../../storage/database/supabase-client';
+import { globalNotifications, userNotifications, getNextNotificationId } from '../notifications/notifications.service';
 
 // 内存存储通知（临时方案，生产环境应使用数据库）
 export interface Notification {
@@ -20,11 +21,6 @@ export interface UserNotification {
   is_read: boolean;
   created_at: string;
 }
-
-// 内存存储
-const globalNotifications: Notification[] = [];
-const userNotifications: UserNotification[] = [];
-let notificationIdCounter = 1;
 
 @Injectable()
 export class AdminService {
@@ -275,7 +271,7 @@ export class AdminService {
     if (targetUsers && targetUsers.length > 0) {
       targetUsers.forEach((userId) => {
         userNotifications.push({
-          id: `notif-${notificationIdCounter++}`,
+          id: `notif-${getNextNotificationId()}`,
           user_id: userId,
           title,
           content,
@@ -287,7 +283,7 @@ export class AdminService {
     } else {
       // 全局通知
       globalNotifications.push({
-        id: `global-${notificationIdCounter++}`,
+        id: `global-${getNextNotificationId()}`,
         title,
         content,
         type,

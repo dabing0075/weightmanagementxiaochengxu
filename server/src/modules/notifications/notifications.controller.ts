@@ -1,0 +1,43 @@
+import { Controller, Get, Post, Param, Query } from '@nestjs/common'
+import { NotificationsService } from './notifications.service'
+
+@Controller('notifications')
+export class NotificationsController {
+  constructor(private readonly notificationsService: NotificationsService) {}
+
+  /**
+   * 获取用户通知列表
+   */
+  @Get()
+  async getNotifications(@Query('userId') userId?: string) {
+    console.log('[NotificationsController] GET /api/notifications')
+    console.log('[NotificationsController] userId:', userId)
+    
+    const data = await this.notificationsService.getUserNotifications(userId)
+    console.log('[NotificationsController] 返回通知数量:', data.length)
+    
+    return {
+      code: 200,
+      msg: 'success',
+      data,
+    }
+  }
+
+  /**
+   * 标记通知为已读
+   */
+  @Post(':id/read')
+  async markAsRead(
+    @Param('id') notificationId: string,
+    @Query('userId') userId?: string,
+  ) {
+    console.log('[NotificationsController] POST /api/notifications/' + notificationId + '/read')
+    
+    const result = await this.notificationsService.markAsRead(notificationId, userId)
+    return {
+      code: 200,
+      msg: 'success',
+      data: result,
+    }
+  }
+}
