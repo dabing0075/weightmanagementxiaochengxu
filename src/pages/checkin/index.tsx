@@ -130,6 +130,8 @@ export default function CheckinPage() {
         setWaist('')
         setNote('')
         fetchRecentRecords()
+        // 发送事件通知其他页面刷新数据
+        Taro.eventCenter.trigger('checkinSuccess')
       } else {
         Taro.showToast({ title: res.data?.msg || '打卡失败', icon: 'none' })
       }

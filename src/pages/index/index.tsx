@@ -106,8 +106,17 @@ export default function HomePage() {
       loadUnreadCount()
     }, 30000)
     
+    // 监听打卡成功事件，刷新数据
+    const handleCheckinSuccess = () => {
+      console.log('收到打卡成功事件，刷新数据')
+      loadData()
+      loadUnreadCount()
+    }
+    Taro.eventCenter.on('checkinSuccess', handleCheckinSuccess)
+    
     return () => {
       clearInterval(pollInterval)
+      Taro.eventCenter.off('checkinSuccess', handleCheckinSuccess)
     }
   }, [])
 

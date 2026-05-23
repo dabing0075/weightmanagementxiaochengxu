@@ -72,6 +72,18 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchUserInfo()
     fetchCheckinStats()
+    
+    // 监听打卡成功事件，刷新数据
+    const handleCheckinSuccess = () => {
+      console.log('我的页收到打卡成功事件，刷新数据')
+      fetchUserInfo()
+      fetchCheckinStats()
+    }
+    Taro.eventCenter.on('checkinSuccess', handleCheckinSuccess)
+    
+    return () => {
+      Taro.eventCenter.off('checkinSuccess', handleCheckinSuccess)
+    }
   }, [])
 
   // 每次进入页面时刷新数据（打卡后数据变化）
