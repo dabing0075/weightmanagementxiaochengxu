@@ -168,11 +168,20 @@ export function HealthRangeBar({
               const end = range.max ?? maxVal
               let midPoint = ((start + end) / 2 - minVal) / totalRange * 100
               
-              // 针对特定标签调整位置，避免重叠
+              // 针对特定标签调整位置，确保在对应区段中间，避免重叠
               if (range.label === '中心型肥胖') {
-                midPoint = Math.max(midPoint - 12, 5)  // 向左移动，避免与右侧重叠
+                // 红色区段(obese)只有min没有max，重新计算中点位置
+                // 将标签放在该区段的视觉中间位置
+                const obeseStart = start
+                const obeseEnd = maxVal  // 使用线段图最大值
+                midPoint = ((obeseStart + obeseEnd) / 2 - minVal) / totalRange * 100
+                // 确保不超出右边界
+                midPoint = Math.min(midPoint, 92)
               } else if (range.label === '中心型肥胖前期') {
-                midPoint = Math.max(midPoint - 3, 15)  // 稍微向左
+                // 橙色区段，确保在中间位置
+                midPoint = ((start + end) / 2 - minVal) / totalRange * 100
+                // 稍微向左偏移避免与"中心型肥胖"重叠
+                midPoint = Math.max(midPoint - 2, 15)
               }
               
               labels.push(
