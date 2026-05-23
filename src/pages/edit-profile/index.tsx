@@ -13,6 +13,14 @@ interface UserInfo {
   gender: string
   birth_date: string
   height: number
+  // 健康指标
+  current_weight?: number
+  current_waist?: number
+  bmi?: number
+  bmi_level?: string
+  body_fat_rate?: number
+  body_fat_level?: string
+  waist_level?: string
 }
 
 export default function EditProfilePage() {

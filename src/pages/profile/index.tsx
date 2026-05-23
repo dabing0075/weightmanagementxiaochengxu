@@ -13,6 +13,15 @@ interface UserInfo {
   height: number
   target_weight: number
   target_waist: number
+  // 健康指标
+  current_weight?: number
+  current_waist?: number
+  bmi?: number
+  bmi_level?: string
+  body_fat_rate?: number
+  body_fat_level?: string
+  waist_level?: string
+  last_checkin_date?: string
 }
 
 interface CheckinStats {

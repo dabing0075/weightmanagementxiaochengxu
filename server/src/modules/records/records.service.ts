@@ -7,6 +7,58 @@ export class RecordsService {
   private readonly DEFAULT_USER_ID = 'f0bc3324-5b55-43e8-97fb-9f7913e7ff40';
   private supabase = getSupabaseClient();
 
+  /**
+   * 计算BMI等级
+   */
+  private getBmiLevel(bmi: number): string {
+    if (bmi < 18.5) return '偏瘦';
+    if (bmi < 24) return '正常';
+    if (bmi < 28) return '超重';
+    return '肥胖';
+  }
+
+  /**
+   * 计算体脂率（成人公式）
+   */
+  private calculateBodyFat(bmi: number, age: number, gender: string): number {
+    // 成人体脂率计算公式
+    const genderFactor = gender === 'male' ? 1 : 0;
+    const bodyFat = (1.2 * bmi) + (0.23 * age) - (10.8 * genderFactor) - 5.4;
+    return Math.round(bodyFat * 10) / 10;
+  }
+
+  /**
+   * 获取体脂率等级
+   */
+  private getBodyFatLevel(bodyFat: number, gender: string): string {
+    if (gender === 'male') {
+      if (bodyFat < 10) return '偏低';
+      if (bodyFat < 20) return '正常';
+      if (bodyFat < 25) return '偏高';
+      return '肥胖';
+    } else {
+      if (bodyFat < 20) return '偏低';
+      if (bodyFat < 30) return '正常';
+      if (bodyFat < 35) return '偏高';
+      return '肥胖';
+    }
+  }
+
+  /**
+   * 获取腰围等级
+   */
+  private getWaistLevel(waist: number, gender: string): string {
+    if (gender === 'male') {
+      if (waist < 85) return '正常';
+      if (waist < 90) return '中心型肥胖前期';
+      return '中心型肥胖';
+    } else {
+      if (waist < 80) return '正常';
+      if (waist < 85) return '中心型肥胖前期';
+      return '中心型肥胖';
+    }
+  }
+
   async checkIn(data: { date: string; weight: number; waist: number; note?: string }) {
     // 检查当天是否已打卡
     const { data: existing, error: checkError } = await this.supabase
@@ -40,6 +92,9 @@ export class RecordsService {
         return { code: 500, msg: '更新记录失败', data: null };
       }
 
+      // 更新用户健康指标
+      await this.updateUserHealthMetrics(data.weight, data.waist, data.date);
+
       console.log('[RecordsService] 更新记录成功', updated);
       return { code: 200, msg: '记录已更新', data: updated };
     }
@@ -62,8 +117,72 @@ export class RecordsService {
       return { code: 500, msg: '创建记录失败', data: null };
     }
 
+    // 更新用户健康指标
+    await this.updateUserHealthMetrics(data.weight, data.waist, data.date);
+
     console.log('[RecordsService] 创建记录成功', newRecord);
     return { code: 200, msg: '打卡成功', data: newRecord };
+  }
+
+  /**
+   * 更新用户健康指标
+   */
+  private async updateUserHealthMetrics(weight: number, waist: number, date: string) {
+    try {
+      // 获取用户信息
+      const { data: user, error: userError } = await this.supabase
+        .from('users')
+        .select('height, gender, birth_date')
+        .eq('id', this.DEFAULT_USER_ID)
+        .single();
+
+      if (userError || !user) {
+        console.error('[RecordsService] 获取用户信息失败', userError);
+        return;
+      }
+
+      const height = Number(user.height); // 身高单位：厘米
+      const gender = user.gender || 'male';
+      
+      // 计算年龄
+      const birthDate = new Date(user.birth_date);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+
+      // 计算健康指标
+      const heightM = height / 100;
+      const bmi = Math.round((weight / (heightM * heightM)) * 10) / 10;
+      const bmiLevel = this.getBmiLevel(bmi);
+      const bodyFat = this.calculateBodyFat(bmi, age, gender);
+      const bodyFatLevel = this.getBodyFatLevel(bodyFat, gender);
+      const waistLevel = this.getWaistLevel(waist, gender);
+
+      // 更新用户表
+      const { error: updateError } = await this.supabase
+        .from('users')
+        .update({
+          current_weight: weight,
+          current_waist: waist,
+          bmi: bmi,
+          bmi_level: bmiLevel,
+          body_fat_rate: bodyFat,
+          body_fat_level: bodyFatLevel,
+          waist_level: waistLevel,
+          last_checkin_date: date,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', this.DEFAULT_USER_ID);
+
+      if (updateError) {
+        console.error('[RecordsService] 更新用户健康指标失败', updateError);
+      } else {
+        console.log('[RecordsService] 更新用户健康指标成功', {
+          weight, waist, bmi, bmiLevel, bodyFat, bodyFatLevel, waistLevel
+        });
+      }
+    } catch (err) {
+      console.error('[RecordsService] 更新用户健康指标异常', err);
+    }
   }
 
   async getRecentRecords(days: number) {

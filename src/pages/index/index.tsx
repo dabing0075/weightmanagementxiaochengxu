@@ -29,6 +29,15 @@ interface UserInfo {
   target_weight: number
   target_waist: number
   avatar_url: string | null
+  // 健康指标（从用户表直接获取）
+  current_weight?: number
+  current_waist?: number
+  bmi?: number
+  bmi_level?: string
+  body_fat_rate?: number
+  body_fat_level?: string
+  waist_level?: string
+  last_checkin_date?: string
 }
 
 // 健康指标接口

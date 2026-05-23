@@ -5,7 +5,7 @@ import { getSupabaseClient } from '../../storage/database/supabase-client'
 export class HealthService {
   /**
    * 获取健康指标
-   * 计算 BMI、体脂率等
+   * 优先从用户表获取已计算的健康指标，如果没有则实时计算
    */
   async getHealthMetrics() {
     const client = getSupabaseClient()
@@ -28,22 +28,12 @@ export class HealthService {
         bmiLevel: '--',
         bodyFatRate: null,
         bodyFatLevel: '--',
+        waistLevel: '--',
         weightDiff: 0,
         todayCheckedIn: false
       }
     }
 
-    // 获取最新的体重记录
-    const { data: records, error: recordError } = await client
-      .from('weight_records')
-      .select('*')
-      .order('record_date', { ascending: false })
-      .limit(1)
-    
-    if (recordError) throw new Error(`获取记录失败: ${recordError.message}`)
-    
-    const latestRecord = records?.[0]
-    
     // 检查今天是否已打卡
     const today = new Date().toISOString().split('T')[0]
     const { data: todayRecords, error: todayError } = await client
@@ -56,7 +46,37 @@ export class HealthService {
     
     const todayCheckedIn = todayRecords && todayRecords.length > 0
 
-    // 如果没有记录，返回用户目标数据
+    // 如果用户表已有健康指标数据，直接返回
+    if (user.current_weight && user.bmi) {
+      const weightDiff = user.target_weight 
+        ? user.current_weight - user.target_weight 
+        : 0
+
+      return {
+        currentWeight: user.current_weight,
+        currentWaist: user.current_waist,
+        bmi: user.bmi,
+        bmiLevel: user.bmi_level || '--',
+        bodyFatRate: user.body_fat_rate,
+        bodyFatLevel: user.body_fat_level || '--',
+        waistLevel: user.waist_level || '--',
+        weightDiff,
+        todayCheckedIn
+      }
+    }
+
+    // 如果用户表没有健康指标，从最新打卡记录计算
+    const { data: records, error: recordError } = await client
+      .from('weight_records')
+      .select('*')
+      .order('record_date', { ascending: false })
+      .limit(1)
+    
+    if (recordError) throw new Error(`获取记录失败: ${recordError.message}`)
+    
+    const latestRecord = records?.[0]
+    
+    // 如果没有记录，返回默认值
     if (!latestRecord) {
       return {
         currentWeight: null,
@@ -65,6 +85,7 @@ export class HealthService {
         bmiLevel: '--',
         bodyFatRate: null,
         bodyFatLevel: '--',
+        waistLevel: '--',
         weightDiff: 0,
         todayCheckedIn
       }

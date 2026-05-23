@@ -12,6 +12,9 @@ interface UserInfo {
   nickname: string
   target_weight: number
   target_waist: number
+  // 当前健康指标
+  current_weight?: number
+  current_waist?: number
 }
 
 interface HealthMetrics {
