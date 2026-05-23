@@ -133,6 +133,7 @@ export default function WeightPage() {
   }
 
   const weightToLose = profile ? profile.currentWeight - profile.targetWeight : 0
+  const isGoalAchieved = profile ? profile.currentWeight <= profile.targetWeight : false
 
   return (
     <View className="flex flex-col min-h-screen bg-[#F7F4ED]">
@@ -191,59 +192,81 @@ export default function WeightPage() {
                   </View>
                 </View>
 
-                <View className="mt-3 p-3 bg-[#F26B3A]/10 rounded-xl">
+                <View className={`mt-3 p-3 rounded-xl ${isGoalAchieved ? 'bg-[#3C8D6E]/10' : 'bg-[#F26B3A]/10'}`}>
                   <View className="flex items-center justify-between">
-                    <Text className="text-sm text-[#6B7280]">需减重</Text>
-                    <Text className="text-lg font-bold text-[#F26B3A]">{weightToLose.toFixed(1)} kg</Text>
+                    <Text className="text-sm text-[#6B7280]">
+                      {isGoalAchieved ? '目标状态' : '需减重'}
+                    </Text>
+                    {isGoalAchieved ? (
+                      <Text className="text-lg font-bold text-[#3C8D6E]">🎉 已达成目标</Text>
+                    ) : (
+                      <Text className="text-lg font-bold text-[#F26B3A]">{weightToLose.toFixed(1)} kg</Text>
+                    )}
                   </View>
                 </View>
               </CardContent>
             </Card>
           )}
 
-          {/* 每周减重目标选择 */}
-          <Card className="bg-white shadow-md">
-            <CardContent className="p-4">
-              <View className="flex items-center gap-2 mb-4">
-                <View className="w-8 h-8 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
-                  <Calculator size={16} color="#6366F1" />
+          {/* 每周减重目标选择 - 仅未达成目标时显示 */}
+          {!isGoalAchieved && (
+            <Card className="bg-white shadow-md">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-4">
+                  <View className="w-8 h-8 rounded-full bg-[#6366F1]/10 flex items-center justify-center">
+                    <Calculator size={16} color="#6366F1" />
+                  </View>
+                  <Text className="text-base font-semibold text-[#1E2933]">每周减重目标</Text>
                 </View>
-                <Text className="text-base font-semibold text-[#1E2933]">每周减重目标</Text>
-              </View>
 
-              <View className="space-y-3">
-                {weeklyGoalOptions.map(option => (
-                  <View
-                    key={option.value}
-                    className={`p-4 rounded-xl border-2 ${
-                      weeklyGoal === option.value
-                        ? 'border-[#F26B3A] bg-[#F26B3A]/5'
-                        : 'border-[#E4DED2] bg-[#F7F4ED]'
-                    }`}
-                    onClick={() => setWeeklyGoal(option.value)}
-                  >
-                    <View className="flex items-center justify-between">
-                      <View>
-                        <Text className="text-base font-semibold text-[#1E2933]">{option.label}</Text>
-                        <Text className="text-sm text-[#6B7280] mt-1">{option.desc}</Text>
-                      </View>
-                      <View
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          weeklyGoal === option.value
-                            ? 'border-[#F26B3A] bg-[#F26B3A]'
-                            : 'border-[#D1D5DB]'
-                        }`}
-                      >
-                        {weeklyGoal === option.value && (
-                          <View className="w-2 h-2 rounded-full bg-white" />
-                        )}
+                <View className="space-y-3">
+                  {weeklyGoalOptions.map(option => (
+                    <View
+                      key={option.value}
+                      className={`p-4 rounded-xl border-2 ${
+                        weeklyGoal === option.value
+                          ? 'border-[#F26B3A] bg-[#F26B3A]/5'
+                          : 'border-[#E4DED2] bg-[#F7F4ED]'
+                      }`}
+                      onClick={() => setWeeklyGoal(option.value)}
+                    >
+                      <View className="flex items-center justify-between">
+                        <View>
+                          <Text className="text-base font-semibold text-[#1E2933]">{option.label}</Text>
+                          <Text className="text-sm text-[#6B7280] mt-1">{option.desc}</Text>
+                        </View>
+                        <View
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            weeklyGoal === option.value
+                              ? 'border-[#F26B3A] bg-[#F26B3A]'
+                              : 'border-[#D1D5DB]'
+                          }`}
+                        >
+                          {weeklyGoal === option.value && (
+                            <View className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </View>
                       </View>
                     </View>
-                  </View>
-                ))}
-              </View>
-            </CardContent>
-          </Card>
+                  ))}
+                </View>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 已达成目标提示 */}
+          {isGoalAchieved && (
+            <Card className="bg-[#3C8D6E]/10 border border-[#3C8D6E]/30">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-2">
+                  <Text className="text-base font-semibold text-[#3C8D6E]">💡 维持体重模式</Text>
+                </View>
+                <Text className="text-sm text-[#1E2933]">
+                  您已达成目标体重！生成的方案将帮助您维持当前体重，保持健康的生活方式。
+                </Text>
+              </CardContent>
+            </Card>
+          )}
 
           {/* 活动水平选择 */}
           <Card className="bg-white shadow-md">
@@ -291,11 +314,11 @@ export default function WeightPage() {
 
           {/* 计算按钮 */}
           <Button
-            className="w-full bg-[#F26B3A] text-white py-4 rounded-xl text-base font-semibold"
+            className={`w-full py-4 rounded-xl text-base font-semibold ${isGoalAchieved ? 'bg-[#3C8D6E] text-white' : 'bg-[#F26B3A] text-white'}`}
             onClick={calculatePlan}
             disabled={loading}
           >
-            {loading ? '计算中...' : '生成减重方案'}
+            {loading ? '计算中...' : isGoalAchieved ? '生成维持方案' : '生成减重方案'}
           </Button>
 
           {/* 计算结果 */}
