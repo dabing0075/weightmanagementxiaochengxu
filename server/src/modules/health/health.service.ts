@@ -479,16 +479,8 @@ export class HealthService {
       throw new Error('请先完善个人信息')
     }
 
-    // 获取最新体重记录
-    const { data: records, error: recordError } = await client
-      .from('weight_records')
-      .select('weight')
-      .order('record_date', { ascending: false })
-      .limit(1)
-    
-    if (recordError) throw new Error(`获取记录失败: ${recordError.message}`)
-    
-    const currentWeight = records?.[0]?.weight || user.current_weight || 70
+    // 使用用户表中的当前体重（打卡时会同步更新）
+    const currentWeight = user.current_weight || 70
     const targetWeight = user.target_weight || currentWeight
     const height = user.height || 170
     const gender = user.gender || 'male'
