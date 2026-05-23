@@ -174,6 +174,7 @@
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前体重</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">累计减重</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">目标体重</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">注册日期</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">最后打卡</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
                 </tr>
@@ -465,6 +466,7 @@
                   <span>${user.nickname || '未设置昵称'}</span>
                 </div>
               </td>
+              <td class="px-6 py-4 text-gray-500 text-sm">${user.createdAt ? new Date(user.createdAt).toLocaleDateString('zh-CN') : '-'}</td>
               <td class="px-6 py-4">${gender}</td>
               <td class="px-6 py-4">${user.height || '-'} cm</td>
               <td class="px-6 py-4">${user.initialWeight ? user.initialWeight + ' kg' : '-'}</td>
