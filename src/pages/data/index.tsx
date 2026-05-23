@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { Scale, Ruler, Share2, TrendingDown, TrendingUp, Activity, CircleUser } from 'lucide-react-taro'
 import { Card, CardContent } from '@/components/ui/card'
 import { HealthRangeBar } from '@/components/ui/health-range-bar'
@@ -130,6 +130,12 @@ export default function DataPage() {
     fetchTrendData()
     fetchStats()
   }, [timeRange])
+
+  // 每次进入页面时刷新数据（打卡后数据变化）
+  useDidShow(() => {
+    fetchTrendData()
+    fetchStats()
+  })
 
   function formatDate(dateStr: string) {
     return dateStr.slice(5) // MM-DD

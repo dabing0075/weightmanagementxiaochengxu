@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { User, Target, Calendar, Download, Info, MessageSquare, Trash2, ChevronRight, Settings, Pencil } from 'lucide-react-taro'
 import { Card, CardContent } from '@/components/ui/card'
 import { Network } from '@/network'
@@ -73,6 +73,12 @@ export default function ProfilePage() {
     fetchUserInfo()
     fetchCheckinStats()
   }, [])
+
+  // 每次进入页面时刷新数据（打卡后数据变化）
+  useDidShow(() => {
+    fetchUserInfo()
+    fetchCheckinStats()
+  })
 
   function getGenderText(gender: string) {
     return gender === 'male' ? '男' : gender === 'female' ? '女' : '未设置'

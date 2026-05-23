@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
+import { useDidShow } from '@tarojs/taro'
 import { Calculator, Target, Flame, Droplets, Utensils, Clock } from 'lucide-react-taro'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -56,6 +57,11 @@ export default function WeightPage() {
   useEffect(() => {
     fetchProfile()
   }, [])
+
+  // 每次进入页面时刷新数据（打卡后体重变化）
+  useDidShow(() => {
+    fetchProfile()
+  })
 
   async function fetchProfile() {
     try {

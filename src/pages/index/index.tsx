@@ -111,8 +111,9 @@ export default function HomePage() {
     }
   }, [])
 
-  // 页面显示时刷新未读数量（从其他页面返回或从后台切换回来）
+  // 页面显示时刷新所有数据（从其他页面返回或从后台切换回来）
   useDidShow(() => {
+    loadData()
     loadUnreadCount()
   })
 

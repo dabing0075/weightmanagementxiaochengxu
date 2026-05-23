@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { View, Text, Picker } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { Calendar, Scale, History } from 'lucide-react-taro'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -144,6 +144,11 @@ export default function CheckinPage() {
   useEffect(() => {
     fetchRecentRecords()
   }, [])
+
+  // 每次进入页面时刷新数据
+  useDidShow(() => {
+    fetchRecentRecords()
+  })
 
   return (
     <View className="flex flex-col min-h-screen bg-[#F7F4ED]">
