@@ -455,6 +455,11 @@ export default function HomePage() {
 
       {/* Main Content */}
       <View className="flex-1 overflow-y-auto pb-20">
+        {/* 问候语 */}
+        <View className="px-4 pt-4 pb-2">
+          <Text className="block text-lg font-semibold text-[#1E2933]">欢迎回来，健康生活每一天！加油！</Text>
+        </View>
+        
         {/* 今日打卡状态 */}
         <View className="px-4 pt-3 pb-2">
           <Card className="shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
