@@ -248,7 +248,7 @@ export class AdminService {
     // 直接从用户表获取数据
     const { data: users } = await client
       .from('users')
-      .select('id, nickname, avatar_url, initial_weight, current_weight, target_weight, bmi, body_fat_rate, last_checkin_date')
+      .select('id, nickname, avatar_url, gender, height, initial_weight, current_weight, target_weight, bmi, body_fat_rate, last_checkin_date')
       .not('current_weight', 'is', null);
 
     // 计算累计减重并排序
@@ -256,6 +256,8 @@ export class AdminService {
       userId: string;
       nickname: string;
       avatarUrl: string | null;
+      gender: string;
+      height: number;
       initialWeight: number;
       currentWeight: number;
       targetWeight: number;
@@ -263,6 +265,7 @@ export class AdminService {
       bmi: number;
       bodyFatRate: number;
       lastCheckinDate: string;
+      isGoalAchieved: boolean;
     }> = [];
 
     for (const user of users || []) {
@@ -275,11 +278,16 @@ export class AdminService {
         ? Math.round((initialWeight - currentWeight) * 10) / 10
         : 0;
       
+      // 是否达标：当前体重 <= 目标体重
+      const isGoalAchieved = targetWeight > 0 && currentWeight <= targetWeight;
+      
       if (currentWeight > 0) {
         rankings.push({
           userId: user.id,
           nickname: user.nickname || '未设置',
           avatarUrl: user.avatar_url,
+          gender: user.gender || 'unknown',
+          height: user.height || 0,
           initialWeight: initialWeight,
           currentWeight: currentWeight,
           targetWeight: targetWeight,
@@ -287,6 +295,7 @@ export class AdminService {
           bmi: user.bmi || 0,
           bodyFatRate: user.body_fat_rate || 0,
           lastCheckinDate: user.last_checkin_date || '',
+          isGoalAchieved: isGoalAchieved,
         });
       }
     }

@@ -379,9 +379,11 @@
 
         data.forEach((item, index) => {
           const medal = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}`;
-          const weightToGoal = item.weightToGoal || 0;
-          const progressText = weightToGoal <= 0 ? `已达标` : `距目标${weightToGoal.toFixed(1)}kg`;
-          const progressClass = weightToGoal <= 0 ? 'text-green-500' : 'text-primary';
+          const gender = item.gender === 'male' ? '男' : item.gender === 'female' ? '女' : '未知';
+          const totalWeightLoss = item.totalWeightLoss || 0;
+          const isGoalAchieved = item.isGoalAchieved;
+          const goalText = isGoalAchieved ? '已达标' : '未达标';
+          const goalClass = isGoalAchieved ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
           const html = `
             <div class="flex items-center justify-between py-3 ${index < data.length - 1 ? 'border-b border-gray-100' : ''}">
               <div class="flex items-center gap-3">
@@ -389,44 +391,79 @@
                 <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                   <i class="fas fa-user text-gray-500"></i>
                 </div>
-                <span class="font-medium">${item.nickname}</span>
+                <div>
+                  <span class="font-medium">${item.nickname}</span>
+                  <p class="text-gray-400 text-xs">${gender} | ${item.height || '-'}cm</p>
+                </div>
               </div>
-              <div class="text-right">
-                <span class="${progressClass} font-bold text-lg">${progressText}</span>
-                <p class="text-gray-400 text-sm">当前 ${item.currentWeight}kg / 目标 ${item.targetWeight}kg</p>
+              <div class="flex items-center gap-4">
+                <div class="text-right">
+                  <span class="text-green-500 font-bold text-lg">-${totalWeightLoss.toFixed(1)}kg</span>
+                  <p class="text-gray-400 text-sm">当前 ${item.currentWeight}kg / 目标 ${item.targetWeight}kg</p>
+                </div>
+                <span class="px-2 py-1 rounded-full text-xs font-medium ${goalClass}">${goalText}</span>
               </div>
             </div>
           `;
           container.innerHTML += html;
         });
 
-        // 排行榜页面
+        // 排行榜页面 - 表格形式展示更详细信息
         const rankingList = document.getElementById('rankingList');
-        rankingList.innerHTML = '';
+        rankingList.innerHTML = `
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">排名</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">客户</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">性别</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">身高</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">初始体重</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前体重</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">目标体重</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">累计减重</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">达标状态</th>
+                </tr>
+              </thead>
+              <tbody id="rankingTable" class="divide-y divide-gray-200"></tbody>
+            </table>
+          </div>
+        `;
+
+        const rankingTable = document.getElementById('rankingTable');
         data.forEach((item, index) => {
           const medal = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}`;
-          const weightToGoal = item.weightToGoal || 0;
-          const progressText = weightToGoal <= 0 ? `已达标` : `距目标${weightToGoal.toFixed(1)}kg`;
-          const progressClass = weightToGoal <= 0 ? 'text-green-500' : 'text-primary';
+          const gender = item.gender === 'male' ? '男' : item.gender === 'female' ? '女' : '未知';
+          const totalWeightLoss = item.totalWeightLoss || 0;
+          const isGoalAchieved = item.isGoalAchieved;
+          const goalText = isGoalAchieved ? '已达标' : '未达标';
+          const goalClass = isGoalAchieved ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
           const html = `
-            <div class="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <span class="text-2xl w-10">${medal}</span>
-                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                  <i class="fas fa-user text-gray-500"></i>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-4">
+                <span class="text-xl">${medal}</span>
+              </td>
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-gray-500 text-sm"></i>
+                  </div>
+                  <span class="font-medium">${item.nickname}</span>
                 </div>
-                <div>
-                  <p class="font-semibold">${item.nickname}</p>
-                  <p class="text-gray-500 text-sm">当前: ${item.currentWeight}kg</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="${progressClass} font-bold text-xl">${progressText}</p>
-                <p class="text-gray-500">目标 ${item.targetWeight}kg</p>
-              </div>
-            </div>
+              </td>
+              <td class="px-4 py-4">${gender}</td>
+              <td class="px-4 py-4">${item.height || '-'} cm</td>
+              <td class="px-4 py-4">${item.initialWeight ? item.initialWeight + ' kg' : '-'}</td>
+              <td class="px-4 py-4">${item.currentWeight ? item.currentWeight + ' kg' : '-'}</td>
+              <td class="px-4 py-4">${item.targetWeight ? item.targetWeight + ' kg' : '-'}</td>
+              <td class="px-4 py-4 font-semibold text-green-500">${totalWeightLoss.toFixed(1)} kg</td>
+              <td class="px-4 py-4">
+                <span class="px-3 py-1 rounded-full text-sm font-medium ${goalClass}">${goalText}</span>
+              </td>
+            </tr>
           `;
-          rankingList.innerHTML += html;
+          rankingTable.innerHTML += html;
         });
       } catch (err) {
         console.error('加载排行榜失败:', err);
