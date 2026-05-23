@@ -100,17 +100,44 @@ export default function WeightPage() {
           }
         }
         
-        setProfile({
+        const newProfile = {
           birthDate: userData.birth_date,
           gender: userData.gender || 'male',
           currentWeight: metricsData?.currentWeight || 70,
           targetWeight: userData.target_weight || 65,
           height: userData.height || 170,
           age: age
-        })
+        }
+        
+        setProfile(newProfile)
+        
+        // 如果之前已经计算过方案，自动重新计算
+        if (calculated) {
+          autoCalculatePlan()
+        }
       }
     } catch (error) {
       console.error('Fetch profile error:', error)
+    }
+  }
+  
+  // 自动计算方案（不需要点击按钮）
+  async function autoCalculatePlan() {
+    try {
+      const res = await Network.request({
+        url: '/api/health/weight-plan',
+        method: 'POST',
+        data: {
+          weeklyGoal,
+          activityLevel
+        }
+      })
+      console.log('Auto weight plan response:', res.data)
+      if (res.data?.code === 200 && res.data?.data) {
+        setWeightPlan(res.data.data)
+      }
+    } catch (error) {
+      console.error('Auto calculate plan error:', error)
     }
   }
 
