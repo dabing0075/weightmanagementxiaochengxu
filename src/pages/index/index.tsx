@@ -91,6 +91,8 @@ export default function HomePage() {
   const [metrics, setMetrics] = useState<HealthMetrics | null>(null)
   const [trendData, setTrendData] = useState<TrendResponse | null>(null)
   const [showNotificationDialog, setShowNotificationDialog] = useState(false)
+  const [showNotificationDetail, setShowNotificationDetail] = useState(false)
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loadingNotifications, setLoadingNotifications] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -259,29 +261,46 @@ export default function HomePage() {
     ]
   }
 
-  // 打开通知弹窗
+  // 打开通知列表弹窗
   const handleNotificationClick = async () => {
     await loadNotifications()
     setShowNotificationDialog(true)
+  }
+
+  // 点击某条通知，查看详情
+  const handleNotificationItemClick = async (notification: Notification) => {
+    setSelectedNotification(notification)
+    setShowNotificationDetail(true)
     
-    // 标记所有通知为已读
-    if (notifications.length > 0) {
+    // 标记该通知为已读
+    if (!notification.read) {
       try {
-        // 批量标记所有未读通知为已读
-        const unreadNotifs = notifications.filter(n => !n.read)
-        for (const notif of unreadNotifs) {
-          await Network.request({
-            url: `/api/notifications/${notif.id}/read`,
-            method: 'POST'
-          })
-        }
+        await Network.request({
+          url: `/api/notifications/${notification.id}/read`,
+          method: 'POST'
+        })
+        // 更新本地状态
+        setNotifications(prev => 
+          prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+        )
+        // 更新未读数量
+        setUnreadCount(prev => Math.max(0, prev - 1))
       } catch (error) {
         console.error('标记通知已读失败:', error)
       }
     }
-    
-    // 清除未读数量
-    setUnreadCount(0)
+  }
+
+  // 关闭详情弹窗
+  const handleCloseDetail = () => {
+    setShowNotificationDetail(false)
+    setSelectedNotification(null)
+  }
+
+  // 截断内容显示（只显示第一行，最多20个字符）
+  const truncateContent = (content: string, maxLength: number = 20) => {
+    if (content.length <= maxLength) return content
+    return content.substring(0, maxLength) + '...'
   }
 
   // 获取通知图标
@@ -667,7 +686,7 @@ export default function HomePage() {
         </View>
       </View>
 
-      {/* 通知弹窗 */}
+      {/* 通知列表弹窗 */}
       <Dialog open={showNotificationDialog} onOpenChange={setShowNotificationDialog}>
         <DialogContent className="max-w-[90vw] max-h-[70vh] overflow-hidden flex flex-col">
           <DialogHeader>
@@ -697,6 +716,7 @@ export default function HomePage() {
                     <View 
                       key={notification.id}
                       className={`flex gap-3 p-3 rounded-xl ${notification.read ? 'bg-gray-50' : 'bg-orange-50'}`}
+                      onClick={() => handleNotificationItemClick(notification)}
                     >
                       <View 
                         className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
@@ -711,7 +731,7 @@ export default function HomePage() {
                             <View className="w-2 h-2 bg-red-500 rounded-full" />
                           )}
                         </View>
-                        <Text className="text-xs text-gray-600 leading-relaxed">{notification.content}</Text>
+                        <Text className="text-xs text-gray-500 leading-relaxed">{truncateContent(notification.content)}</Text>
                         <Text className="text-xs text-gray-400 mt-1">{notification.date}</Text>
                       </View>
                     </View>
@@ -728,6 +748,42 @@ export default function HomePage() {
               onClick={() => setShowNotificationDialog(false)}
             >
               <Text className="text-sm">关闭</Text>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 通知详情弹窗 */}
+      <Dialog open={showNotificationDetail} onOpenChange={setShowNotificationDetail}>
+        <DialogContent className="max-w-[90vw]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedNotification && (
+                <>
+                  {(() => {
+                    const IconComponent = getNotificationIcon(selectedNotification.type)
+                    const iconColor = getNotificationIconColor(selectedNotification.type)
+                    return <IconComponent size={20} color={iconColor} />
+                  })()}
+                  <Text className="text-lg font-semibold">{selectedNotification.title}</Text>
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedNotification && (
+            <View className="py-4">
+              <Text className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{selectedNotification.content}</Text>
+              <Text className="text-xs text-gray-400 mt-4">{selectedNotification.date}</Text>
+            </View>
+          )}
+          
+          <DialogFooter>
+            <Button 
+              className="w-full bg-[#F26B3A]"
+              onClick={handleCloseDetail}
+            >
+              <Text className="text-sm text-white">关闭</Text>
             </Button>
           </DialogFooter>
         </DialogContent>
