@@ -522,13 +522,20 @@ export class HealthService {
     // 计算总热量消耗 (TDEE)
     const tdee = Math.round(bmr * activityFactor)
 
+    // 判断是否已达成目标（当前体重 <= 目标体重）
+    const isGoalAchieved = currentWeight <= targetWeight
+
     // 计算每日热量缺口
     // 1kg 脂肪 ≈ 7700 大卡
     // 每周减重 0.5kg 需要每日缺口约 550 大卡 (3850/7)
     // 每周减重 1kg 需要每日缺口约 1100 大卡 (7700/7)
     // 为安全起见，限制最大缺口为 500 大卡/天
+    // 如果已达成目标，热量差按0计算
     let dailyDeficit: number
-    if (weeklyGoal === 0.5) {
+    if (isGoalAchieved) {
+      // 已达成目标，热量差为0，维持当前体重
+      dailyDeficit = 0
+    } else if (weeklyGoal === 0.5) {
       dailyDeficit = 3850 / 7 // 约 550，取整为 550
     } else {
       dailyDeficit = 7700 / 7 // 约 1100，限制为 500
@@ -569,7 +576,9 @@ export class HealthService {
       bmr,
       tdee,
       dailyCalories,
+      dailyDeficit,
       weeksToGoal,
+      isGoalAchieved,
       protein: proteinGrams,
       carbs: carbsGrams,
       fat: fatGrams,

@@ -20,7 +20,9 @@ interface WeightPlan {
   bmr: number
   tdee: number
   dailyCalories: number
+  dailyDeficit: number
   weeksToGoal: number
+  isGoalAchieved: boolean
   protein: number
   carbs: number
   fat: number
@@ -294,19 +296,32 @@ export default function WeightPage() {
           {calculated && weightPlan && (
             <View className="space-y-4">
               {/* 时间预估 */}
-              <Card className="bg-gradient-to-r from-[#F26B3A] to-[#E85A2A] shadow-lg">
+              <Card className={weightPlan.isGoalAchieved ? "bg-gradient-to-r from-[#10B981] to-[#059669] shadow-lg" : "bg-gradient-to-r from-[#F26B3A] to-[#E85A2A] shadow-lg"}>
                 <CardContent className="p-4">
                   <View className="flex items-center gap-2 mb-3">
                     <Clock size={20} color="#FFFFFF" />
-                    <Text className="text-base font-semibold text-white">达成目标预估</Text>
+                    <Text className="text-base font-semibold text-white">
+                      {weightPlan.isGoalAchieved ? '已达成目标' : '达成目标预估'}
+                    </Text>
                   </View>
-                  <View className="flex items-baseline gap-2">
-                    <Text className="text-4xl font-bold text-white">{weightPlan.weeksToGoal}</Text>
-                    <Text className="text-lg text-[rgba(255,255,255,0.8)]">周</Text>
-                  </View>
-                  <Text className="text-sm text-[rgba(255,255,255,0.7)] mt-2">
-                    按{getWeeklyGoalLabel(weeklyGoal)}节奏，预计 {Math.ceil(weightPlan.weeksToGoal / 4)} 个月达成目标
-                  </Text>
+                  {weightPlan.isGoalAchieved ? (
+                    <View>
+                      <Text className="text-xl font-bold text-white">🎉 恭喜！您已达成目标体重</Text>
+                      <Text className="text-sm text-[rgba(255,255,255,0.7)] mt-2">
+                        当前热量摄入按维持体重标准计算，保持健康生活方式
+                      </Text>
+                    </View>
+                  ) : (
+                    <View>
+                      <View className="flex items-baseline gap-2">
+                        <Text className="text-4xl font-bold text-white">{weightPlan.weeksToGoal}</Text>
+                        <Text className="text-lg text-[rgba(255,255,255,0.8)]">周</Text>
+                      </View>
+                      <Text className="text-sm text-[rgba(255,255,255,0.7)] mt-2">
+                        按{getWeeklyGoalLabel(weeklyGoal)}节奏，预计 {Math.ceil(weightPlan.weeksToGoal / 4)} 个月达成目标
+                      </Text>
+                    </View>
+                  )}
                 </CardContent>
               </Card>
 
@@ -317,7 +332,9 @@ export default function WeightPage() {
                     <View className="w-8 h-8 rounded-full bg-[#EF4444]/10 flex items-center justify-center">
                       <Flame size={16} color="#EF4444" />
                     </View>
-                    <Text className="text-base font-semibold text-[#1E2933]">每日热量摄入额度</Text>
+                    <Text className="text-base font-semibold text-[#1E2933]">
+                      {weightPlan.isGoalAchieved ? '每日热量摄入标准' : '每日热量摄入额度'}
+                    </Text>
                   </View>
 
                   <View className="flex items-center justify-center py-4">
@@ -327,7 +344,7 @@ export default function WeightPage() {
                     </View>
                   </View>
 
-                  <View className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-[#E4DED2]">
+                  <View className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-[#E4DED2]">
                     <View className="text-center">
                       <Text className="text-xs text-[#6B7280] mb-1 block">基础代谢率</Text>
                       <Text className="text-base font-semibold text-[#1E2933]">{weightPlan.bmr} 大卡</Text>
@@ -335,6 +352,12 @@ export default function WeightPage() {
                     <View className="text-center">
                       <Text className="text-xs text-[#6B7280] mb-1 block">总热量消耗</Text>
                       <Text className="text-base font-semibold text-[#1E2933]">{weightPlan.tdee} 大卡</Text>
+                    </View>
+                    <View className="text-center">
+                      <Text className="text-xs text-[#6B7280] mb-1 block">热量差</Text>
+                      <Text className={`text-base font-semibold ${weightPlan.dailyDeficit > 0 ? 'text-[#EF4444]' : 'text-[#10B981]'}`}>
+                        {weightPlan.dailyDeficit > 0 ? `-${weightPlan.dailyDeficit}` : 0} 大卡
+                      </Text>
                     </View>
                   </View>
                 </CardContent>
