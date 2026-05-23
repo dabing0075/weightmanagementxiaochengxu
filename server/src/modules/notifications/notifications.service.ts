@@ -19,6 +19,9 @@ export interface UserNotification {
   created_at: string
 }
 
+// 用户已读通知记录（记录用户已阅读的通知ID）
+export const userReadNotifications: Record<string, Set<string>> = {}
+
 // 导出内存存储供其他模块使用
 export const globalNotifications: GlobalNotification[] = []
 export const userNotifications: UserNotification[] = []
@@ -29,22 +32,32 @@ export function getNextNotificationId(): number {
   return _notificationIdCounter++
 }
 
+// 获取用户已读记录
+function getUserReadSet(userId: string): Set<string> {
+  if (!userReadNotifications[userId]) {
+    userReadNotifications[userId] = new Set<string>()
+  }
+  return userReadNotifications[userId]
+}
+
 @Injectable()
 export class NotificationsService {
   /**
    * 获取用户通知列表（全局通知 + 个人通知）
    */
   async getUserNotifications(userId?: string) {
-    const now = new Date()
+    // 使用默认用户 ID，确保全局通知的已读状态一致
+    const effectiveUserId = userId || 'default-user'
+    const readSet = getUserReadSet(effectiveUserId)
     
-    // 获取全局通知
+    // 获取全局通知（默认未读，除非用户已标记已读）
     const globalNotifs = globalNotifications.map(n => ({
       id: n.id,
       type: n.type,
       title: n.title,
       content: n.content,
       date: n.created_at.split('T')[0],
-      read: true, // 全局通知默认已读（用户可以点击查看）
+      read: readSet.has(n.id), // 根据用户已读记录判断
     }))
 
     // 获取个人通知（如果有 userId）
@@ -73,6 +86,11 @@ export class NotificationsService {
    * 标记通知为已读
    */
   async markAsRead(notificationId: string, userId?: string) {
+    // 对于全局通知，使用默认用户标记
+    const effectiveUserId = userId || 'default-user'
+    const readSet = getUserReadSet(effectiveUserId)
+    readSet.add(notificationId)
+    
     // 查找个人通知
     const notification = userNotifications.find(n => n.id === notificationId)
     if (notification) {
@@ -155,5 +173,13 @@ export class NotificationsService {
     }
 
     return { success: false, message: '通知不存在' }
+  }
+
+  /**
+   * 获取未读通知数量
+   */
+  async getUnreadCount(userId?: string): Promise<number> {
+    const notifications = await this.getUserNotifications(userId)
+    return notifications.filter(n => !n.read).length
   }
 }

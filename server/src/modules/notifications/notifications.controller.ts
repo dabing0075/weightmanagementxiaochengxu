@@ -24,6 +24,23 @@ export class NotificationsController {
   }
 
   /**
+   * 获取未读通知数量
+   */
+  @Get('unread-count')
+  async getUnreadCount(@Query('userId') userId?: string) {
+    console.log('[NotificationsController] GET /api/notifications/unread-count')
+    
+    const count = await this.notificationsService.getUnreadCount(userId)
+    console.log('[NotificationsController] 未读数量:', count)
+    
+    return {
+      code: 200,
+      msg: 'success',
+      data: { count },
+    }
+  }
+
+  /**
    * 标记通知为已读
    */
   @Post(':id/read')

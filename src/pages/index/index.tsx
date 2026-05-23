@@ -93,9 +93,11 @@ export default function HomePage() {
   const [showNotificationDialog, setShowNotificationDialog] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loadingNotifications, setLoadingNotifications] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
     loadData()
+    loadUnreadCount()
   }, [])
 
   // BMI健康等级颜色（与数据页一致）
@@ -173,6 +175,25 @@ export default function HomePage() {
     }
   }
 
+  // 加载未读通知数量
+  const loadUnreadCount = async () => {
+    try {
+      const res = await Network.request({
+        url: '/api/notifications',
+        method: 'GET'
+      })
+      console.log('通知响应:', res.data)
+      
+      if (res.data?.code === 200 && res.data.data) {
+        const notifs = res.data.data as Notification[]
+        const unread = notifs.filter((n: Notification) => !n.read).length
+        setUnreadCount(unread)
+      }
+    } catch (error) {
+      console.error('加载未读通知数量失败:', error)
+    }
+  }
+
   // 加载通知
   const loadNotifications = async () => {
     setLoadingNotifications(true)
@@ -239,9 +260,28 @@ export default function HomePage() {
   }
 
   // 打开通知弹窗
-  const handleNotificationClick = () => {
-    loadNotifications()
+  const handleNotificationClick = async () => {
+    await loadNotifications()
     setShowNotificationDialog(true)
+    
+    // 标记所有通知为已读
+    if (notifications.length > 0) {
+      try {
+        // 批量标记所有未读通知为已读
+        const unreadNotifs = notifications.filter(n => !n.read)
+        for (const notif of unreadNotifs) {
+          await Network.request({
+            url: `/api/notifications/${notif.id}/read`,
+            method: 'POST'
+          })
+        }
+      } catch (error) {
+        console.error('标记通知已读失败:', error)
+      }
+    }
+    
+    // 清除未读数量
+    setUnreadCount(0)
   }
 
   // 获取通知图标
@@ -336,8 +376,27 @@ export default function HomePage() {
           onClick={handleNotificationClick}
         >
           <Bell size={20} color="#6B7280" />
-          {notifications.some(n => !n.read) && (
-            <View className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          {unreadCount > 0 && (
+            <View 
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                minWidth: '16px',
+                height: '16px',
+                borderRadius: '8px',
+                backgroundColor: '#EF4444',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingLeft: '4px',
+                paddingRight: '4px'
+              }}
+            >
+              <Text style={{ fontSize: '10px', color: '#fff', fontWeight: 'bold' }}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Text>
+            </View>
           )}
         </View>
       </View>
