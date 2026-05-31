@@ -382,30 +382,33 @@ export class HealthService {
     
     if (currentWeight && currentBodyFat) {
       // 脂肪量 = 体重 × 体脂率
-      const fatMass = currentWeight * (currentBodyFat / 100)
+      const fatMass = parseFloat((currentWeight * (currentBodyFat / 100)).toFixed(1))
       
       // 去脂体重（瘦体重）= 体重 - 脂肪量
-      const leanBodyMass = currentWeight - fatMass
+      const leanBodyMass = parseFloat((currentWeight - fatMass).toFixed(1))
       
       // 水分 = 去脂体重 × 73.5%
-      const bodyWater = leanBodyMass * 0.735
+      const bodyWater = parseFloat((leanBodyMass * 0.735).toFixed(1))
       
       // 蛋白质 = 去脂体重 × 19%
-      const protein = leanBodyMass * 0.19
+      const protein = parseFloat((leanBodyMass * 0.19).toFixed(1))
       
-      // 肌肉量 = 水分 + 蛋白质
-      const muscleMass = bodyWater + protein
+      // 骨量 = 体重 × 13%
+      const boneMass = parseFloat((currentWeight * 0.13).toFixed(1))
       
-      // 骨骼肌 = 肌肉量 × 71.3%
-      const skeletalMuscle = muscleMass * 0.713
+      // 肌肉量 = 去脂体重 - 骨量
+      const muscleMass = parseFloat((leanBodyMass - boneMass).toFixed(1))
       
-      // 骨质 = 去脂体重 × 17%（男性取 0.16-0.18，女性取 0.15-0.17）
-      const boneMass = leanBodyMass * (user?.gender === 'male' ? 0.17 : 0.16)
+      // 骨骼肌 = 肌肉量 × 71.4%
+      const skeletalMuscle = parseFloat((muscleMass * 0.714).toFixed(1))
       
       // 内脏脂肪等级估算（基于腰围和BMI）
-      const vfi = currentWaist && currentBmi 
-        ? Math.round(1.08 * currentWaist + 0.13 * currentBmi + 0.16 * this.calculateAge(user?.birth_date) - 10.5 * (user?.gender === 'male' ? 1 : 0) - 94.2)
-        : 0
+      let vfi = 0
+      if (currentWaist) {
+        vfi = Math.round(currentWaist / 10 * (currentBmi / 22))
+      } else {
+        vfi = Math.round(currentBmi * 0.5)
+      }
       
       // 基础代谢率（Mifflin-St Jeor公式）
       const height = user?.height || 170
