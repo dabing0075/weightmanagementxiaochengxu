@@ -76,6 +76,17 @@ interface StatsData {
       obese: { min: number; label: string }
     }
   }
+  bodyComposition: {
+    fatMass: number // 脂肪量
+    leanBodyMass: number // 去脂体重
+    bodyWater: number // 水分
+    protein: number // 蛋白质
+    muscleMass: number // 肌肉量
+    skeletalMuscle: number // 骨骼肌
+    boneMass: number // 骨质
+    vfi: number // 内脏脂肪等级
+    bmr: number // 基础代谢率
+  } | null
   gender: 'male' | 'female'
 }
 
@@ -857,7 +868,89 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
             )}
           </View>
         )}
-      </ScrollView>
-    </View>
+
+        {/* 身体成分指标 */}
+        {statsData?.bodyComposition && (
+            <View className="px-4 mt-4">
+              <Text className="block text-lg font-semibold text-[#1E2933] mb-3">身体成分指标</Text>
+              
+              {/* 指标卡片网格 */}
+              <View className="grid grid-cols-2 gap-3">
+                {/* 脂肪量 */}
+                <View className="bg-white rounded-xl p-4 shadow-sm">
+                  <Text className="block text-xs text-[#6B7280] mb-1">脂肪量</Text>
+                  <Text className="block text-xl font-bold text-[#F97316]">{statsData.bodyComposition.fatMass}</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 体重 × 体脂率</Text>
+                </View>
+                
+                {/* 去脂体重 */}
+                <View className="bg-white rounded-xl p-4 shadow-sm">
+                  <Text className="block text-xs text-[#6B7280] mb-1">去脂体重</Text>
+                  <Text className="block text-xl font-bold text-[#3B82F6]">{statsData.bodyComposition.leanBodyMass}</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 体重 - 脂肪量</Text>
+                </View>
+                
+                {/* 水分 */}
+                <View className="bg-white rounded-xl p-4 shadow-sm">
+                  <Text className="block text-xs text-[#6B7280] mb-1">水分</Text>
+                  <Text className="block text-xl font-bold text-[#06B6D4]">{statsData.bodyComposition.bodyWater}</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 去脂体重 × 73.5%</Text>
+                </View>
+                
+                {/* 蛋白质 */}
+                <View className="bg-white rounded-xl p-4 shadow-sm">
+                  <Text className="block text-xs text-[#6B7280] mb-1">蛋白质</Text>
+                  <Text className="block text-xl font-bold text-[#8B5CF6]">{statsData.bodyComposition.protein}</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 去脂体重 × 19%</Text>
+                </View>
+                
+                {/* 肌肉量 */}
+                <View className="bg-white rounded-xl p-4 shadow-sm">
+                  <Text className="block text-xs text-[#6B7280] mb-1">肌肉量</Text>
+                  <Text className="block text-xl font-bold text-[#10B981]">{statsData.bodyComposition.muscleMass}</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 水分 + 蛋白质</Text>
+                </View>
+                
+                {/* 骨骼肌 */}
+                <View className="bg-white rounded-xl p-4 shadow-sm">
+                  <Text className="block text-xs text-[#6B7280] mb-1">骨骼肌</Text>
+                  <Text className="block text-xl font-bold text-[#EC4899]">{statsData.bodyComposition.skeletalMuscle}</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 肌肉量 × 71.3%</Text>
+                </View>
+                
+                {/* 骨质 */}
+                <View className="bg-white rounded-xl p-4 shadow-sm">
+                  <Text className="block text-xs text-[#6B7280] mb-1">骨质</Text>
+                  <Text className="block text-xl font-bold text-[#6366F1]">{statsData.bodyComposition.boneMass}</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 去脂体重 × 17%</Text>
+                </View>
+                
+                {/* 内脏脂肪等级 */}
+                <View className="bg-white rounded-xl p-4 shadow-sm">
+                  <Text className="block text-xs text-[#6B7280] mb-1">内脏脂肪等级</Text>
+                  <Text className={`block text-xl font-bold ${statsData.bodyComposition.vfi <= 9 ? 'text-[#10B981]' : statsData.bodyComposition.vfi <= 14 ? 'text-[#F97316]' : 'text-[#EF4444]'}`}>
+                    {statsData.bodyComposition.vfi}
+                  </Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">级 {statsData.bodyComposition.vfi <= 9 ? '(正常)' : statsData.bodyComposition.vfi <= 14 ? '(偏高)' : '(高风险)'}</Text>
+                </View>
+              </View>
+              
+              {/* 基础代谢率 */}
+              <View className="bg-gradient-to-r from-[#4CAF50] to-[#45A049] rounded-xl p-4 shadow-sm mt-3">
+                <View className="flex flex-row justify-between items-center">
+                  <View>
+                    <Text className="block text-sm text-white text-opacity-80">基础代谢率 (BMR)</Text>
+                    <Text className="block text-xs text-white text-opacity-60 mt-1">Mifflin-St Jeor 公式计算</Text>
+                  </View>
+                  <View className="text-right">
+                    <Text className="block text-2xl font-bold text-white">{statsData.bodyComposition.bmr}</Text>
+                    <Text className="block text-xs text-white text-opacity-80">kcal/天</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+        </ScrollView>
+        </View>
   )
 }

@@ -366,6 +366,67 @@ export class HealthService {
     const currentWaist = records[0]?.waist || 0
     const waistLevel = this.getWaistLevel(currentWaist, user?.gender || 'male')
 
+    // 计算身体成分指标
+    const currentWeight = records[0]?.weight || 0
+    let bodyComposition: {
+      fatMass: number
+      leanBodyMass: number
+      bodyWater: number
+      protein: number
+      muscleMass: number
+      skeletalMuscle: number
+      boneMass: number
+      vfi: number
+      bmr: number
+    } | null = null
+    
+    if (currentWeight && currentBodyFat) {
+      // 脂肪量 = 体重 × 体脂率
+      const fatMass = currentWeight * (currentBodyFat / 100)
+      
+      // 去脂体重（瘦体重）= 体重 - 脂肪量
+      const leanBodyMass = currentWeight - fatMass
+      
+      // 水分 = 去脂体重 × 73.5%
+      const bodyWater = leanBodyMass * 0.735
+      
+      // 蛋白质 = 去脂体重 × 19%
+      const protein = leanBodyMass * 0.19
+      
+      // 肌肉量 = 水分 + 蛋白质
+      const muscleMass = bodyWater + protein
+      
+      // 骨骼肌 = 肌肉量 × 71.3%
+      const skeletalMuscle = muscleMass * 0.713
+      
+      // 骨质 = 去脂体重 × 17%（男性取 0.16-0.18，女性取 0.15-0.17）
+      const boneMass = leanBodyMass * (user?.gender === 'male' ? 0.17 : 0.16)
+      
+      // 内脏脂肪等级估算（基于腰围和BMI）
+      const vfi = currentWaist && currentBmi 
+        ? Math.round(1.08 * currentWaist + 0.13 * currentBmi + 0.16 * this.calculateAge(user?.birth_date) - 10.5 * (user?.gender === 'male' ? 1 : 0) - 94.2)
+        : 0
+      
+      // 基础代谢率（Mifflin-St Jeor公式）
+      const height = user?.height || 170
+      const age = this.calculateAge(user?.birth_date)
+      const bmr = user?.gender === 'male'
+        ? Math.round(10 * currentWeight + 6.25 * height - 5 * age + 5)
+        : Math.round(10 * currentWeight + 6.25 * height - 5 * age - 161)
+      
+      bodyComposition = {
+        fatMass: parseFloat(fatMass.toFixed(1)),
+        leanBodyMass: parseFloat(leanBodyMass.toFixed(1)),
+        bodyWater: parseFloat(bodyWater.toFixed(1)),
+        protein: parseFloat(protein.toFixed(1)),
+        muscleMass: parseFloat(muscleMass.toFixed(1)),
+        skeletalMuscle: parseFloat(skeletalMuscle.toFixed(1)),
+        boneMass: parseFloat(boneMass.toFixed(1)),
+        vfi: vfi > 0 ? vfi : 0,
+        bmr: bmr
+      }
+    }
+
     // 根据性别获取健康区间
     const gender = user?.gender || 'male'
     const healthRanges = {
@@ -436,6 +497,7 @@ export class HealthService {
         level: waistLevel,
         ranges: healthRanges.waist[gender]
       },
+      bodyComposition,
       gender: gender
     }
   }
