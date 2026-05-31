@@ -1093,7 +1093,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.weight?.direction === 'up' ? '↑ ' : comparisonData.changes?.weight?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.weight?.text || '-'}
+                    {comparisonData.changes?.weight?.text || '-'}{comparisonData.changes?.weight?.direction === 'up' ? ' ↑' : comparisonData.changes?.weight?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1118,7 +1118,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.bmi?.direction === 'up' ? '↑ ' : comparisonData.changes?.bmi?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bmi?.text || '-'}
+                    {comparisonData.changes?.bmi?.text || '-'}{comparisonData.changes?.bmi?.direction === 'up' ? ' ↑' : comparisonData.changes?.bmi?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1143,7 +1143,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.bodyFatRate?.direction === 'up' ? '↑ ' : comparisonData.changes?.bodyFatRate?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bodyFatRate?.text || '-'}
+                    {comparisonData.changes?.bodyFatRate?.text || '-'}{comparisonData.changes?.bodyFatRate?.direction === 'up' ? ' ↑' : comparisonData.changes?.bodyFatRate?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1168,7 +1168,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.fatMass?.direction === 'up' ? '↑ ' : comparisonData.changes?.fatMass?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.fatMass?.text || '-'}
+                    {comparisonData.changes?.fatMass?.text || '-'}{comparisonData.changes?.fatMass?.direction === 'up' ? ' ↑' : comparisonData.changes?.fatMass?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1193,7 +1193,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.leanBodyMass?.direction === 'up' ? '↑ ' : comparisonData.changes?.leanBodyMass?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.leanBodyMass?.text || '-'}
+                    {comparisonData.changes?.leanBodyMass?.text || '-'}{comparisonData.changes?.leanBodyMass?.direction === 'up' ? ' ↑' : comparisonData.changes?.leanBodyMass?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1218,7 +1218,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.bodyWater?.direction === 'up' ? '↑ ' : comparisonData.changes?.bodyWater?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bodyWater?.text || '-'}
+                    {comparisonData.changes?.bodyWater?.text || '-'}{comparisonData.changes?.bodyWater?.direction === 'up' ? ' ↑' : comparisonData.changes?.bodyWater?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1243,7 +1243,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.protein?.direction === 'up' ? '↑ ' : comparisonData.changes?.protein?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.protein?.text || '-'}
+                    {comparisonData.changes?.protein?.text || '-'}{comparisonData.changes?.protein?.direction === 'up' ? ' ↑' : comparisonData.changes?.protein?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1268,7 +1268,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.boneMass?.direction === 'up' ? '↑ ' : comparisonData.changes?.boneMass?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.boneMass?.text || '-'}
+                    {comparisonData.changes?.boneMass?.text || '-'}{comparisonData.changes?.boneMass?.direction === 'up' ? ' ↑' : comparisonData.changes?.boneMass?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1293,7 +1293,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.muscleMass?.direction === 'up' ? '↑ ' : comparisonData.changes?.muscleMass?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.muscleMass?.text || '-'}
+                    {comparisonData.changes?.muscleMass?.text || '-'}{comparisonData.changes?.muscleMass?.direction === 'up' ? ' ↑' : comparisonData.changes?.muscleMass?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1318,7 +1318,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.skeletalMuscle?.direction === 'up' ? '↑ ' : comparisonData.changes?.skeletalMuscle?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.skeletalMuscle?.text || '-'}
+                    {comparisonData.changes?.skeletalMuscle?.text || '-'}{comparisonData.changes?.skeletalMuscle?.direction === 'up' ? ' ↑' : comparisonData.changes?.skeletalMuscle?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1343,7 +1343,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.vfi?.direction === 'up' ? '↑ ' : comparisonData.changes?.vfi?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.vfi?.text || '-'}
+                    {comparisonData.changes?.vfi?.text || '-'}{comparisonData.changes?.vfi?.direction === 'up' ? ' ↑' : comparisonData.changes?.vfi?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1368,7 +1368,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.bmr?.direction === 'up' ? '↑ ' : comparisonData.changes?.bmr?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bmr?.text || '-'}
+                    {comparisonData.changes?.bmr?.text || '-'}{comparisonData.changes?.bmr?.direction === 'up' ? ' ↑' : comparisonData.changes?.bmr?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1409,7 +1409,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.bodyAge?.direction === 'up' ? '↑ ' : comparisonData.changes?.bodyAge?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bodyAge?.text || '-'}
+                    {comparisonData.changes?.bodyAge?.text || '-'}{comparisonData.changes?.bodyAge?.direction === 'up' ? ' ↑' : comparisonData.changes?.bodyAge?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1434,7 +1434,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.healthScore?.direction === 'up' ? '↑ ' : comparisonData.changes?.healthScore?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.healthScore?.text || '-'}
+                    {comparisonData.changes?.healthScore?.text || '-'}{comparisonData.changes?.healthScore?.direction === 'up' ? ' ↑' : comparisonData.changes?.healthScore?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1459,7 +1459,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.weightControl?.direction === 'up' ? '↑ ' : comparisonData.changes?.weightControl?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.weightControl?.text || '-'}
+                    {comparisonData.changes?.weightControl?.text || '-'}{comparisonData.changes?.weightControl?.direction === 'up' ? ' ↑' : comparisonData.changes?.weightControl?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1484,7 +1484,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.fatControl?.direction === 'up' ? '↑ ' : comparisonData.changes?.fatControl?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.fatControl?.text || '-'}
+                    {comparisonData.changes?.fatControl?.text || '-'}{comparisonData.changes?.fatControl?.direction === 'up' ? ' ↑' : comparisonData.changes?.fatControl?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
@@ -1509,7 +1509,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                       : 'text-[#6B7280]'
                   }`}
                   >
-                    {comparisonData.changes?.muscleControl?.direction === 'up' ? '↑ ' : comparisonData.changes?.muscleControl?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.muscleControl?.text || '-'}
+                    {comparisonData.changes?.muscleControl?.text || '-'}{comparisonData.changes?.muscleControl?.direction === 'up' ? ' ↑' : comparisonData.changes?.muscleControl?.direction === 'down' ? ' ↓' : ''}
                   </Text>
                 </View>
               </View>
