@@ -29,6 +29,7 @@ interface TrendResponse {
   }
 }
 
+
 interface StatsData {
   weightStats: {
     avg: number
@@ -90,10 +91,86 @@ interface StatsData {
   gender: 'male' | 'female'
 }
 
+interface BodyComparisonData {
+  summary: {
+    days: number
+    weightLoss: number
+    fatLoss: number
+  }
+  firstRecord: {
+    date: string
+    weight: number
+    waist: number
+    bmi: number
+    bodyFatRate: number
+    fatMass: number
+    leanBodyMass: number
+    bodyWater: number
+    protein: number
+    boneMass: number
+    muscleMass: number
+    skeletalMuscle: number
+    vfi: number
+    bmr: number
+    healthScore: number
+    obesityLevel: string
+    bodyAge: number
+    weightControl: number
+    fatControl: number
+    muscleControl: number
+    bodyType: string
+    weightJin: number
+    fatMassJin: number
+    leanBodyMassJin: number
+    bodyWaterJin: number
+    proteinJin: number
+    boneMassJin: number
+    muscleMassJin: number
+    skeletalMuscleJin: number
+    weightControlJin: number
+    fatControlJin: number
+  }
+  latestRecord: {
+    date: string
+    weight: number
+    waist: number
+    bmi: number
+    bodyFatRate: number
+    fatMass: number
+    leanBodyMass: number
+    bodyWater: number
+    protein: number
+    boneMass: number
+    muscleMass: number
+    skeletalMuscle: number
+    vfi: number
+    bmr: number
+    healthScore: number
+    obesityLevel: string
+    bodyAge: number
+    weightControl: number
+    fatControl: number
+    muscleControl: number
+    bodyType: string
+    weightJin: number
+    fatMassJin: number
+    leanBodyMassJin: number
+    bodyWaterJin: number
+    proteinJin: number
+    boneMassJin: number
+    muscleMassJin: number
+    skeletalMuscleJin: number
+    weightControlJin: number
+    fatControlJin: number
+  }
+  changes: Record<string, { value: number; text: string; direction: string }>
+}
+
 export default function DataPage() {
   const [timeRange, setTimeRange] = useState(7)
   const [trendData, setTrendData] = useState<TrendResponse | null>(null)
   const [statsData, setStatsData] = useState<StatsData | null>(null)
+  const [comparisonData, setComparisonData] = useState<BodyComparisonData | null>(null)
   const [loading, setLoading] = useState(false)
 
   const timeOptions = [
@@ -137,15 +214,32 @@ export default function DataPage() {
     }
   }
 
+  async function fetchComparison() {
+    try {
+      const res = await Network.request({
+        url: '/api/health/body-comparison',
+        method: 'GET'
+      })
+      console.log('Comparison data response:', res.data)
+      if (res.data?.code === 200 && res.data?.data) {
+        setComparisonData(res.data.data)
+      }
+    } catch (error) {
+      console.error('Fetch comparison error:', error)
+    }
+  }
+
   useEffect(() => {
     fetchTrendData()
     fetchStats()
+    fetchComparison()
     
     // 监听打卡成功事件，刷新数据
     const handleCheckinSuccess = () => {
       console.log('数据页收到打卡成功事件，刷新数据')
       fetchTrendData()
       fetchStats()
+      fetchComparison()
     }
     Taro.eventCenter.on('checkinSuccess', handleCheckinSuccess)
     
@@ -158,6 +252,7 @@ export default function DataPage() {
   useDidShow(() => {
     fetchTrendData()
     fetchStats()
+    fetchComparison()
   })
 
   function formatDate(dateStr: string) {
@@ -950,6 +1045,366 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
               </View>
             </View>
           )}
+
+        {/* 身体数据对比表格 */}
+        {comparisonData && (
+          <View className="px-4 mt-6 mb-6">
+            <Text className="block text-lg font-semibold text-[#1E2933] mb-3">身体数据对比</Text>
+            <Text className="block text-xs text-[#6B7280] mb-3">
+              首次打卡 {comparisonData.firstRecord.date} 与最新打卡 {comparisonData.latestRecord.date} 对比（共 {comparisonData.summary.days} 天）
+            </Text>
+            
+            {/* 表格 */}
+            <View className="bg-white rounded-xl shadow-sm overflow-hidden">
+              {/* 表头 */}
+              <View className="flex flex-row bg-[#F3F4F6] border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs font-semibold text-[#374151] text-center">指标</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs font-semibold text-[#374151] text-center">初始</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs font-semibold text-[#374151] text-center">当前</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className="block text-xs font-semibold text-[#374151] text-center">变化</Text>
+                </View>
+              </View>
+              
+              {/* 数据行 */}
+              {/* 体重 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">体重</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.weightJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.weightJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.weight?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.weight?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.weight?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* BMI */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">BMI</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.bmi}</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bmi}</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bmi?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.bmi?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.bmi?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 体脂率 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">体脂率</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.bodyFatRate}%</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyFatRate}%</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bodyFatRate?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.bodyFatRate?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.bodyFatRate?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 脂肪量 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">脂肪量</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.fatMassJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.fatMassJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.fatMass?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.fatMass?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.fatMass?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 去脂体重 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">去脂体重</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.leanBodyMassJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.leanBodyMassJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.leanBodyMass?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.leanBodyMass?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.leanBodyMass?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 水分 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">水分</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.bodyWaterJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyWaterJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bodyWater?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.bodyWater?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.bodyWater?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 蛋白质 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">蛋白质</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.proteinJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.proteinJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.protein?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.protein?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.protein?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 骨量 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">骨量</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.boneMassJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.boneMassJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.boneMass?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.boneMass?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.boneMass?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 肌肉量 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">肌肉量</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.muscleMassJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.muscleMassJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.muscleMass?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.muscleMass?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.muscleMass?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 骨骼肌 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">骨骼肌</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.skeletalMuscleJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.skeletalMuscleJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.skeletalMuscle?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.skeletalMuscle?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.skeletalMuscle?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 内脏脂肪指数 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">内脏脂肪指数</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.vfi}</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.vfi}</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.vfi?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.vfi?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.vfi?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 基础代谢率 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">基础代谢率</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.bmr}kcal</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bmr}kcal</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bmr?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.bmr?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.bmr?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 肥胖等级 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">肥胖等级</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.obesityLevel}</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.obesityLevel}</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className="block text-xs text-[#6B7280] text-center">-</Text>
+                </View>
+              </View>
+
+              {/* 身体年龄 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">身体年龄</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.bodyAge}岁</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyAge}岁</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bodyAge?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.bodyAge?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.bodyAge?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 健康评分 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">健康评分</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.healthScore}分</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.healthScore}分</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.healthScore?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.healthScore?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.healthScore?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 体重控制 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">体重控制</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.weightControlJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.weightControlJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.weightControl?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.weightControl?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.weightControl?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 脂肪控制 */}
+              <View className="flex flex-row border-b border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">脂肪控制</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.fatControlJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.fatControlJin}斤</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.fatControl?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.fatControl?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
+                    {comparisonData.changes?.fatControl?.text || '-'}
+                  </Text>
+                </View>
+              </View>
+
+              {/* 肌肉控制 */}
+              <View className="flex flex-row">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">肌肉控制</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.muscleControl}kg</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.muscleControl}kg</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className="block text-xs text-[#6B7280] text-center">-</Text>
+                </View>
+              </View>
+
+              {/* 身体型 */}
+              <View className="flex flex-row border-t border-[#E5E7EB]">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
+                  <Text className="block text-xs text-[#374151]">身体型</Text>
+                </View>
+                <View className="w-3/4 p-2">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyType}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
         </ScrollView>
         </View>
   )

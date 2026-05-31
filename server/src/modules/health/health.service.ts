@@ -631,4 +631,229 @@ export class HealthService {
       activityLevel
     }
   }
+
+  /**
+   * 获取身体数据对比（第一条记录 vs 最新记录）
+   */
+  async getBodyDataComparison() {
+    const client = getSupabaseClient()
+    
+    // 获取用户信息
+    const { data: users, error: userError } = await client
+      .from('users')
+      .select('*')
+      .limit(1)
+    
+    if (userError) throw new Error(`获取用户信息失败: ${userError.message}`)
+    
+    const user = users?.[0]
+    if (!user) {
+      throw new Error('请先完善个人信息')
+    }
+
+    const height = user.height || 170
+    const gender = user.gender || 'male'
+    const age = this.calculateAge(user.birth_date)
+
+    // 获取所有打卡记录，按日期排序
+    const { data: records, error: recordsError } = await client
+      .from('weight_records')
+      .select('*')
+      .order('record_date', { ascending: true })
+    
+    if (recordsError) throw new Error(`获取打卡记录失败: ${recordsError.message}`)
+
+    if (!records || records.length === 0) {
+      return null
+    }
+
+    // 第一条记录和最新记录
+    const firstRecord = records[0]
+    const latestRecord = records[records.length - 1]
+
+    // 计算天数差
+    const firstDate = new Date(firstRecord.record_date)
+    const latestDate = new Date(latestRecord.record_date)
+    const daysDiff = Math.ceil((latestDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24))
+
+    // 辅助函数：计算各项指标
+    const calculateMetrics = (weight: number, waist?: number) => {
+      const bmi = parseFloat((weight / Math.pow(height / 100, 2)).toFixed(1))
+      const bodyFatRate = this.calculateBodyFat(weight, height, gender, age)
+      
+      // 脂肪量 (kg)
+      const fatMass = parseFloat((weight * bodyFatRate / 100).toFixed(1))
+      // 去脂体重 (kg)
+      const leanBodyMass = parseFloat((weight - fatMass).toFixed(1))
+      // 水分 (kg) - 去脂体重的73.5%
+      const bodyWater = parseFloat((leanBodyMass * 0.735).toFixed(1))
+      // 蛋白质 (kg) - 去脂体重的19%
+      const protein = parseFloat((leanBodyMass * 0.19).toFixed(1))
+      // 骨量 (kg) - 体重的13%
+      const boneMass = parseFloat((weight * 0.13).toFixed(1))
+      // 肌肉量 (kg) - 去脂体重 - 骨量
+      const muscleMass = parseFloat((leanBodyMass - boneMass).toFixed(1))
+      // 骨骼肌 (kg) - 肌肉量的71.4%
+      const skeletalMuscle = parseFloat((muscleMass * 0.714).toFixed(1))
+      // 内脏脂肪指数 - 根据腰围和BMI估算
+      let vfi = 0
+      if (waist) {
+        vfi = Math.round(waist / 10 * (bmi / 22))
+      } else {
+        vfi = Math.round(bmi * 0.5)
+      }
+      // 基础代谢率 (BMR)
+      let bmr: number
+      if (gender === 'male') {
+        bmr = Math.round(10 * weight + 6.25 * height - 5 * age + 5)
+      } else {
+        bmr = Math.round(10 * weight + 6.25 * height - 5 * age - 161)
+      }
+      // 健康评分 (基于BMI和体脂率)
+      let healthScore = 70
+      if (bmi >= 18.5 && bmi < 24) healthScore += 10
+      else if (bmi >= 24 && bmi < 28) healthScore -= 5
+      else if (bmi >= 28) healthScore -= 15
+      if (gender === 'male') {
+        if (bodyFatRate >= 10 && bodyFatRate < 20) healthScore += 10
+        else if (bodyFatRate >= 20 && bodyFatRate < 25) healthScore += 5
+        else if (bodyFatRate >= 25) healthScore -= 5
+      } else {
+        if (bodyFatRate >= 18 && bodyFatRate < 28) healthScore += 10
+        else if (bodyFatRate >= 28 && bodyFatRate < 33) healthScore += 5
+        else if (bodyFatRate >= 33) healthScore -= 5
+      }
+      healthScore = Math.min(100, Math.max(0, healthScore))
+      
+      // 肥胖等级
+      let obesityLevel = '标准'
+      if (bmi < 18.5) obesityLevel = '偏瘦'
+      else if (bmi >= 18.5 && bmi < 24) obesityLevel = '标准'
+      else if (bmi >= 24 && bmi < 28) obesityLevel = '超重'
+      else obesityLevel = '肥胖'
+      
+      // 身体年龄 (基于BMR和体脂率估算)
+      let bodyAge = age
+      if (bodyFatRate > (gender === 'male' ? 20 : 30)) bodyAge += 3
+      else if (bodyFatRate < (gender === 'male' ? 15 : 25)) bodyAge -= 2
+      
+      // 体重控制量 (kg) - 当前体重 - 标准体重
+      const standardWeight = (height - 100) * 0.9
+      const weightControl = parseFloat((weight - standardWeight).toFixed(1))
+      
+      // 脂肪控制量 (kg) - 当前脂肪量 - 标准脂肪量
+      const standardFatRate = gender === 'male' ? 15 : 25
+      const standardFatMass = weight * standardFatRate / 100
+      const fatControl = parseFloat((fatMass - standardFatMass).toFixed(1))
+      
+      // 肌肉控制量 (kg) - 暂设为0
+      const muscleControl = 0
+      
+      // 体型
+      let bodyType = '标准型'
+      if (bodyFatRate > (gender === 'male' ? 25 : 32)) bodyType = '肥胖型'
+      else if (bodyFatRate > (gender === 'male' ? 20 : 28)) bodyType = '偏胖型'
+      else if (bodyFatRate < (gender === 'male' ? 12 : 20)) bodyType = '偏瘦型'
+      
+      return {
+        weight,
+        waist: waist || 0,
+        bmi,
+        bodyFatRate,
+        fatMass,
+        leanBodyMass,
+        bodyWater,
+        protein,
+        boneMass,
+        muscleMass,
+        skeletalMuscle,
+        vfi,
+        bmr,
+        healthScore,
+        obesityLevel,
+        bodyAge,
+        weightControl,
+        fatControl,
+        muscleControl,
+        bodyType
+      }
+    }
+
+    // 计算第一条和最新记录的指标
+    const firstMetrics = calculateMetrics(firstRecord.weight, firstRecord.waist)
+    const latestMetrics = calculateMetrics(latestRecord.weight, latestRecord.waist)
+
+    // 计算变化值
+    const calculateChange = (latest: number, first: number, suffix: string = '') => {
+      const diff = parseFloat((latest - first).toFixed(1))
+      const isPositive = diff > 0
+      return {
+        value: Math.abs(diff),
+        text: `${diff > 0 ? '+' : ''}${diff}${suffix}`,
+        direction: diff > 0 ? 'up' : diff < 0 ? 'down' : 'same',
+        isGood: (suffix === '斤' || suffix === '%' || suffix === '') && diff < 0 // 体重、体脂下降是好事
+      }
+    }
+
+    // 转换为斤
+    const kgToJin = (kg: number) => parseFloat((kg * 2).toFixed(1))
+
+    // 减重和减脂统计
+    const weightLoss = parseFloat((firstRecord.weight - latestRecord.weight).toFixed(1))
+    const fatLoss = parseFloat((firstMetrics.fatMass - latestMetrics.fatMass).toFixed(1))
+
+    return {
+      summary: {
+        days: daysDiff,
+        weightLoss: kgToJin(weightLoss),
+        fatLoss: kgToJin(fatLoss)
+      },
+      firstRecord: {
+        date: firstRecord.record_date,
+        ...firstMetrics,
+        weightJin: kgToJin(firstRecord.weight),
+        fatMassJin: kgToJin(firstMetrics.fatMass),
+        leanBodyMassJin: kgToJin(firstMetrics.leanBodyMass),
+        bodyWaterJin: kgToJin(firstMetrics.bodyWater),
+        proteinJin: kgToJin(firstMetrics.protein),
+        boneMassJin: kgToJin(firstMetrics.boneMass),
+        muscleMassJin: kgToJin(firstMetrics.muscleMass),
+        skeletalMuscleJin: kgToJin(firstMetrics.skeletalMuscle),
+        weightControlJin: kgToJin(firstMetrics.weightControl),
+        fatControlJin: kgToJin(firstMetrics.fatControl)
+      },
+      latestRecord: {
+        date: latestRecord.record_date,
+        ...latestMetrics,
+        weightJin: kgToJin(latestRecord.weight),
+        fatMassJin: kgToJin(latestMetrics.fatMass),
+        leanBodyMassJin: kgToJin(latestMetrics.leanBodyMass),
+        bodyWaterJin: kgToJin(latestMetrics.bodyWater),
+        proteinJin: kgToJin(latestMetrics.protein),
+        boneMassJin: kgToJin(latestMetrics.boneMass),
+        muscleMassJin: kgToJin(latestMetrics.muscleMass),
+        skeletalMuscleJin: kgToJin(latestMetrics.skeletalMuscle),
+        weightControlJin: kgToJin(latestMetrics.weightControl),
+        fatControlJin: kgToJin(latestMetrics.fatControl)
+      },
+      changes: {
+        weight: calculateChange(kgToJin(latestRecord.weight), kgToJin(firstRecord.weight), '斤'),
+        bodyFatRate: calculateChange(latestMetrics.bodyFatRate, firstMetrics.bodyFatRate, '%'),
+        bmi: calculateChange(latestMetrics.bmi, firstMetrics.bmi, ''),
+        muscleMass: calculateChange(kgToJin(latestMetrics.muscleMass), kgToJin(firstMetrics.muscleMass), '斤'),
+        protein: calculateChange(kgToJin(latestMetrics.protein), kgToJin(firstMetrics.protein), '斤'),
+        fatMass: calculateChange(kgToJin(latestMetrics.fatMass), kgToJin(firstMetrics.fatMass), '斤'),
+        bodyWater: calculateChange(kgToJin(latestMetrics.bodyWater), kgToJin(firstMetrics.bodyWater), '斤'),
+        boneMass: calculateChange(kgToJin(latestMetrics.boneMass), kgToJin(firstMetrics.boneMass), '斤'),
+        skeletalMuscle: calculateChange(kgToJin(latestMetrics.skeletalMuscle), kgToJin(firstMetrics.skeletalMuscle), '斤'),
+        vfi: calculateChange(latestMetrics.vfi, firstMetrics.vfi, ''),
+        healthScore: calculateChange(latestMetrics.healthScore, firstMetrics.healthScore, '分'),
+        bodyAge: calculateChange(latestMetrics.bodyAge, firstMetrics.bodyAge, ''),
+        bmr: calculateChange(latestMetrics.bmr, firstMetrics.bmr, 'kcal'),
+        leanBodyMass: calculateChange(kgToJin(latestMetrics.leanBodyMass), kgToJin(firstMetrics.leanBodyMass), '斤'),
+        weightControl: calculateChange(kgToJin(latestMetrics.weightControl), kgToJin(firstMetrics.weightControl), '斤'),
+        fatControl: calculateChange(kgToJin(latestMetrics.fatControl), kgToJin(firstMetrics.fatControl), '斤')
+      }
+    }
+  }
 }

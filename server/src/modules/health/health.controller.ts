@@ -75,4 +75,20 @@ export class HealthController {
       data
     }
   }
+
+  /**
+   * 获取身体数据对比
+   * 返回第一条记录与最新记录的对比数据
+   */
+  @Get('body-comparison')
+  async getBodyComparison() {
+    console.log('[HealthController] GET /api/health/body-comparison')
+    const data = await this.healthService.getBodyDataComparison()
+    console.log('[HealthController] 返回数据:', data)
+    return {
+      code: 200,
+      msg: 'success',
+      data
+    }
+  }
 }
