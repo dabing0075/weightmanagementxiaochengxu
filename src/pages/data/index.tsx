@@ -950,6 +950,135 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
               </View>
             </View>
           )}
+
+          {/* 身体成分指标计算公式说明 */}
+          <View className="bg-white rounded-xl shadow-sm mt-4 mb-4 overflow-hidden">
+            <View className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
+              <Text className="text-lg font-bold text-white">身体成分指标计算公式</Text>
+            </View>
+            
+            {/* 表格头部 */}
+            <View className="flex flex-row bg-gray-100 border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm font-bold text-gray-700">指标名称</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm font-bold text-gray-700">计算公式</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm font-bold text-gray-700">说明</Text>
+              </View>
+            </View>
+            
+            {/* 表格内容 */}
+            <View className="flex flex-row border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">脂肪量</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">体重 × 体脂率</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">体内脂肪的总重量</Text>
+              </View>
+            </View>
+            
+            <View className="flex flex-row border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">去脂体重</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">体重 - 脂肪量</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">也称瘦体重</Text>
+              </View>
+            </View>
+            
+            <View className="flex flex-row border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">身体水分</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">去脂体重 × 73.5%</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">体内水分总量</Text>
+              </View>
+            </View>
+            
+            <View className="flex flex-row border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">蛋白质</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">去脂体重 × 19%</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">体内蛋白质含量</Text>
+              </View>
+            </View>
+            
+            <View className="flex flex-row border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">肌肉量</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">去脂体重 - 骨量</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">肌肉总重量</Text>
+              </View>
+            </View>
+            
+            <View className="flex flex-row border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">骨骼肌</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">肌肉量 × 71.4%</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">附着骨骼的肌肉</Text>
+              </View>
+            </View>
+            
+            <View className="flex flex-row border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">骨量</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">体重 × 13%</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">骨骼矿物质含量</Text>
+              </View>
+            </View>
+            
+            <View className="flex flex-row border-b border-gray-200">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">内脏脂肪指数</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">腰围与BMI综合计算</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">评估内脏脂肪堆积</Text>
+              </View>
+            </View>
+            
+            <View className="flex flex-row">
+              <View className="w-1/4 px-3 py-3 border-r border-gray-200 bg-gray-50">
+                <Text className="text-sm text-gray-800">基础代谢率</Text>
+              </View>
+              <View className="w-2/5 px-3 py-3 border-r border-gray-200">
+                <Text className="text-sm text-gray-600">Mifflin-St Jeor公式</Text>
+              </View>
+              <View className="w-1/3 px-3 py-3">
+                <Text className="text-sm text-gray-600">静息状态热量消耗</Text>
+              </View>
+            </View>
+          </View>
         </ScrollView>
         </View>
   )
