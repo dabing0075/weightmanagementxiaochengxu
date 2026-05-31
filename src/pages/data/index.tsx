@@ -163,7 +163,7 @@ interface BodyComparisonData {
     weightControlJin: number
     fatControlJin: number
   }
-  changes: Record<string, { value: number; text: string; direction: string }>
+  changes: Record<string, { value: number; text: string; direction: string; isGood?: boolean }>
 }
 
 export default function DataPage() {
@@ -1079,14 +1079,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">体重</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.weightJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.weight}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.weightJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.weight}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.weight?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.weight?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.weight?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.weight?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.weight?.isGood === false 
+                      ? 'text-[#EF4444]' 
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.weight?.direction === 'up' ? '↑ ' : comparisonData.changes?.weight?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.weight?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1103,8 +1110,15 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bmi}</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bmi?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.bmi?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.bmi?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.bmi?.direction === 'up' 
+                      ? (comparisonData.changes?.bmi?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.bmi?.direction === 'down'
+                      ? (comparisonData.changes?.bmi?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.bmi?.direction === 'up' ? '↑ ' : comparisonData.changes?.bmi?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bmi?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1121,8 +1135,15 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyFatRate}%</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bodyFatRate?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.bodyFatRate?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.bodyFatRate?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.bodyFatRate?.direction === 'up' 
+                      ? (comparisonData.changes?.bodyFatRate?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.bodyFatRate?.direction === 'down'
+                      ? (comparisonData.changes?.bodyFatRate?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.bodyFatRate?.direction === 'up' ? '↑ ' : comparisonData.changes?.bodyFatRate?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bodyFatRate?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1133,14 +1154,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">脂肪量</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.fatMassJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.fatMass}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.fatMassJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.fatMass}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.fatMass?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.fatMass?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.fatMass?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.fatMass?.direction === 'up' 
+                      ? (comparisonData.changes?.fatMass?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.fatMass?.direction === 'down'
+                      ? (comparisonData.changes?.fatMass?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.fatMass?.direction === 'up' ? '↑ ' : comparisonData.changes?.fatMass?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.fatMass?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1151,14 +1179,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">去脂体重</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.leanBodyMassJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.leanBodyMass}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.leanBodyMassJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.leanBodyMass}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.leanBodyMass?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.leanBodyMass?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.leanBodyMass?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.leanBodyMass?.direction === 'up' 
+                      ? (comparisonData.changes?.leanBodyMass?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.leanBodyMass?.direction === 'down'
+                      ? (comparisonData.changes?.leanBodyMass?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.leanBodyMass?.direction === 'up' ? '↑ ' : comparisonData.changes?.leanBodyMass?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.leanBodyMass?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1169,14 +1204,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">水分</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.bodyWaterJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.bodyWater}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyWaterJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyWater}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bodyWater?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.bodyWater?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.bodyWater?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.bodyWater?.direction === 'up' 
+                      ? (comparisonData.changes?.bodyWater?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.bodyWater?.direction === 'down'
+                      ? (comparisonData.changes?.bodyWater?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.bodyWater?.direction === 'up' ? '↑ ' : comparisonData.changes?.bodyWater?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bodyWater?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1187,14 +1229,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">蛋白质</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.proteinJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.protein}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.proteinJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.protein}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.protein?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.protein?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.protein?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.protein?.direction === 'up' 
+                      ? (comparisonData.changes?.protein?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.protein?.direction === 'down'
+                      ? (comparisonData.changes?.protein?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.protein?.direction === 'up' ? '↑ ' : comparisonData.changes?.protein?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.protein?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1205,14 +1254,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">骨量</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.boneMassJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.boneMass}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.boneMassJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.boneMass}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.boneMass?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.boneMass?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.boneMass?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.boneMass?.direction === 'up' 
+                      ? (comparisonData.changes?.boneMass?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.boneMass?.direction === 'down'
+                      ? (comparisonData.changes?.boneMass?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.boneMass?.direction === 'up' ? '↑ ' : comparisonData.changes?.boneMass?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.boneMass?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1223,14 +1279,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">肌肉量</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.muscleMassJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.muscleMass}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.muscleMassJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.muscleMass}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.muscleMass?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.muscleMass?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.muscleMass?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.muscleMass?.direction === 'up' 
+                      ? (comparisonData.changes?.muscleMass?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.muscleMass?.direction === 'down'
+                      ? (comparisonData.changes?.muscleMass?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.muscleMass?.direction === 'up' ? '↑ ' : comparisonData.changes?.muscleMass?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.muscleMass?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1241,14 +1304,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">骨骼肌</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.skeletalMuscleJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.skeletalMuscle}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.skeletalMuscleJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.skeletalMuscle}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.skeletalMuscle?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.skeletalMuscle?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.skeletalMuscle?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.skeletalMuscle?.direction === 'up' 
+                      ? (comparisonData.changes?.skeletalMuscle?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.skeletalMuscle?.direction === 'down'
+                      ? (comparisonData.changes?.skeletalMuscle?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.skeletalMuscle?.direction === 'up' ? '↑ ' : comparisonData.changes?.skeletalMuscle?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.skeletalMuscle?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1265,8 +1335,15 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.vfi}</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.vfi?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.vfi?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.vfi?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.vfi?.direction === 'up' 
+                      ? (comparisonData.changes?.vfi?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.vfi?.direction === 'down'
+                      ? (comparisonData.changes?.vfi?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.vfi?.direction === 'up' ? '↑ ' : comparisonData.changes?.vfi?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.vfi?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1283,8 +1360,15 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bmr}kcal</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bmr?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.bmr?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.bmr?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.bmr?.direction === 'up' 
+                      ? (comparisonData.changes?.bmr?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.bmr?.direction === 'down'
+                      ? (comparisonData.changes?.bmr?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.bmr?.direction === 'up' ? '↑ ' : comparisonData.changes?.bmr?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bmr?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1317,8 +1401,15 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyAge}岁</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.bodyAge?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.bodyAge?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.bodyAge?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.bodyAge?.direction === 'up' 
+                      ? (comparisonData.changes?.bodyAge?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.bodyAge?.direction === 'down'
+                      ? (comparisonData.changes?.bodyAge?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.bodyAge?.direction === 'up' ? '↑ ' : comparisonData.changes?.bodyAge?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.bodyAge?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1335,8 +1426,15 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.healthScore}分</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.healthScore?.direction === 'up' ? 'text-[#10B981]' : comparisonData.changes?.healthScore?.direction === 'down' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.healthScore?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.healthScore?.direction === 'up' 
+                      ? (comparisonData.changes?.healthScore?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.healthScore?.direction === 'down'
+                      ? (comparisonData.changes?.healthScore?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.healthScore?.direction === 'up' ? '↑ ' : comparisonData.changes?.healthScore?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.healthScore?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1347,14 +1445,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">体重控制</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.weightControlJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.weightControl}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.weightControlJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.weightControl}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.weightControl?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.weightControl?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.weightControl?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.weightControl?.direction === 'up' 
+                      ? (comparisonData.changes?.weightControl?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.weightControl?.direction === 'down'
+                      ? (comparisonData.changes?.weightControl?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.weightControl?.direction === 'up' ? '↑ ' : comparisonData.changes?.weightControl?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.weightControl?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1365,14 +1470,21 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">脂肪控制</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.fatControlJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.fatControl}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.fatControlJin}斤</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.fatControl}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className={`block text-xs text-center font-semibold ${comparisonData.changes?.fatControl?.direction === 'down' ? 'text-[#10B981]' : comparisonData.changes?.fatControl?.direction === 'up' ? 'text-[#EF4444]' : 'text-[#6B7280]'}`}>
-                    {comparisonData.changes?.fatControl?.text || '-'}
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.fatControl?.direction === 'up' 
+                      ? (comparisonData.changes?.fatControl?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.fatControl?.direction === 'down'
+                      ? (comparisonData.changes?.fatControl?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.fatControl?.direction === 'up' ? '↑ ' : comparisonData.changes?.fatControl?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.fatControl?.text || '-'}
                   </Text>
                 </View>
               </View>
@@ -1383,13 +1495,22 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#374151]">肌肉控制</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.muscleControl}kg</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.muscleControl}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
-                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.muscleControl}kg</Text>
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.muscleControl}公斤</Text>
                 </View>
                 <View className="w-1/4 p-2">
-                  <Text className="block text-xs text-[#6B7280] text-center">-</Text>
+                  <Text className={`block text-xs text-center font-semibold ${
+                    comparisonData.changes?.muscleControl?.direction === 'up' 
+                      ? (comparisonData.changes?.muscleControl?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : comparisonData.changes?.muscleControl?.direction === 'down'
+                      ? (comparisonData.changes?.muscleControl?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                      : 'text-[#6B7280]'
+                  }`}
+                  >
+                    {comparisonData.changes?.muscleControl?.direction === 'up' ? '↑ ' : comparisonData.changes?.muscleControl?.direction === 'down' ? '↓ ' : ''}{comparisonData.changes?.muscleControl?.text || '-'}
+                  </Text>
                 </View>
               </View>
 

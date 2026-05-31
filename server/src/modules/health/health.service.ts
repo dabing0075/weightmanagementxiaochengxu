@@ -784,75 +784,57 @@ export class HealthService {
     const latestMetrics = calculateMetrics(latestRecord.weight, latestRecord.waist)
 
     // 计算变化值
-    const calculateChange = (latest: number, first: number, suffix: string = '') => {
+    const calculateChange = (latest: number, first: number, suffix: string = '', isDecreaseGood: boolean = false) => {
       const diff = parseFloat((latest - first).toFixed(1))
       const isPositive = diff > 0
+      // isGood: 根据指标类型判断变化是否有利
+      // 减少有利的指标：体重、体脂率、脂肪量、内脏脂肪指数、身体年龄
+      // 增加有利的指标：肌肉量、水分、蛋白质、骨量、骨骼肌、BMR
+      let isGood: boolean
+      if (isDecreaseGood) {
+        isGood = diff < 0 // 下降是好事
+      } else {
+        isGood = diff > 0 // 上升是好事
+      }
       return {
         value: Math.abs(diff),
         text: `${diff > 0 ? '+' : ''}${diff}${suffix}`,
         direction: diff > 0 ? 'up' : diff < 0 ? 'down' : 'same',
-        isGood: (suffix === '斤' || suffix === '%' || suffix === '') && diff < 0 // 体重、体脂下降是好事
+        isGood
       }
     }
-
-    // 转换为斤
-    const kgToJin = (kg: number) => parseFloat((kg * 2).toFixed(1))
-
-    // 减重和减脂统计
-    const weightLoss = parseFloat((firstRecord.weight - latestRecord.weight).toFixed(1))
-    const fatLoss = parseFloat((firstMetrics.fatMass - latestMetrics.fatMass).toFixed(1))
 
     return {
       summary: {
         days: daysDiff,
-        weightLoss: kgToJin(weightLoss),
-        fatLoss: kgToJin(fatLoss)
+        weightLoss: parseFloat((firstRecord.weight - latestRecord.weight).toFixed(1)),
+        fatLoss: parseFloat((firstMetrics.fatMass - latestMetrics.fatMass).toFixed(1))
       },
       firstRecord: {
         date: firstRecord.record_date,
-        ...firstMetrics,
-        weightJin: kgToJin(firstRecord.weight),
-        fatMassJin: kgToJin(firstMetrics.fatMass),
-        leanBodyMassJin: kgToJin(firstMetrics.leanBodyMass),
-        bodyWaterJin: kgToJin(firstMetrics.bodyWater),
-        proteinJin: kgToJin(firstMetrics.protein),
-        boneMassJin: kgToJin(firstMetrics.boneMass),
-        muscleMassJin: kgToJin(firstMetrics.muscleMass),
-        skeletalMuscleJin: kgToJin(firstMetrics.skeletalMuscle),
-        weightControlJin: kgToJin(firstMetrics.weightControl),
-        fatControlJin: kgToJin(firstMetrics.fatControl)
+        ...firstMetrics
       },
       latestRecord: {
         date: latestRecord.record_date,
-        ...latestMetrics,
-        weightJin: kgToJin(latestRecord.weight),
-        fatMassJin: kgToJin(latestMetrics.fatMass),
-        leanBodyMassJin: kgToJin(latestMetrics.leanBodyMass),
-        bodyWaterJin: kgToJin(latestMetrics.bodyWater),
-        proteinJin: kgToJin(latestMetrics.protein),
-        boneMassJin: kgToJin(latestMetrics.boneMass),
-        muscleMassJin: kgToJin(latestMetrics.muscleMass),
-        skeletalMuscleJin: kgToJin(latestMetrics.skeletalMuscle),
-        weightControlJin: kgToJin(latestMetrics.weightControl),
-        fatControlJin: kgToJin(latestMetrics.fatControl)
+        ...latestMetrics
       },
       changes: {
-        weight: calculateChange(kgToJin(latestRecord.weight), kgToJin(firstRecord.weight), '斤'),
-        bodyFatRate: calculateChange(latestMetrics.bodyFatRate, firstMetrics.bodyFatRate, '%'),
-        bmi: calculateChange(latestMetrics.bmi, firstMetrics.bmi, ''),
-        muscleMass: calculateChange(kgToJin(latestMetrics.muscleMass), kgToJin(firstMetrics.muscleMass), '斤'),
-        protein: calculateChange(kgToJin(latestMetrics.protein), kgToJin(firstMetrics.protein), '斤'),
-        fatMass: calculateChange(kgToJin(latestMetrics.fatMass), kgToJin(firstMetrics.fatMass), '斤'),
-        bodyWater: calculateChange(kgToJin(latestMetrics.bodyWater), kgToJin(firstMetrics.bodyWater), '斤'),
-        boneMass: calculateChange(kgToJin(latestMetrics.boneMass), kgToJin(firstMetrics.boneMass), '斤'),
-        skeletalMuscle: calculateChange(kgToJin(latestMetrics.skeletalMuscle), kgToJin(firstMetrics.skeletalMuscle), '斤'),
-        vfi: calculateChange(latestMetrics.vfi, firstMetrics.vfi, ''),
-        healthScore: calculateChange(latestMetrics.healthScore, firstMetrics.healthScore, '分'),
-        bodyAge: calculateChange(latestMetrics.bodyAge, firstMetrics.bodyAge, ''),
-        bmr: calculateChange(latestMetrics.bmr, firstMetrics.bmr, 'kcal'),
-        leanBodyMass: calculateChange(kgToJin(latestMetrics.leanBodyMass), kgToJin(firstMetrics.leanBodyMass), '斤'),
-        weightControl: calculateChange(kgToJin(latestMetrics.weightControl), kgToJin(firstMetrics.weightControl), '斤'),
-        fatControl: calculateChange(kgToJin(latestMetrics.fatControl), kgToJin(firstMetrics.fatControl), '斤')
+        weight: calculateChange(latestRecord.weight, firstRecord.weight, 'kg', true),
+        bodyFatRate: calculateChange(latestMetrics.bodyFatRate, firstMetrics.bodyFatRate, '%', true),
+        bmi: calculateChange(latestMetrics.bmi, firstMetrics.bmi, '', true),
+        muscleMass: calculateChange(latestMetrics.muscleMass, firstMetrics.muscleMass, 'kg', false),
+        protein: calculateChange(latestMetrics.protein, firstMetrics.protein, 'kg', false),
+        fatMass: calculateChange(latestMetrics.fatMass, firstMetrics.fatMass, 'kg', true),
+        bodyWater: calculateChange(latestMetrics.bodyWater, firstMetrics.bodyWater, 'kg', false),
+        boneMass: calculateChange(latestMetrics.boneMass, firstMetrics.boneMass, 'kg', false),
+        skeletalMuscle: calculateChange(latestMetrics.skeletalMuscle, firstMetrics.skeletalMuscle, 'kg', false),
+        vfi: calculateChange(latestMetrics.vfi, firstMetrics.vfi, '', true),
+        healthScore: calculateChange(latestMetrics.healthScore, firstMetrics.healthScore, '分', false),
+        bodyAge: calculateChange(latestMetrics.bodyAge, firstMetrics.bodyAge, '岁', true),
+        bmr: calculateChange(latestMetrics.bmr, firstMetrics.bmr, 'kcal', false),
+        leanBodyMass: calculateChange(latestMetrics.leanBodyMass, firstMetrics.leanBodyMass, 'kg', false),
+        weightControl: calculateChange(latestMetrics.weightControl, firstMetrics.weightControl, 'kg', true),
+        fatControl: calculateChange(latestMetrics.fatControl, firstMetrics.fatControl, 'kg', true)
       }
     }
   }
