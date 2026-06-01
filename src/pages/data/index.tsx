@@ -1050,6 +1050,28 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
         {comparisonData && (
           <View className="px-4 mt-6 mb-6">
             <Text className="block text-lg font-semibold text-[#1E2933] mb-3">身体数据对比</Text>
+            
+            {/* 减重减脂数据统计卡片 */}
+            <View className="bg-white rounded-xl shadow-sm p-4 mb-4">
+              <View className="flex flex-row justify-around">
+                <View className="text-center">
+                  <Text className="block text-sm text-[#6B7280] mb-1">天数</Text>
+                  <Text className="block text-2xl font-bold text-[#10B981]">{comparisonData.summary.days}</Text>
+                  <Text className="block text-xs text-[#9CA3AF]">天</Text>
+                </View>
+                <View className="text-center">
+                  <Text className="block text-sm text-[#6B7280] mb-1">减重</Text>
+                  <Text className="block text-2xl font-bold text-[#10B981]">{(comparisonData.summary.weightLoss * 2).toFixed(1)}</Text>
+                  <Text className="block text-xs text-[#9CA3AF]">斤</Text>
+                </View>
+                <View className="text-center">
+                  <Text className="block text-sm text-[#6B7280] mb-1">减脂</Text>
+                  <Text className="block text-2xl font-bold text-[#10B981]">{(comparisonData.summary.fatLoss * 2).toFixed(1)}</Text>
+                  <Text className="block text-xs text-[#9CA3AF]">斤</Text>
+                </View>
+              </View>
+            </View>
+            
             <Text className="block text-xs text-[#6B7280] mb-3">
               首次打卡 {comparisonData.firstRecord.date} 与最新打卡 {comparisonData.latestRecord.date} 对比（共 {comparisonData.summary.days} 天）
             </Text>
