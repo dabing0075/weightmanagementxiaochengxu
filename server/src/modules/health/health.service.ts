@@ -752,11 +752,25 @@ export class HealthService {
       // 肌肉控制量 (kg) - 暂设为0
       const muscleControl = 0
       
-      // 体型
+      // 体型 - 根据腰围健康等级确定
       let bodyType = '标准型'
-      if (bodyFatRate > (gender === 'male' ? 25 : 32)) bodyType = '肥胖型'
-      else if (bodyFatRate > (gender === 'male' ? 20 : 28)) bodyType = '偏胖型'
-      else if (bodyFatRate < (gender === 'male' ? 12 : 20)) bodyType = '偏瘦型'
+      if (waist) {
+        // 有腰围数据时，根据腰围健康等级确定体型
+        if (gender === 'male') {
+          if (waist >= 90) bodyType = '肥胖型'
+          else if (waist >= 85) bodyType = '偏胖型'
+          else bodyType = '标准型'
+        } else {
+          if (waist >= 85) bodyType = '肥胖型'
+          else if (waist >= 80) bodyType = '偏胖型'
+          else bodyType = '标准型'
+        }
+      } else {
+        // 无腰围数据时，使用体脂率估算
+        if (bodyFatRate > (gender === 'male' ? 25 : 32)) bodyType = '肥胖型'
+        else if (bodyFatRate > (gender === 'male' ? 20 : 28)) bodyType = '偏胖型'
+        else if (bodyFatRate < (gender === 'male' ? 12 : 20)) bodyType = '偏瘦型'
+      }
       
       return {
         weight,

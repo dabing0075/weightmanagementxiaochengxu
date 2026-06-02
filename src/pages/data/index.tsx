@@ -1536,13 +1536,19 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
               </View>
 
-              {/* 身体型 */}
+              {/* 体型 */}
               <View className="flex flex-row border-t border-[#E5E7EB]">
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
-                  <Text className="block text-xs text-[#374151]">身体型</Text>
+                  <Text className="block text-xs text-[#374151]">体型</Text>
                 </View>
-                <View className="w-3/4 p-2">
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
+                  <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.bodyType}</Text>
+                </View>
+                <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
                   <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.latestRecord.bodyType}</Text>
+                </View>
+                <View className="w-1/4 p-2">
+                  <Text className="block text-xs text-[#6B7280] text-center">-</Text>
                 </View>
               </View>
             </View>
