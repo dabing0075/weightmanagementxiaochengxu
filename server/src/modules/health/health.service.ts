@@ -735,10 +735,76 @@ export class HealthService {
       else if (bmi >= 24 && bmi < 28) obesityLevel = '超重'
       else obesityLevel = '肥胖'
       
-      // 身体年龄 (基于BMR和体脂率估算)
-      let bodyAge = age
-      if (bodyFatRate > (gender === 'male' ? 20 : 30)) bodyAge += 3
-      else if (bodyFatRate < (gender === 'male' ? 15 : 25)) bodyAge -= 2
+      // 身体年龄计算（按文档公式）
+      // 身体年龄 = 基础身体年龄 × 40% + 进阶身体年龄 × 60%
+      
+      // 计算肌肉率（%）
+      const muscleRate = (muscleMass / weight) * 100
+      
+      // 1. BMI年龄
+      let bmiAge = age
+      if (bmi >= 18.5 && bmi < 24) {
+        bmiAge = age // BMI 18.5-23.9：等于实际年龄
+      } else if (bmi >= 24 && bmi < 28) {
+        bmiAge = age + 5 // BMI 24-27.9：实际年龄 + 5岁
+      } else if (bmi >= 28) {
+        bmiAge = age + 10 // BMI ≥ 28：实际年龄 + 10岁
+      } else {
+        bmiAge = age + 3 // BMI < 18.5：实际年龄 + 3岁
+      }
+      
+      // 2. 腰围年龄
+      let waistAge = age
+      if (waist) {
+        if (gender === 'male') {
+          if (waist < 85) {
+            waistAge = age // 男性腰围 < 85cm：等于实际年龄
+          } else if (waist < 90) {
+            waistAge = age + 5 // 男性腰围 85-90cm：实际年龄 + 5岁
+          } else {
+            waistAge = age + 10 // 男性腰围 ≥ 90cm：实际年龄 + 10岁
+          }
+        } else {
+          if (waist < 80) {
+            waistAge = age // 女性腰围 < 80cm：等于实际年龄
+          } else if (waist < 85) {
+            waistAge = age + 5 // 女性腰围 80-85cm：实际年龄 + 5岁
+          } else {
+            waistAge = age + 10 // 女性腰围 ≥ 85cm：实际年龄 + 10岁
+          }
+        }
+      }
+      
+      // 3. 肌肉量年龄
+      let muscleAge = age
+      if (gender === 'male') {
+        if (muscleRate >= 35) {
+          muscleAge = age - 5 // 男性肌肉率 ≥ 35%：实际年龄 - 5岁
+        } else if (muscleRate >= 30) {
+          muscleAge = age // 男性肌肉率 30-35%：等于实际年龄
+        } else {
+          muscleAge = age + 5 // 男性肌肉率 < 30%：实际年龄 + 5岁
+        }
+      } else {
+        if (muscleRate >= 28) {
+          muscleAge = age - 5 // 女性肌肉率 ≥ 28%：实际年龄 - 5岁
+        } else if (muscleRate >= 25) {
+          muscleAge = age // 女性肌肉率 25-28%：等于实际年龄
+        } else {
+          muscleAge = age + 5 // 女性肌肉率 < 25%：实际年龄 + 5岁
+        }
+      }
+      
+      // 4. 基础身体年龄 = 0.6 × 实际年龄 + 0.4 × BMI年龄 + 0.3 × 腰围年龄 - 0.3 × 肌肉量年龄
+      const baseBodyAge = 0.6 * age + 0.4 * bmiAge + 0.3 * waistAge - 0.3 * muscleAge
+      
+      // 5. 进阶身体年龄 = 实际年龄 + (内脏脂肪等级 - 9) × 2 + (体脂率 - 标准体脂率) × 1 - (肌肉率 - 标准肌肉率) × 1
+      const standardBodyFatRate = gender === 'male' ? 17.5 : 22.5
+      const standardMuscleRate = gender === 'male' ? 37.5 : 30.5
+      const advancedBodyAge = age + (vfi - 9) * 2 + (bodyFatRate - standardBodyFatRate) * 1 - (muscleRate - standardMuscleRate) * 1
+      
+      // 6. 最终身体年龄 = 基础身体年龄 × 40% + 进阶身体年龄 × 60%
+      let bodyAge = Math.round(baseBodyAge * 0.4 + advancedBodyAge * 0.6)
       
       // 体重控制量 (kg) - 当前体重 - 标准体重
       const standardWeight = (height - 100) * 0.9
