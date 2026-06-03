@@ -712,22 +712,6 @@ export class HealthService {
       } else {
         bmr = Math.round(10 * weight + 6.25 * height - 5 * age - 161)
       }
-      // 健康评分 (基于BMI和体脂率)
-      let healthScore = 70
-      if (bmi >= 18.5 && bmi < 24) healthScore += 10
-      else if (bmi >= 24 && bmi < 28) healthScore -= 5
-      else if (bmi >= 28) healthScore -= 15
-      if (gender === 'male') {
-        if (bodyFatRate >= 10 && bodyFatRate < 20) healthScore += 10
-        else if (bodyFatRate >= 20 && bodyFatRate < 25) healthScore += 5
-        else if (bodyFatRate >= 25) healthScore -= 5
-      } else {
-        if (bodyFatRate >= 18 && bodyFatRate < 28) healthScore += 10
-        else if (bodyFatRate >= 28 && bodyFatRate < 33) healthScore += 5
-        else if (bodyFatRate >= 33) healthScore -= 5
-      }
-      healthScore = Math.min(100, Math.max(0, healthScore))
-      
       // 肥胖等级
       let obesityLevel = '标准'
       if (bmi < 18.5) obesityLevel = '偏瘦'
@@ -805,6 +789,86 @@ export class HealthService {
       
       // 6. 最终身体年龄 = 基础身体年龄 × 40% + 进阶身体年龄 × 60%
       let bodyAge = Math.round(baseBodyAge * 0.4 + advancedBodyAge * 0.6)
+      
+      // 健康评分（按文档公式，5个维度各20分，总分100分）
+      
+      // 维度1：BMI指数（20分，男女通用）
+      let bmiScore = 0
+      if (bmi >= 18.5 && bmi < 24) {
+        bmiScore = 20  // 标准体重
+      } else if (bmi >= 24 && bmi < 28) {
+        bmiScore = 14  // 超重
+      } else {
+        bmiScore = 6   // 偏瘦/肥胖
+      }
+      
+      // 维度2：腰围（20分，男女分标准）
+      let waistScore = 0
+      if (waist) {
+        if (gender === 'male') {
+          if (waist < 85) waistScore = 20       // 正常无腹型肥胖
+          else if (waist < 90) waistScore = 12  // 临界肥胖
+          else waistScore = 5                    // 中心性肥胖
+        } else {
+          if (waist < 80) waistScore = 20       // 正常无腹型肥胖
+          else if (waist < 85) waistScore = 12  // 临界肥胖
+          else waistScore = 5                    // 中心性肥胖
+        }
+      } else {
+        waistScore = 10  // 无腰围数据，给中等分
+      }
+      
+      // 维度3：体脂率（20分，男女分标准）
+      let bodyFatScore = 0
+      if (gender === 'male') {
+        if (bodyFatRate >= 15 && bodyFatRate <= 22) {
+          bodyFatScore = 20  // 理想
+        } else if (bodyFatRate >= 23 && bodyFatRate <= 27) {
+          bodyFatScore = 13  // 偏高
+        } else if (bodyFatRate < 12 || bodyFatRate > 27) {
+          bodyFatScore = 6   // 过低/过高
+        } else {
+          bodyFatScore = 13  // 边界情况
+        }
+      } else {
+        if (bodyFatRate >= 20 && bodyFatRate <= 28) {
+          bodyFatScore = 20  // 理想
+        } else if (bodyFatRate >= 29 && bodyFatRate <= 33) {
+          bodyFatScore = 13  // 偏高
+        } else if (bodyFatRate < 17 || bodyFatRate > 33) {
+          bodyFatScore = 6   // 过低/过高
+        } else {
+          bodyFatScore = 13  // 边界情况
+        }
+      }
+      
+      // 维度4：骨骼肌肉率（20分，男女分标准）
+      let muscleScore = 0
+      if (gender === 'male') {
+        if (muscleRate >= 35) muscleScore = 20       // 优秀
+        else if (muscleRate >= 32) muscleScore = 14  // 合格
+        else muscleScore = 7                          // 肌肉不足
+      } else {
+        if (muscleRate >= 30) muscleScore = 20       // 优秀
+        else if (muscleRate >= 27) muscleScore = 14  // 合格
+        else muscleScore = 7                          // 肌肉不足
+      }
+      
+      // 维度5：身体年龄差值（20分，男女统一）
+      let ageDiffScore = 0
+      const ageDiff = bodyAge - age
+      if (ageDiff < 0) {
+        ageDiffScore = 20  // 身体年龄 < 实际年龄
+      } else if (ageDiff === 0) {
+        ageDiffScore = 15  // 身体年龄 = 实际年龄
+      } else if (ageDiff <= 3) {
+        ageDiffScore = 10  // 超出0-3岁
+      } else {
+        ageDiffScore = 4   // 超出>3岁
+      }
+      
+      // 总分
+      const healthScore = bmiScore + waistScore + bodyFatScore + muscleScore + ageDiffScore
       
       // 体重控制量 (kg) - 当前体重 - 标准体重
       const standardWeight = (height - 100) * 0.9
