@@ -82,7 +82,7 @@ interface StatsData {
     leanBodyMass: number // 去脂体重
     bodyWater: number // 水分
     protein: number // 蛋白质
-    muscleMass: number // 肌肉量
+    muscleMass: number // 软瘦组织重量
     skeletalMuscle: number // 骨骼肌
     boneMass: number // 骨质
     vfi: number // 内脏脂肪等级
@@ -999,9 +999,9 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                   <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 去脂体重 × 19%</Text>
                 </View>
                 
-                {/* 肌肉量 */}
+                {/* 软瘦组织重量 */}
                 <View className="bg-white rounded-xl p-4 shadow-sm">
-                  <Text className="block text-xs text-[#6B7280] mb-1">肌肉量</Text>
+                  <Text className="block text-xs text-[#6B7280] mb-1">软瘦组织重量</Text>
                   <Text className="block text-xl font-bold text-[#10B981]">{statsData.bodyComposition.muscleMass}</Text>
                   <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 水分 + 蛋白质</Text>
                 </View>
@@ -1010,7 +1010,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 <View className="bg-white rounded-xl p-4 shadow-sm">
                   <Text className="block text-xs text-[#6B7280] mb-1">骨骼肌</Text>
                   <Text className="block text-xl font-bold text-[#EC4899]">{statsData.bodyComposition.skeletalMuscle}</Text>
-                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 肌肉量 × 71.3%</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 软瘦组织重量 × 71.3%</Text>
                 </View>
                 
                 {/* 骨质 */}
@@ -1295,10 +1295,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
               </View>
 
-              {/* 肌肉量 */}
+              {/* 软瘦组织重量 */}
               <View className="flex flex-row border-b border-[#E5E7EB]">
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB] bg-[#F9FAFB]">
-                  <Text className="block text-xs text-[#374151]">肌肉量</Text>
+                  <Text className="block text-xs text-[#374151]">软瘦组织重量</Text>
                 </View>
                 <View className="w-1/4 p-2 border-r border-[#E5E7EB]">
                   <Text className="block text-xs text-[#1E2933] text-center">{comparisonData.firstRecord.muscleMass}公斤</Text>
