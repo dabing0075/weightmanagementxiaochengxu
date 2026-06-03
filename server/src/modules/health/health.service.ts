@@ -937,8 +937,10 @@ export class HealthService {
       // isGood: 根据指标类型判断变化是否有利
       // 减少有利的指标：体重、体脂率、脂肪量、内脏脂肪指数、身体年龄
       // 增加有利的指标：肌肉量、水分、蛋白质、骨量、骨骼肌、BMR
-      let isGood: boolean
-      if (isDecreaseGood) {
+      let isGood: boolean | null
+      if (diff === 0) {
+        isGood = null // 无变化，不好不坏
+      } else if (isDecreaseGood) {
         isGood = diff < 0 // 下降是好事
       } else {
         isGood = diff > 0 // 上升是好事
