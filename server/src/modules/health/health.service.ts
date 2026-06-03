@@ -738,8 +738,8 @@ export class HealthService {
       // 身体年龄计算（按文档公式）
       // 身体年龄 = 基础身体年龄 × 40% + 进阶身体年龄 × 60%
       
-      // 计算肌肉率（%）
-      const muscleRate = (muscleMass / weight) * 100
+      // 计算肌肉率（%）- 按骨骼肌重量占体重的比例
+      const muscleRate = (skeletalMuscle / weight) * 100
       
       // 1. BMI年龄
       let bmiAge = age
@@ -775,23 +775,23 @@ export class HealthService {
         }
       }
       
-      // 3. 肌肉量年龄
+      // 3. 肌肉量年龄（基于骨骼肌率）
       let muscleAge = age
       if (gender === 'male') {
-        if (muscleRate >= 35) {
-          muscleAge = age - 5 // 男性肌肉率 ≥ 35%：实际年龄 - 5岁
-        } else if (muscleRate >= 30) {
-          muscleAge = age // 男性肌肉率 30-35%：等于实际年龄
+        if (muscleRate >= 33) {
+          muscleAge = age - 5 // 男性骨骼肌率 ≥ 33%：实际年龄 - 5岁
+        } else if (muscleRate >= 28) {
+          muscleAge = age // 男性骨骼肌率 28-33%：等于实际年龄
         } else {
-          muscleAge = age + 5 // 男性肌肉率 < 30%：实际年龄 + 5岁
+          muscleAge = age + 5 // 男性骨骼肌率 < 28%：实际年龄 + 5岁
         }
       } else {
-        if (muscleRate >= 28) {
-          muscleAge = age - 5 // 女性肌肉率 ≥ 28%：实际年龄 - 5岁
-        } else if (muscleRate >= 25) {
-          muscleAge = age // 女性肌肉率 25-28%：等于实际年龄
+        if (muscleRate >= 27) {
+          muscleAge = age - 5 // 女性骨骼肌率 ≥ 27%：实际年龄 - 5岁
+        } else if (muscleRate >= 22) {
+          muscleAge = age // 女性骨骼肌率 22-27%：等于实际年龄
         } else {
-          muscleAge = age + 5 // 女性肌肉率 < 25%：实际年龄 + 5岁
+          muscleAge = age + 5 // 女性骨骼肌率 < 22%：实际年龄 + 5岁
         }
       }
       
@@ -800,7 +800,7 @@ export class HealthService {
       
       // 5. 进阶身体年龄 = 实际年龄 + (内脏脂肪等级 - 9) × 2 + (体脂率 - 标准体脂率) × 1 - (肌肉率 - 标准肌肉率) × 1
       const standardBodyFatRate = gender === 'male' ? 17.5 : 22.5
-      const standardMuscleRate = gender === 'male' ? 37.5 : 30.5
+      const standardMuscleRate = gender === 'male' ? 33 : 27  // 标准骨骼肌率
       const advancedBodyAge = age + (vfi - 9) * 2 + (bodyFatRate - standardBodyFatRate) * 1 - (muscleRate - standardMuscleRate) * 1
       
       // 6. 最终身体年龄 = 基础身体年龄 × 40% + 进阶身体年龄 × 60%
