@@ -1003,7 +1003,7 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 <View className="bg-white rounded-xl p-4 shadow-sm">
                   <Text className="block text-xs text-[#6B7280] mb-1">软瘦组织重量</Text>
                   <Text className="block text-xl font-bold text-[#10B981]">{statsData.bodyComposition.muscleMass}</Text>
-                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 水分 + 蛋白质</Text>
+                  <Text className="block text-xs text-[#9CA3AF] mt-1">kg = 去脂体重 - 骨量</Text>
                 </View>
                 
                 {/* 骨骼肌 */}
