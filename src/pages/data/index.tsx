@@ -1133,10 +1133,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.bmi?.direction === 'up' 
-                      ? (comparisonData.changes?.bmi?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.bmi?.direction === 'down'
-                      ? (comparisonData.changes?.bmi?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.bmi?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.bmi?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1158,10 +1158,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.bodyFatRate?.direction === 'up' 
-                      ? (comparisonData.changes?.bodyFatRate?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.bodyFatRate?.direction === 'down'
-                      ? (comparisonData.changes?.bodyFatRate?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.bodyFatRate?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.bodyFatRate?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1183,10 +1183,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.fatMass?.direction === 'up' 
-                      ? (comparisonData.changes?.fatMass?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.fatMass?.direction === 'down'
-                      ? (comparisonData.changes?.fatMass?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.fatMass?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.fatMass?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1208,10 +1208,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.leanBodyMass?.direction === 'up' 
-                      ? (comparisonData.changes?.leanBodyMass?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.leanBodyMass?.direction === 'down'
-                      ? (comparisonData.changes?.leanBodyMass?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.leanBodyMass?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.leanBodyMass?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1233,10 +1233,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.bodyWater?.direction === 'up' 
-                      ? (comparisonData.changes?.bodyWater?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.bodyWater?.direction === 'down'
-                      ? (comparisonData.changes?.bodyWater?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.bodyWater?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.bodyWater?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1258,10 +1258,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.protein?.direction === 'up' 
-                      ? (comparisonData.changes?.protein?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.protein?.direction === 'down'
-                      ? (comparisonData.changes?.protein?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.protein?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.protein?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1283,10 +1283,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.boneMass?.direction === 'up' 
-                      ? (comparisonData.changes?.boneMass?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.boneMass?.direction === 'down'
-                      ? (comparisonData.changes?.boneMass?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.boneMass?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.boneMass?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1308,10 +1308,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.muscleMass?.direction === 'up' 
-                      ? (comparisonData.changes?.muscleMass?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.muscleMass?.direction === 'down'
-                      ? (comparisonData.changes?.muscleMass?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.muscleMass?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.muscleMass?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1333,10 +1333,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.skeletalMuscle?.direction === 'up' 
-                      ? (comparisonData.changes?.skeletalMuscle?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.skeletalMuscle?.direction === 'down'
-                      ? (comparisonData.changes?.skeletalMuscle?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.skeletalMuscle?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.skeletalMuscle?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1358,10 +1358,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.vfi?.direction === 'up' 
-                      ? (comparisonData.changes?.vfi?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.vfi?.direction === 'down'
-                      ? (comparisonData.changes?.vfi?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.vfi?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.vfi?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1383,10 +1383,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.bmr?.direction === 'up' 
-                      ? (comparisonData.changes?.bmr?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.bmr?.direction === 'down'
-                      ? (comparisonData.changes?.bmr?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.bmr?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.bmr?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1424,10 +1424,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.bodyAge?.direction === 'up' 
-                      ? (comparisonData.changes?.bodyAge?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.bodyAge?.direction === 'down'
-                      ? (comparisonData.changes?.bodyAge?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.bodyAge?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.bodyAge?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1449,11 +1449,8 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.healthScore?.direction === 'up' 
-                      ? (comparisonData.changes?.healthScore?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.healthScore?.direction === 'down'
-                      ? (comparisonData.changes?.healthScore?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : 'text-[#6B7280]'
+                    comparisonData.changes?.healthScore?.isGood === true ? 'text-[#10B981]' : 
+                    comparisonData.changes?.healthScore?.isGood === false ? 'text-[#EF4444]' : 'text-[#6B7280]'
                   }`}
                   >
                     {comparisonData.changes?.healthScore?.text || '-'}{comparisonData.changes?.healthScore?.direction === 'up' ? ' ↑' : comparisonData.changes?.healthScore?.direction === 'down' ? ' ↓' : ''}
@@ -1474,10 +1471,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.weightControl?.direction === 'up' 
-                      ? (comparisonData.changes?.weightControl?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.weightControl?.direction === 'down'
-                      ? (comparisonData.changes?.weightControl?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.weightControl?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.weightControl?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1499,10 +1496,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.fatControl?.direction === 'up' 
-                      ? (comparisonData.changes?.fatControl?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.fatControl?.direction === 'down'
-                      ? (comparisonData.changes?.fatControl?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.fatControl?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.fatControl?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
@@ -1524,10 +1521,10 @@ BMI：${statsData.bmiLevel.current.toFixed(1)} (${statsData.bmiLevel.level})
                 </View>
                 <View className="w-1/4 p-2">
                   <Text className={`block text-xs text-center font-semibold ${
-                    comparisonData.changes?.muscleControl?.direction === 'up' 
-                      ? (comparisonData.changes?.muscleControl?.isGood === true ? 'text-[#10B981]' : 'text-[#EF4444]')
-                      : comparisonData.changes?.muscleControl?.direction === 'down'
-                      ? (comparisonData.changes?.muscleControl?.isGood === false ? 'text-[#10B981]' : 'text-[#EF4444]')
+                    comparisonData.changes?.muscleControl?.isGood === true 
+                      ? 'text-[#10B981]' 
+                      : comparisonData.changes?.muscleControl?.isGood === false 
+                      ? 'text-[#EF4444]' 
                       : 'text-[#6B7280]'
                   }`}
                   >
