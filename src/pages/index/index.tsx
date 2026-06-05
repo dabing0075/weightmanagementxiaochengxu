@@ -18,7 +18,8 @@ import {
   Trophy,
   Info,
   Heart,
-  Clock
+  Clock,
+  Flame
 } from 'lucide-react-taro'
 
 // 用户信息接口
@@ -55,6 +56,7 @@ interface HealthMetrics {
   todayCheckedIn: boolean
   healthScore?: number
   bodyAge?: number
+  bmr?: number
 }
 
 // 趋势数据接口
@@ -663,6 +665,27 @@ export default function HomePage() {
                 <View className="mt-2">
                   <Text className="text-xs text-[#6B7280]">
                     实际年龄 {userInfo?.birth_date ? Math.floor((new Date().getTime() - new Date(userInfo.birth_date).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : '--'} 岁
+                  </Text>
+                </View>
+              </CardContent>
+            </Card>
+
+            {/* 基础代谢率卡片 */}
+            <Card className="shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-2">
+                  <View className="w-7 h-7 bg-[#4CAF50]/15 rounded-lg flex items-center justify-center">
+                    <Flame size={16} color="#4CAF50" />
+                  </View>
+                  <Text className="text-xs font-medium text-[#6B7280]">基础代谢率</Text>
+                </View>
+                <Text className="block text-2xl font-bold text-[#1E2933]">
+                  {metrics?.bmr || '--'}
+                  <Text className="text-sm font-normal text-[#6B7280] ml-1">kcal</Text>
+                </Text>
+                <View className="mt-2">
+                  <Text className="text-xs text-[#6B7280]">
+                    Mifflin-St Jeor 公式
                   </Text>
                 </View>
               </CardContent>

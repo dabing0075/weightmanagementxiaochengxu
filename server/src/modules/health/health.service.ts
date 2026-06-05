@@ -233,6 +233,14 @@ export class HealthService {
 
     const healthScore = bmiScore + waistScore + bodyFatScore + muscleScore + ageDiffScore
 
+    // 计算基础代谢率 BMR（Mifflin-St Jeor公式）
+    let bmr = 0
+    if (gender === 'male') {
+      bmr = Math.round(10 * weight + 6.25 * height - 5 * age + 5)
+    } else {
+      bmr = Math.round(10 * weight + 6.25 * height - 5 * age - 161)
+    }
+
     return {
       currentWeight: latestRecord.weight,
       currentWaist: latestRecord.waist,
@@ -245,7 +253,8 @@ export class HealthService {
       todayCheckedIn,
       gender: user.gender,
       healthScore,
-      bodyAge
+      bodyAge,
+      bmr
     }
   }
 
