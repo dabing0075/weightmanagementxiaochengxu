@@ -241,6 +241,21 @@ export class HealthService {
       bmr = Math.round(10 * weight + 6.25 * height - 5 * age - 161)
     }
 
+    // 计算体型（根据腰围健康等级）
+    let bodyType = '标准型'
+    if (latestRecord.waist) {
+      const waist = latestRecord.waist
+      if (gender === 'male') {
+        if (waist >= 90) bodyType = '肥胖型'
+        else if (waist >= 85) bodyType = '偏胖型'
+        else bodyType = '标准型'
+      } else {
+        if (waist >= 85) bodyType = '肥胖型'
+        else if (waist >= 80) bodyType = '偏胖型'
+        else bodyType = '标准型'
+      }
+    }
+
     return {
       currentWeight: latestRecord.weight,
       currentWaist: latestRecord.waist,
@@ -254,7 +269,8 @@ export class HealthService {
       gender: user.gender,
       healthScore,
       bodyAge,
-      bmr
+      bmr,
+      bodyType
     }
   }
 

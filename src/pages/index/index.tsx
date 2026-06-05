@@ -19,7 +19,8 @@ import {
   Info,
   Heart,
   Clock,
-  Flame
+  Flame,
+  PersonStanding
 } from 'lucide-react-taro'
 
 // 用户信息接口
@@ -57,6 +58,7 @@ interface HealthMetrics {
   healthScore?: number
   bodyAge?: number
   bmr?: number
+  bodyType?: string
 }
 
 // 趋势数据接口
@@ -686,6 +688,26 @@ export default function HomePage() {
                 <View className="mt-2">
                   <Text className="text-xs text-[#6B7280]">
                     Mifflin-St Jeor 公式
+                  </Text>
+                </View>
+              </CardContent>
+            </Card>
+
+            {/* 体型卡片 */}
+            <Card className="shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-2">
+                  <View className="w-7 h-7 bg-[#8B5CF6]/15 rounded-lg flex items-center justify-center">
+                    <PersonStanding size={16} color="#8B5CF6" />
+                  </View>
+                  <Text className="text-xs font-medium text-[#6B7280]">体型</Text>
+                </View>
+                <Text className="block text-2xl font-bold text-[#1E2933]">
+                  {metrics?.bodyType || '--'}
+                </Text>
+                <View className="mt-2">
+                  <Text className="text-xs text-[#6B7280]">
+                    根据腰围健康等级确定
                   </Text>
                 </View>
               </CardContent>
