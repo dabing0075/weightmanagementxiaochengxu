@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { View, Text, Picker } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { Calendar, Scale, History } from 'lucide-react-taro'
+import { Calendar, Scale, History, ChevronLeft, ChevronRight, Check } from 'lucide-react-taro'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,11 @@ export default function CheckinPage() {
   const [recentRecords, setRecentRecords] = useState<Record[]>([])
   const [todayCheckedIn, setTodayCheckedIn] = useState(false)
   const [loading, setLoading] = useState(false)
+  
+  // 日历状态
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1)
+  const [checkedDates, setCheckedDates] = useState<Set<string>>(new Set())
 
   function getTodayDate() {
     const today = new Date()
@@ -103,6 +108,102 @@ export default function CheckinPage() {
     }
   }
 
+  // 获取指定月份的打卡记录
+  async function fetchMonthRecords(year: number, month: number) {
+    try {
+      // 计算月份的开始和结束日期
+      const startDate = `${year}-${String(month).padStart(2, '0')}-01`
+      const lastDay = new Date(year, month, 0).getDate()
+      const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+      
+      const res = await Network.request({
+        url: '/api/records/history',
+        method: 'GET',
+        data: { startDate, endDate }
+      })
+      console.log('Month records response:', res.data)
+      if (res.data?.code === 200 && res.data?.data) {
+        const dates = new Set<string>(res.data.data.map((r: Record) => r.record_date))
+        setCheckedDates(dates)
+      } else {
+        setCheckedDates(new Set<string>())
+      }
+    } catch (error) {
+      console.error('Fetch month records error:', error)
+      setCheckedDates(new Set<string>())
+    }
+  }
+
+  // 切换月份
+  function goToPrevMonth() {
+    let newYear = currentYear
+    let newMonth = currentMonth - 1
+    if (newMonth < 1) {
+      newMonth = 12
+      newYear -= 1
+    }
+    setCurrentYear(newYear)
+    setCurrentMonth(newMonth)
+    fetchMonthRecords(newYear, newMonth)
+  }
+
+  function goToNextMonth() {
+    let newYear = currentYear
+    let newMonth = currentMonth + 1
+    if (newMonth > 12) {
+      newMonth = 1
+      newYear += 1
+    }
+    setCurrentYear(newYear)
+    setCurrentMonth(newMonth)
+    fetchMonthRecords(newYear, newMonth)
+  }
+
+  // 生成日历网格
+  function generateCalendarDays() {
+    const days: Array<{ date: string; day: number; isCurrentMonth: boolean }> = []
+    const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay() // 0-6, 0是周日
+    const daysInMonth = new Date(currentYear, currentMonth, 0).getDate()
+    
+    // 上个月的天数
+    const prevMonthDays = new Date(currentYear, currentMonth - 1, 0).getDate()
+    
+    // 填充上个月的日期
+    for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+      const day = prevMonthDays - i
+      const prevMonth = currentMonth - 1 === 0 ? 12 : currentMonth - 1
+      const year = currentMonth - 1 === 0 ? currentYear - 1 : currentYear
+      days.push({
+        date: `${year}-${String(prevMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+        day,
+        isCurrentMonth: false
+      })
+    }
+    
+    // 填充当月日期
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({
+        date: `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(i).padStart(2, '0')}`,
+        day: i,
+        isCurrentMonth: true
+      })
+    }
+    
+    // 填充下个月的日期（补齐6行）
+    const remainingDays = 42 - days.length
+    for (let i = 1; i <= remainingDays; i++) {
+      const nextMonth = currentMonth + 1 === 13 ? 1 : currentMonth + 1
+      const year = currentMonth + 1 === 13 ? currentYear + 1 : currentYear
+      days.push({
+        date: `${year}-${String(nextMonth).padStart(2, '0')}-${String(i).padStart(2, '0')}`,
+        day: i,
+        isCurrentMonth: false
+      })
+    }
+    
+    return days
+  }
+
   async function handleSubmit() {
     if (!weight) {
       Taro.showToast({ title: '请输入体重', icon: 'none' })
@@ -133,6 +234,7 @@ export default function CheckinPage() {
         setWaist('')
         setNote('')
         fetchRecentRecords()
+        fetchMonthRecords(currentYear, currentMonth)
         // 发送事件通知其他页面刷新数据
         Taro.eventCenter.trigger('checkinSuccess')
       } else {
@@ -148,11 +250,13 @@ export default function CheckinPage() {
 
   useEffect(() => {
     fetchRecentRecords()
+    fetchMonthRecords(currentYear, currentMonth)
   }, [])
 
   // 每次进入页面时刷新数据
   useDidShow(() => {
     fetchRecentRecords()
+    fetchMonthRecords(currentYear, currentMonth)
   })
 
   return (
@@ -171,6 +275,91 @@ export default function CheckinPage() {
 
       {/* Content */}
       <View className="flex-1 overflow-y-auto pb-20 px-4 py-4">
+        {/* 打卡日历 */}
+        <Card className="bg-white shadow-md mb-6">
+          <CardContent className="p-4">
+            {/* 日历头部 */}
+            <View className="flex items-center justify-between mb-4">
+              <View 
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F0EDE6]"
+                onClick={goToPrevMonth}
+              >
+                <ChevronLeft size={20} color="#1E2933" />
+              </View>
+              <Text className="text-base font-semibold text-[#1E2933]">
+                {currentYear}年{currentMonth}月
+              </Text>
+              <View 
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#F0EDE6]"
+                onClick={goToNextMonth}
+              >
+                <ChevronRight size={20} color="#1E2933" />
+              </View>
+            </View>
+            
+            {/* 星期标题 */}
+            <View className="grid grid-cols-7 gap-1 mb-2">
+              {['日', '一', '二', '三', '四', '五', '六'].map((day, index) => (
+                <View key={index} className="h-8 flex items-center justify-center">
+                  <Text className={`text-xs font-medium ${index === 0 || index === 6 ? 'text-[#F26B3A]' : 'text-[#6B7280]'}`}>
+                    {day}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            
+            {/* 日历网格 */}
+            <View className="grid grid-cols-7 gap-1">
+              {generateCalendarDays().map((dayInfo, index) => {
+                const isChecked = checkedDates.has(dayInfo.date)
+                const isToday = dayInfo.date === getTodayDate()
+                const canSelect = dayInfo.isCurrentMonth && new Date(dayInfo.date) <= new Date()
+                
+                return (
+                  <View 
+                    key={index}
+                    className={`h-10 flex flex-col items-center justify-center rounded-lg relative ${
+                      dayInfo.isCurrentMonth ? 'bg-[#F7F4ED]' : ''
+                    } ${isToday ? 'ring-2 ring-[#F26B3A]' : ''}`}
+                    onClick={() => {
+                      if (canSelect) {
+                        setSelectedDate(dayInfo.date)
+                        checkExistingRecord(dayInfo.date)
+                      }
+                    }}
+                  >
+                    <Text className={`text-sm ${
+                      !dayInfo.isCurrentMonth ? 'text-[#C4C4C4]' :
+                      isToday ? 'text-[#F26B3A] font-semibold' :
+                      'text-[#1E2933]'
+                    }`}
+                    >
+                      {dayInfo.day}
+                    </Text>
+                    {isChecked && (
+                      <View className="absolute -bottom-1 flex items-center justify-center">
+                        <Check size={12} color="#3C8D6E" />
+                      </View>
+                    )}
+                  </View>
+                )
+              })}
+            </View>
+            
+            {/* 图例说明 */}
+            <View className="flex items-center justify-center gap-4 mt-4">
+              <View className="flex items-center gap-1">
+                <View className="w-3 h-3 rounded bg-[#3C8D6E]" />
+                <Text className="text-xs text-[#6B7280]">已打卡</Text>
+              </View>
+              <View className="flex items-center gap-1">
+                <View className="w-3 h-3 rounded ring-1 ring-[#F26B3A]" />
+                <Text className="text-xs text-[#6B7280]">今天</Text>
+              </View>
+            </View>
+          </CardContent>
+        </Card>
+
         {/* 今日打卡状态提示 */}
         <View 
           className={`rounded-xl p-3 flex items-center gap-3 mb-6 ${
