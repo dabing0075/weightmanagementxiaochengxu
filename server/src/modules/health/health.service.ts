@@ -95,6 +95,144 @@ export class HealthService {
       ? latestRecord.weight - user.target_weight 
       : 0
 
+    // 计算健康评分和身体年龄
+    const age = this.calculateAge(user.birth_date)
+    const height = user.height
+    const gender = user.gender
+    const weight = latestRecord.weight
+    const waist = latestRecord.waist
+
+    // 计算身体成分（用于身体年龄和健康评分）
+    const fatMass = parseFloat((weight * bodyFatRate / 100).toFixed(1))
+    const leanBodyMass = parseFloat((weight - fatMass).toFixed(1))
+    const boneMass = parseFloat((weight * 0.13).toFixed(1))
+    const muscleMass = parseFloat((leanBodyMass - boneMass).toFixed(1))
+    const skeletalMuscle = parseFloat((muscleMass * 0.714).toFixed(1))
+    const muscleRate = (skeletalMuscle / weight) * 100
+    
+    // 内脏脂肪指数
+    let vfi = 0
+    if (waist) {
+      vfi = Math.round(waist / 10 * (currentBmi / 22))
+    } else {
+      vfi = Math.round(currentBmi * 0.5)
+    }
+
+    // 身体年龄计算
+    let bmiAge = age
+    if (currentBmi >= 18.5 && currentBmi < 24) {
+      bmiAge = age
+    } else if (currentBmi >= 24 && currentBmi < 28) {
+      bmiAge = age + 5
+    } else if (currentBmi >= 28) {
+      bmiAge = age + 10
+    } else {
+      bmiAge = age + 3
+    }
+
+    let waistAge = age
+    if (waist) {
+      if (gender === 'male') {
+        if (waist < 85) waistAge = age
+        else if (waist < 90) waistAge = age + 5
+        else waistAge = age + 10
+      } else {
+        if (waist < 80) waistAge = age
+        else if (waist < 85) waistAge = age + 5
+        else waistAge = age + 10
+      }
+    }
+
+    let muscleAge = age
+    if (gender === 'male') {
+      if (muscleRate >= 33) muscleAge = age - 5
+      else if (muscleRate >= 28) muscleAge = age
+      else muscleAge = age + 5
+    } else {
+      if (muscleRate >= 27) muscleAge = age - 5
+      else if (muscleRate >= 22) muscleAge = age
+      else muscleAge = age + 5
+    }
+
+    const baseBodyAge = 0.6 * age + 0.4 * bmiAge + 0.3 * waistAge - 0.3 * muscleAge
+    const standardBodyFatRate = gender === 'male' ? 17.5 : 22.5
+    const standardMuscleRate = gender === 'male' ? 33 : 27
+    const advancedBodyAge = age + (vfi - 9) * 2 + (bodyFatRate - standardBodyFatRate) * 1 - (muscleRate - standardMuscleRate) * 1
+    const bodyAge = Math.round(baseBodyAge * 0.4 + advancedBodyAge * 0.6)
+
+    // 健康评分计算
+    let bmiScore = 0
+    if (currentBmi >= 18.5 && currentBmi < 24) {
+      bmiScore = 20
+    } else if (currentBmi >= 24 && currentBmi < 28) {
+      bmiScore = 14
+    } else {
+      bmiScore = 6
+    }
+
+    let waistScore = 0
+    if (waist) {
+      if (gender === 'male') {
+        if (waist < 85) waistScore = 20
+        else if (waist < 90) waistScore = 12
+        else waistScore = 5
+      } else {
+        if (waist < 80) waistScore = 20
+        else if (waist < 85) waistScore = 12
+        else waistScore = 5
+      }
+    } else {
+      waistScore = 10
+    }
+
+    let bodyFatScore = 0
+    if (gender === 'male') {
+      if (bodyFatRate >= 15 && bodyFatRate <= 22) {
+        bodyFatScore = 20
+      } else if (bodyFatRate >= 23 && bodyFatRate <= 27) {
+        bodyFatScore = 13
+      } else if (bodyFatRate < 12 || bodyFatRate > 27) {
+        bodyFatScore = 6
+      } else {
+        bodyFatScore = 13
+      }
+    } else {
+      if (bodyFatRate >= 20 && bodyFatRate <= 28) {
+        bodyFatScore = 20
+      } else if (bodyFatRate >= 29 && bodyFatRate <= 33) {
+        bodyFatScore = 13
+      } else if (bodyFatRate < 17 || bodyFatRate > 33) {
+        bodyFatScore = 6
+      } else {
+        bodyFatScore = 13
+      }
+    }
+
+    let muscleScore = 0
+    if (gender === 'male') {
+      if (muscleRate >= 35) muscleScore = 20
+      else if (muscleRate >= 32) muscleScore = 14
+      else muscleScore = 7
+    } else {
+      if (muscleRate >= 30) muscleScore = 20
+      else if (muscleRate >= 27) muscleScore = 14
+      else muscleScore = 7
+    }
+
+    let ageDiffScore = 0
+    const ageDiff = bodyAge - age
+    if (ageDiff < 0) {
+      ageDiffScore = 20
+    } else if (ageDiff === 0) {
+      ageDiffScore = 15
+    } else if (ageDiff <= 3) {
+      ageDiffScore = 10
+    } else {
+      ageDiffScore = 4
+    }
+
+    const healthScore = bmiScore + waistScore + bodyFatScore + muscleScore + ageDiffScore
+
     return {
       currentWeight: latestRecord.weight,
       currentWaist: latestRecord.waist,
@@ -105,7 +243,9 @@ export class HealthService {
       waistLevel,
       weightDiff,
       todayCheckedIn,
-      gender: user.gender
+      gender: user.gender,
+      healthScore,
+      bodyAge
     }
   }
 

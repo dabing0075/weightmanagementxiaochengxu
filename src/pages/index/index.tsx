@@ -16,7 +16,9 @@ import {
   Target,
   Calendar,
   Trophy,
-  Info
+  Info,
+  Heart,
+  Clock
 } from 'lucide-react-taro'
 
 // 用户信息接口
@@ -51,6 +53,8 @@ interface HealthMetrics {
   waistLevel: string
   weightDiff: number
   todayCheckedIn: boolean
+  healthScore?: number
+  bodyAge?: number
 }
 
 // 趋势数据接口
@@ -603,6 +607,63 @@ export default function HomePage() {
                       {metrics?.bodyFatLevel || '--'}
                     </Text>
                   </View>
+                </View>
+              </CardContent>
+            </Card>
+
+            {/* 健康评分卡片 */}
+            <Card className="shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-2">
+                  <View className="w-7 h-7 bg-[#EF4444]/15 rounded-lg flex items-center justify-center">
+                    <Heart size={16} color="#EF4444" />
+                  </View>
+                  <Text className="text-xs font-medium text-[#6B7280]">健康评分</Text>
+                </View>
+                <Text className="block text-2xl font-bold text-[#1E2933]">
+                  {metrics?.healthScore || '--'}
+                  <Text className="text-sm font-normal text-[#6B7280] ml-1">分</Text>
+                </Text>
+                <View className="mt-2">
+                  <View 
+                    className="inline-flex items-center px-2 py-1 rounded-full"
+                    style={{ 
+                      backgroundColor: (metrics?.healthScore || 0) >= 80 ? '#10B98115' : 
+                                       (metrics?.healthScore || 0) >= 60 ? '#F59E0B15' : '#EF444415'
+                    }}
+                  >
+                    <Text 
+                      className="text-xs font-semibold"
+                      style={{ 
+                        color: (metrics?.healthScore || 0) >= 80 ? '#10B981' : 
+                               (metrics?.healthScore || 0) >= 60 ? '#F59E0B' : '#EF4444'
+                      }}
+                    >
+                      {(metrics?.healthScore || 0) >= 80 ? '优秀' : 
+                       (metrics?.healthScore || 0) >= 60 ? '良好' : '需改善'}
+                    </Text>
+                  </View>
+                </View>
+              </CardContent>
+            </Card>
+
+            {/* 身体年龄卡片 */}
+            <Card className="shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+              <CardContent className="p-4">
+                <View className="flex items-center gap-2 mb-2">
+                  <View className="w-7 h-7 bg-[#8B5CF6]/15 rounded-lg flex items-center justify-center">
+                    <Clock size={16} color="#8B5CF6" />
+                  </View>
+                  <Text className="text-xs font-medium text-[#6B7280]">身体年龄</Text>
+                </View>
+                <Text className="block text-2xl font-bold text-[#1E2933]">
+                  {metrics?.bodyAge || '--'}
+                  <Text className="text-sm font-normal text-[#6B7280] ml-1">岁</Text>
+                </Text>
+                <View className="mt-2">
+                  <Text className="text-xs text-[#6B7280]">
+                    实际年龄 {userInfo?.birth_date ? Math.floor((new Date().getTime() - new Date(userInfo.birth_date).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : '--'} 岁
+                  </Text>
                 </View>
               </CardContent>
             </Card>
