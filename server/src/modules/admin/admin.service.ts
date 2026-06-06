@@ -145,11 +145,20 @@ export class AdminService {
     }
 
     // 获取所有打卡记录（从 weight_records 表）
-    const { data: records } = await client
+    const { data: rawRecords } = await client
       .from('weight_records')
       .select('*')
       .eq('user_id', userId)
-      .order('date', { ascending: true });
+      .order('record_date', { ascending: true });
+
+    // 转换记录格式，供前端显示
+    const records = rawRecords?.map(r => ({
+      id: r.id,
+      date: r.record_date,
+      weight: r.weight,
+      waist: r.waist,
+      note: r.note,
+    })) || [];
 
     // 使用用户表中的当前数据
     const currentWeight = user.current_weight || 0;
@@ -208,7 +217,7 @@ export class AdminService {
     const { count: todayCheckins } = await client
       .from('weight_records')
       .select('*', { count: 'exact', head: true })
-      .eq('date', today);
+      .eq('record_date', today);
 
     // 获取总打卡次数
     const { count: totalRecords } = await client
