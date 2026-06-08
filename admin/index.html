@@ -278,36 +278,6 @@
     </div>
   </div>
 
-  <!-- 出生日期选择器弹窗 -->
-  <div id="birthDatePickerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 w-full max-w-sm">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl font-bold text-gray-800">选择出生日期</h3>
-        <button onclick="closeBirthDatePicker()" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="grid grid-cols-3 gap-3 mb-4">
-        <div>
-          <label class="block text-sm text-gray-500 mb-1">年</label>
-          <select id="birthYear" class="w-full border border-gray-300 rounded-lg p-2" onchange="updateBirthDateDays()"></select>
-        </div>
-        <div>
-          <label class="block text-sm text-gray-500 mb-1">月</label>
-          <select id="birthMonth" class="w-full border border-gray-300 rounded-lg p-2" onchange="updateBirthDateDays()"></select>
-        </div>
-        <div>
-          <label class="block text-sm text-gray-500 mb-1">日</label>
-          <select id="birthDay" class="w-full border border-gray-300 rounded-lg p-2"></select>
-        </div>
-      </div>
-      <div class="flex gap-3">
-        <button onclick="closeBirthDatePicker()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">取消</button>
-        <button onclick="saveBirthDate()" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">保存</button>
-      </div>
-    </div>
-  </div>
-
   <script>
     const API_BASE = window.location.origin + '/api/admin';
     let token = null;
@@ -617,10 +587,6 @@
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-gray-500 text-sm">性别</p>
               <p class="font-semibold">${gender}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100" onclick="showBirthDatePicker('${data.user.birthDate || ''}', '${userId}')">
-              <p class="text-gray-500 text-sm">出生日期 <i class="fas fa-edit text-xs text-gray-400 ml-1"></i></p>
-              <p class="font-semibold">${data.user.birthDate || '点击设置'}</p>
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-gray-500 text-sm">身高</p>
